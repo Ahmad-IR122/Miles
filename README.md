@@ -1,20 +1,29 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# AI-Powered Travel Assistant
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Introduction 
+This project aims to build an AI powered travel assistant that help users build personalized itineraries based on travel destination, preferencese, available information, and travel requirements.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+The objective is to provide users with an intelligent system that combines AI capabilities, retrieval-based information, and backend services to deliver relevant travel recommendations.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Getting Started
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+### Prerequisites
+
+Before running the project, make sure you have:
+
+- Python 3.11+
+- Required environment variables configured 
+
+## Project Structure
+```
+.
+├── backend/
+│   ├── routers/       # API endpoints
+│   ├── services/      # Business logic
+│   ├── schemas/       # Data validation models
+│   └── core/          # Configuration and shared backend components
+│
+├── azure-pipelines-be-pr.yml  # Backend PR validation pipeline
+├── azure-pipeline-fe-pr.yml  # Frontend PR valiadtion pipeline
+└── frontend/
+```

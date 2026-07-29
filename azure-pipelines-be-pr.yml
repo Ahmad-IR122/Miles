@@ -32,6 +32,11 @@ steps:
 - script: |
     cd backend
     pip install ruff
-    ruff check .
-  displayName: Check linting and unused imports
+    ruff check . --select F, D
+  displayName: Check linting and docstrings
+
+- script: |
+    cd backend
+    ruff format --check .
+  displayName: Check code formatting
 
