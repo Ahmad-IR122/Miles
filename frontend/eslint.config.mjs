@@ -6,28 +6,39 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
+    ignores: ["dist/**", "node_modules/**", "build/**", "coverage/**"],
+  },
+  {
     files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
       sourceType: "module",
+      ecmaVersion: "latest",
       globals: globals.browser,
       parser: tseslint.parser,
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
     },
     plugins: {
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       '@typescript-eslint': tseslint.plugin,
     },
-    ...pluginReact.configs.flat.recommended,
-    ...pluginReactHooks.configs.flat.recommended,
+    settings: {
+      react: { version: "detect" },
+    },
     rules: {
-      "no-unused-vars": "warn",           // Warn unused vars
-      "no-console": "off",                // Allow console
-      "semi": ["error", "always"],        // Require semicolons
-      "quotes": ["error", "double"],      // Double quotes only
-      "indent": ["error", 2],             // 2-space indent
-      "no-var": "error",                  // Ban var, use let/const
-      "prefer-const": "warn",             // Warn if let should be const
-      "eqeqeq": ["error", "always"],      // Use === not ==
+      ...pluginReact.configs.flat.recommended.rules,
+      ...pluginReact.configs.flat['jsx-runtime'].rules,
+      ...pluginReactHooks.configs.flat.recommended.rules,
+      "no-unused-vars": "warn",
+      "no-console": "off",
+      "semi": ["error", "always"],
+      "quotes": ["error", "double"],
+      "indent": ["error", 2],
+      "no-var": "error",
+      "prefer-const": "warn",
+      "eqeqeq": ["error", "always"],
     }
   },
   js.configs.recommended,
