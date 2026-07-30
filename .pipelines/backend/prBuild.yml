@@ -18,7 +18,7 @@ steps:
 
 - task: Cache@2
   inputs:
-    key: 'pip | "$(Agent.OS)" | pipelines/backend/../../backend/requirements.txt'
+    key: 'pip | "$(Agent.OS)" | backend/requirements.txt'
     restoreKeys: |
       pip | "$(Agent.OS)"
     path: ~/.cache/pip
