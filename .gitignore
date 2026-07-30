@@ -10,3 +10,4 @@ __pycache__/
 .vscode/
 *.pyc
 .vscode/
+.vscode/settings.json
