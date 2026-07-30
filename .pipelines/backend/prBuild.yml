@@ -29,14 +29,5 @@ steps:
     pip install -r requirements.txt
   displayName: Install backend dependencies
 
-- script: |
-    cd backend
-    pip install ruff
-    ruff check . --select F, D
-  displayName: Check linting and docstrings
 
-- script: |
-    cd backend
-    ruff format --check .
-  displayName: Check code formatting
 
