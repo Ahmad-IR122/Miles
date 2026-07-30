@@ -23,7 +23,7 @@ Before running the project, make sure you have:
 │   ├── schemas/       # Data validation models
 │   └── core/          # Configuration and shared backend components
 │
-├── azure-pipelines-be-pr.yml  # Backend PR validation pipeline
-├── azure-pipeline-fe-pr.yml  # Frontend PR valiadtion pipeline
+├── .pipelines/        # PR validation pipelines 
+├── aiServices/        # AI Services
 └── frontend/
 ```
