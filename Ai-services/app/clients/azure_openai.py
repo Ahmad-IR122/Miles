@@ -1,8 +1,6 @@
 from openai import AzureOpenAI
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-
-from app.config import settings
-
+from app.config.config import settings
 
 def get_client():
     print("Creating Azure client...")
