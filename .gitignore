@@ -3,3 +3,10 @@ __pycache__/
 .env
 .venv/
 venv/
+.venv/
+__pycache__/
+.env
+.pytest_cache/
+.vscode/
+*.pyc
+.vscode/
