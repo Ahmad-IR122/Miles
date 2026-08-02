@@ -13,7 +13,7 @@ import type { Dayjs } from "dayjs";
 
 const allCountries = Country.getAllCountries();
 
-function TripPlanningForm() {
+const TripPlanningForm = () => {
   const [budget, setBudget] = useState("");
   const [country, setCountry] = useState<ICountry | null>(null);
   const [city, setCity] = useState<ICity | null>(null);
@@ -128,7 +128,6 @@ function TripPlanningForm() {
           </IconButton>
         </div>
 
-        
         <h3>Budget</h3>
         <TextField
           label="Budget"
@@ -146,6 +145,6 @@ function TripPlanningForm() {
       </div>
     </LocalizationProvider>
   );
-}
+};
 
 export default TripPlanningForm;
