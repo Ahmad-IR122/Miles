@@ -10,10 +10,17 @@
     "preview": "vite preview",
     "prepare": "cd .. && husky frontend/.husky"
   },
-"lint-staged": {
-  "*.{js,jsx,ts,tsx}": "frontend/node_modules/.bin/eslint --config frontend/eslint.config.mjs --fix"
-},
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "frontend/node_modules/.bin/eslint --config frontend/eslint.config.mjs --fix"
+  },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "@mui/x-date-pickers": "^9.10.1",
+    "country-state-city": "^3.2.1",
+    "dayjs": "^1.11.21",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.2"
