@@ -6,12 +6,27 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import Chip from "@mui/material/Chip";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { Dayjs } from "dayjs";
 
 const allCountries = Country.getAllCountries();
+
+const interestOptions = [
+  "Adventure",
+  "History",
+  "Food",
+  "Nature",
+  "Nightlife",
+  "Shopping",
+  "Art & Culture",
+  "Relaxation",
+  "Other",
+];
 
 const TripPlanningForm = () => {
   const [budget, setBudget] = useState("");
@@ -22,6 +37,11 @@ const TripPlanningForm = () => {
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
+
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [otherInterest, setOtherInterest] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleBudgetChange = (event: ChangeEvent<HTMLInputElement>) => {
     setBudget(event.target.value);
@@ -51,6 +71,61 @@ const TripPlanningForm = () => {
 
   const increaseChildren = () => setChildren((prev) => prev + 1);
   const decreaseChildren = () => setChildren((prev) => Math.max(0, prev - 1));
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests((prev) =>
+      prev.includes(interest)
+        ? prev.filter((item) => item !== interest)
+        : [...prev, interest]
+    );
+  };
+
+  const handleOtherInterestChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setOtherInterest(event.target.value);
+  };
+
+  const handleSubmit = async () => {
+    setErrorMessage("");
+
+    // Basic required-field checks
+    if (!country || !city) {
+      setErrorMessage("Please select a destination.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      setErrorMessage("Please select both a start and end date.");
+      return;
+    }
+    if (selectedInterests.length === 0) {
+      setErrorMessage("Please select at least one interest.");
+      return;
+    }
+
+    const tripRequest = {
+      country: country.name,
+      city: city.name,
+      startDate: startDate.format("YYYY-MM-DD"),
+      endDate: endDate.format("YYYY-MM-DD"),
+      adults,
+      children,
+      interests: selectedInterests,
+      otherInterest: selectedInterests.includes("Other") ? otherInterest : "",
+      budget,
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      // Mocked submit until the real backend endpoint exists.
+      // Replace this block with a real fetch/axios call later.
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("Trip request submitted:", tripRequest);
+    } catch {
+      setErrorMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -128,6 +203,30 @@ const TripPlanningForm = () => {
           </IconButton>
         </div>
 
+        <h3>Interests</h3>
+        <div>
+          {interestOptions.map((interest) => (
+            <Chip
+              key={interest}
+              label={interest}
+              clickable
+              color={selectedInterests.includes(interest) ? "primary" : "default"}
+              onClick={() => toggleInterest(interest)}
+            />
+          ))}
+        </div>
+
+        {selectedInterests.includes("Other") && (
+          <TextField
+            label="Tell us your interest"
+            value={otherInterest}
+            onChange={handleOtherInterestChange}
+            variant="outlined"
+          />
+        )}
+
+        <p>Selected interests: {selectedInterests.join(", ") || "none yet"}</p>
+
         <h3>Budget</h3>
         <TextField
           label="Budget"
@@ -142,6 +241,15 @@ const TripPlanningForm = () => {
           }}
         />
         <p>Current value in state: {budget} USD</p>
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <CircularProgress size={20} /> : "Generate Itinerary"}
+        </Button>
       </div>
     </LocalizationProvider>
   );
