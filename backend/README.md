@@ -1,4 +1,4 @@
-# Introduction 
+# Introduction
 # Project A — Backend
 This is the backend service for Project A (AI Trip Planner), built with FastAPI. This initial version covers Task 510 — Initialize BE: it sets up the base project scaffolding, folder structure, and tooling only. No feature logic (trip planning, itineraries, recommendations, etc.) has been implemented yet.
 
@@ -38,3 +38,14 @@ No automated test suite exists yet, since this task was scaffolding only.
 - Project layout: `app/routers` holds API endpoints, `app/schemas` holds Pydantic request/response models, `app/services` holds business logic, `app/core` holds shared config.
 - Branch naming: `user/<username>/<short-description>`.
 - Add new dependencies to `requirements.txt` via `pip freeze > requirements.txt` inside your virtual environment before committing.
+
+
+## Pre-commit hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to catch lint/format issues before commit.
+
+Setup for new contributors:
+\```bash
+pip install pre-commit
+pre-commit install
+\```

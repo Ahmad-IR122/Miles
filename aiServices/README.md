@@ -46,7 +46,7 @@ Send a POST request to /chat with a prompt in the body. For example, using curl:
 
 curl -X POST http://127.0.0.1:8000/chat -H "Content-Type: application/json" -d "{\"prompt\":\"Hello!\"}"
 
-also you ccan use api test tools like : postman 
+also you ccan use api test tools like : postman
 ## Project structure
 
 ```md
@@ -72,3 +72,14 @@ Ai-services/
 - app/services/chat.py sends prompts to Azure OpenAI.
 - app/clients/azure_openai.py builds the Azure OpenAI client.
 - app/config.py loads environment settings.
+
+
+## Pre-commit hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to catch lint/format issues before commit.
+
+Setup for new contributors:
+\```bash
+pip install pre-commit
+pre-commit install
+\```
