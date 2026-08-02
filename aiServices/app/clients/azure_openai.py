@@ -2,11 +2,12 @@ from openai import AzureOpenAI
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from app.config.config import settings
 
+
 def get_client():
     print("Creating Azure client...")
     print(settings.AZURE_OPENAI_ENDPOINT)
     print(settings.AZURE_OPENAI_API_VERSION)
-    
+
     if settings.AZURE_OPENAI_API_KEY:
         print("Using API Key")
         return AzureOpenAI(
@@ -15,8 +16,8 @@ def get_client():
             api_version="2025-03-01-preview",
         )
     token_provider = get_bearer_token_provider(
-      DefaultAzureCredential(),
-      "https://cognitiveservices.azure.com/.default",
+        DefaultAzureCredential(),
+        "https://cognitiveservices.azure.com/.default",
     )
     return AzureOpenAI(
         azure_ad_token_provider=token_provider,
