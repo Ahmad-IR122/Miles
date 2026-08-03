@@ -1,7 +1,8 @@
 import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import { City, Country, type ICountry, type ICity } from "country-state-city";
+import { Country, type ICountry } from "country-state-city";
+import allCities from "../../data/cities.json";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
@@ -15,6 +16,11 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { Dayjs } from "dayjs";
 
 const allCountries = Country.getAllCountries();
+
+interface CityOption {
+  cityId: number;
+  name: string;
+}
 
 const interestOptions = [
   "Adventure",
@@ -30,9 +36,15 @@ const interestOptions = [
 
 const TripPlanningForm = () => {
   const [budget, setBudget] = useState("");
+
+  const [originCountry, setOriginCountry] = useState<ICountry | null>(null);
+  const [originCity, setOriginCity] = useState<CityOption | null>(null);
+  const [originCities, setOriginCities] = useState<CityOption[]>([]);
+
   const [country, setCountry] = useState<ICountry | null>(null);
-  const [city, setCity] = useState<ICity | null>(null);
-  const [cities, setCities] = useState<ICity[]>([]);
+  const [city, setCity] = useState<CityOption | null>(null);
+  const [cities, setCities] = useState<CityOption[]>([]);
+
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [adults, setAdults] = useState(1);
@@ -51,6 +63,27 @@ const TripPlanningForm = () => {
     }
   };
 
+  const handleOriginCountryChange = (
+    _event: SyntheticEvent,
+    newValue: ICountry | null
+  ) => {
+    setOriginCountry(newValue);
+    setOriginCity(null);
+
+    if (newValue) {
+      const countryCities = allCities
+        .filter((c) => c.country === newValue.isoCode)
+        .map((c) => ({ cityId: c.cityId, name: c.name }));
+      setOriginCities(countryCities);
+    } else {
+      setOriginCities([]);
+    }
+  };
+
+  const handleOriginCityChange = (_event: SyntheticEvent, newValue: CityOption | null) => {
+    setOriginCity(newValue);
+  };
+
   const handleCountryChange = (
     _event: SyntheticEvent,
     newValue: ICountry | null
@@ -59,14 +92,16 @@ const TripPlanningForm = () => {
     setCity(null);
 
     if (newValue) {
-      const countryCities = City.getCitiesOfCountry(newValue.isoCode) ?? [];
+      const countryCities = allCities
+        .filter((c) => c.country === newValue.isoCode)
+        .map((c) => ({ cityId: c.cityId, name: c.name }));
       setCities(countryCities);
     } else {
       setCities([]);
     }
   };
 
-  const handleCityChange = (_event: SyntheticEvent, newValue: ICity | null) => {
+  const handleCityChange = (_event: SyntheticEvent, newValue: CityOption | null) => {
     setCity(newValue);
   };
 
@@ -91,6 +126,10 @@ const TripPlanningForm = () => {
   const handleSubmit = async () => {
     setErrorMessage("");
 
+    if (!originCountry || !originCity) {
+      setErrorMessage("Please select an origin.");
+      return;
+    }
     if (!country || !city) {
       setErrorMessage("Please select a destination.");
       return;
@@ -109,8 +148,10 @@ const TripPlanningForm = () => {
     }
 
     const tripRequest = {
-      country: country.name,
-      city: city.name,
+      originCountry: originCountry.name,
+      originCity: originCity.name,
+      destinationCountry: country.name,
+      destinationCity: city.name,
       startDate: startDate.format("YYYY-MM-DD"),
       endDate: endDate.format("YYYY-MM-DD"),
       adults,
@@ -135,6 +176,33 @@ const TripPlanningForm = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div>
+        <h3>Origin</h3>
+        <Autocomplete
+          options={allCountries}
+          getOptionLabel={(option) => option.name}
+          value={originCountry}
+          onChange={handleOriginCountryChange}
+          renderInput={(params) => (
+            <TextField {...params} label="From (Country)" variant="outlined" />
+          )}
+        />
+
+        <Autocomplete
+          options={originCities}
+          getOptionLabel={(option) => option.name}
+          isOptionEqualToValue={(option, value) => option.cityId === value.cityId}
+          value={originCity}
+          onChange={handleOriginCityChange}
+          disabled={!originCountry}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={originCountry ? "From (City)" : "Select a country first"}
+              variant="outlined"
+            />
+          )}
+        />
+
         <h3>Destination</h3>
         <Autocomplete
           options={allCountries}
@@ -142,20 +210,21 @@ const TripPlanningForm = () => {
           value={country}
           onChange={handleCountryChange}
           renderInput={(params) => (
-            <TextField {...params} label="Country" variant="outlined" />
+            <TextField {...params} label="To (Country)" variant="outlined" />
           )}
         />
 
         <Autocomplete
           options={cities}
           getOptionLabel={(option) => option.name}
+          isOptionEqualToValue={(option, value) => option.cityId === value.cityId}
           value={city}
           onChange={handleCityChange}
           disabled={!country}
           renderInput={(params) => (
             <TextField
               {...params}
-              label={country ? "City" : "Select a country first"}
+              label={country ? "To (City)" : "Select a country first"}
               variant="outlined"
             />
           )}
