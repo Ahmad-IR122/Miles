@@ -44,7 +44,11 @@ const TripPlanningForm = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleBudgetChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBudget(event.target.value);
+    const value = event.target.value;
+
+    if (value === "" || /^[0-9]+$/.test(value)) {
+      setBudget(value);
+    }
   };
 
   const handleCountryChange = (
@@ -87,7 +91,6 @@ const TripPlanningForm = () => {
   const handleSubmit = async () => {
     setErrorMessage("");
 
-    // Basic required-field checks
     if (!country || !city) {
       setErrorMessage("Please select a destination.");
       return;
@@ -98,6 +101,10 @@ const TripPlanningForm = () => {
     }
     if (selectedInterests.length === 0) {
       setErrorMessage("Please select at least one interest.");
+      return;
+    }
+    if (!budget || Number(budget) <= 0) {
+      setErrorMessage("Please enter a valid budget greater than 0.");
       return;
     }
 
@@ -116,8 +123,6 @@ const TripPlanningForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Mocked submit until the real backend endpoint exists.
-      // Replace this block with a real fetch/axios call later.
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("Trip request submitted:", tripRequest);
     } catch {
@@ -156,10 +161,6 @@ const TripPlanningForm = () => {
           )}
         />
 
-        <p>
-          Selected destination: {city ? `${city.name}, ${country?.name}` : "none yet"}
-        </p>
-
         <h3>Travel Dates</h3>
         <DatePicker
           label="Start date"
@@ -173,12 +174,6 @@ const TripPlanningForm = () => {
           onChange={(newValue) => setEndDate(newValue)}
           minDate={startDate ?? undefined}
         />
-
-        <p>
-          Selected dates:{" "}
-          {startDate ? startDate.format("MMM D, YYYY") : "none"} →{" "}
-          {endDate ? endDate.format("MMM D, YYYY") : "none"}
-        </p>
 
         <h3>Travelers</h3>
         <div>
@@ -225,12 +220,11 @@ const TripPlanningForm = () => {
           />
         )}
 
-        <p>Selected interests: {selectedInterests.join(", ") || "none yet"}</p>
-
         <h3>Budget</h3>
         <TextField
           label="Budget"
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={budget}
           onChange={handleBudgetChange}
           variant="outlined"
@@ -240,7 +234,6 @@ const TripPlanningForm = () => {
             },
           }}
         />
-        <p>Current value in state: {budget} USD</p>
         {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
 
         <Button
