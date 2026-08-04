@@ -1,0 +1,27 @@
+trigger: none
+pr:
+  branches:
+    include:
+      - "*"
+  paths:
+    include:
+      - aiServices/**
+variables:
+  pythonVersion: "3.11"
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: $(pythonVersion)
+
+- task: Cache@2
+  inputs:
+    key: 'pip | "$(Agent.OS)" | aiServices/requirements.txt'
+    restoreKeys: |
+      pip | "$(Agent.OS)"
+    path: ~/.cache/pip
+
+- script: |
+    cd aiServices
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: Install AI Services dependencies
