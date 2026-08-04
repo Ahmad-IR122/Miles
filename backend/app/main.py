@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import health
 from app.routers import itinerary
+from app.routers import trip # this is mising in the original code snippet, but it is necessary to include the trip router
 
 
 app = FastAPI(
