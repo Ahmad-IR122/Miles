@@ -9,6 +9,7 @@ pr:
 variables:
   pythonVersion: "3.11"
   PIP_CACHE_DIR: $(Pipeline.Workspace)/.pipcache
+  group: BE-pipeline-env 
 steps:
 - task: UsePythonVersion@0
   inputs:

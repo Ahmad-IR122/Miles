@@ -34,7 +34,9 @@ class TripRequest(BaseModel):
 
     @model_validator(mode="after")
     def check_interests(self):
-        if not self.interests and not (self.other_interest and self.other_interest.strip()):
+        if not self.interests and not (
+            self.other_interest and self.other_interest.strip()
+        ):
             raise ValueError("select at least one interest, or fill in other_interest")
         return self
 
