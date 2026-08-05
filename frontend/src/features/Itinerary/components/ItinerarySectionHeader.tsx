@@ -5,10 +5,12 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
 
 type ItinerarySectionHeaderProps = {
+  dateLabel?: string;
   dayNumber: number;
 };
 
 export function ItinerarySectionHeader({
+  dateLabel,
   dayNumber,
 }: ItinerarySectionHeaderProps) {
   const classes = useItineraryStyles();
@@ -17,6 +19,7 @@ export function ItinerarySectionHeader({
     <Box className={classes.sectionBar}>
       <Typography className={classes.sectionTitle} component="h2">
         Day {dayNumber}
+        {dateLabel ? ` - ${dateLabel}` : ""}
       </Typography>
 
       <Box className={classes.sectionActions}>
@@ -29,7 +32,12 @@ export function ItinerarySectionHeader({
         </Button>
         <Button
           className={`${classes.compactButton} ${classes.outlineBlueButton}`}
-          startIcon={<AutoAwesomeIcon fontSize="small" />}
+          startIcon={
+            <AutoAwesomeIcon
+              className={classes.regenerateIcon}
+              fontSize="small"
+            />
+          }
           variant="contained"
         >
           Regenerate Day

@@ -1,19 +1,20 @@
 import { Box } from "@mui/material";
+import type { Dispatch, SetStateAction } from "react";
 import type { Day } from "../pages/Itinerary";
+import { formatDayDate } from "../pages/Itinerary";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
 
 type DaySelectorProps = {
   days: Day[];
-  endDate?: string;
   selectedDay: number;
+  setSelectedDay: Dispatch<SetStateAction<number>>;
   startDate?: string;
 };
 
 export function DaySelector({
   days,
-  endDate,
   selectedDay,
-  
+  setSelectedDay,
   startDate,
 }: DaySelectorProps) {
   const classes = useItineraryStyles();
@@ -26,11 +27,12 @@ export function DaySelector({
             index === selectedDay ? classes.dayTabActive : ""
           }`}
           key={day.day}
+          onClick={() => setSelectedDay(index)}
           type="button"
         >
           <span>Day {day.day}</span>
           <span className={classes.dayDate}>
-            {index === selectedDay ? startDate : endDate}
+            {formatDayDate(startDate, index)}
           </span>
         </button>
       ))}

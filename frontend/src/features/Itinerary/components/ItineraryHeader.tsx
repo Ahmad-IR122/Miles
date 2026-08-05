@@ -6,15 +6,19 @@ import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
 
 type ItineraryHeaderProps = {
+  budget?: string;
   dateRange: string;
   daysCount: number;
   destination?: string;
+  travelers?: number;
 };
 
 export function ItineraryHeader({
+  budget,
   dateRange,
   daysCount,
   destination,
+  travelers,
 }: ItineraryHeaderProps) {
   const classes = useItineraryStyles();
 
@@ -32,6 +36,8 @@ export function ItineraryHeader({
         {dateRange && (
           <Typography className={classes.subtitle}>
             {dateRange} · {daysCount} days
+            {travelers ? ` · ${travelers} travelers` : ""}
+            {budget ? ` · Budget: ${budget}` : ""}
           </Typography>
         )}
       </Box>

@@ -24,7 +24,165 @@ export const useItineraryStyles = makeStyles({
   },
   shell: {
     maxWidth: "none",
+    ...shorthands.padding("0"),
+  },
+  layout: {
+    display: "grid",
+    gridTemplateAreas: "\"main summary\"",
+    gridTemplateColumns: "minmax(720px, 1fr) 257px",
+    minHeight: "100vh",
+    "@media (max-width: 900px)": {
+      gridTemplateAreas: "\"summary\" \"main\"",
+      gridTemplateColumns: "1fr",
+    },
+  },
+  mainContent: {
+    gridArea: "main",
+    minWidth: 0,
     ...shorthands.padding("33px", "27px", "16px"),
+  },
+  summarySidebar: {
+    gridArea: "summary",
+    minHeight: "100vh",
+    backgroundColor: "#ffffff",
+    ...shorthands.borderLeft("1px", "solid", "#e3eaf4"),
+    ...shorthands.padding("26px", "16px"),
+    "@media (max-width: 900px)": {
+      minHeight: "auto",
+      ...shorthands.borderLeft("0"),
+      ...shorthands.borderBottom("1px", "solid", "#e3eaf4"),
+    },
+  },
+  summaryTitle: {
+    color: "#020b22",
+    fontSize: "15px",
+    lineHeight: "21px",
+    fontWeight: 800,
+    marginBottom: "20px",
+  },
+  summaryCards: {
+    display: "grid",
+    gap: "19px",
+    marginBottom: "18px",
+    "@media (max-width: 900px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+    "@media (max-width: 560px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+  summaryCard: {
+    position: "relative",
+    minHeight: "122px",
+    backgroundColor: "#f7f9fc",
+    ...shorthands.borderRadius("11px"),
+    ...shorthands.padding("18px", "14px", "13px"),
+  },
+  summaryCheck: {
+    position: "absolute",
+    top: "14px",
+    right: "13px",
+    color: "#22c55e",
+    fontSize: "12px",
+    lineHeight: "12px",
+    fontWeight: 900,
+  },
+  summaryValue: {
+    color: "#020b22",
+    fontSize: "21px",
+    lineHeight: "27px",
+    fontWeight: 900,
+    marginTop: "18px",
+  },
+  summaryLabel: {
+    color: "#8b7dd6",
+    fontSize: "11px",
+    lineHeight: "15px",
+    fontWeight: 700,
+    marginTop: "1px",
+  },
+  summaryNote: {
+    color: "#52688c",
+    fontSize: "11px",
+    lineHeight: "15px",
+    fontWeight: 500,
+    marginTop: "2px",
+  },
+  summaryMoneyIcon: {
+    color: "#f59e0b",
+    fontSize: "20px",
+  },
+  summaryCalendarIcon: {
+    color: "#a78bfa",
+    fontSize: "20px",
+  },
+  summaryTargetIcon: {
+    color: "#0ea5e9",
+    fontSize: "20px",
+  },
+  summaryTravelersIcon: {
+    color: "#6d4cc2",
+    fontSize: "20px",
+  },
+  budgetRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    color: "#52688c",
+    fontSize: "12px",
+    lineHeight: "17px",
+    fontWeight: 700,
+    marginBottom: "8px",
+  },
+  progressTrack: {
+    height: "5px",
+    overflow: "hidden",
+    backgroundColor: "#edf2f7",
+    ...shorthands.borderRadius("999px"),
+    marginBottom: "17px",
+  },
+  progressFill: {
+    height: "100%",
+    background: "linear-gradient(90deg, #12b8dc 0%, #287ff2 100%)",
+    ...shorthands.borderRadius("999px"),
+  },
+  modifyTripButton: {
+    width: "100%",
+    height: "48px",
+    color: "#ffffff",
+    background: "linear-gradient(135deg, #10b6dc 0%, #347bf5 100%)",
+    ...shorthands.borderRadius("11px"),
+    textTransform: "none",
+    fontSize: "13px",
+    lineHeight: "18px",
+    fontWeight: 800,
+    boxShadow: "none",
+    marginBottom: "19px",
+    ":hover": {
+      background: "linear-gradient(135deg, #10b6dc 0%, #347bf5 100%)",
+      boxShadow: "none",
+    },
+  },
+  modifyTripIcon: {
+    color: "#ffd2e2",
+    fontSize: "17px",
+  },
+  exportButton: {
+    width: "100%",
+    height: "43px",
+    color: "#0f1f39",
+    backgroundColor: "#ffffff",
+    ...shorthands.border("1px", "solid", "#dbe4f0"),
+    ...shorthands.borderRadius("10px"),
+    textTransform: "none",
+    fontSize: "12px",
+    lineHeight: "17px",
+    fontWeight: 800,
+    boxShadow: "none",
+    ":hover": {
+      backgroundColor: "#ffffff",
+      boxShadow: "none",
+    },
   },
   header: {
     display: "flex",
@@ -135,7 +293,7 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.borderRadius("28px"),
     ...shorthands.border("1px", "solid", "#d9e4f4"),
     backgroundColor: "#ffffff",
-    color: "#5e6f8d",
+    color: "#64748b",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -147,7 +305,7 @@ export const useItineraryStyles = makeStyles({
   },
   dayTabActive: {
     background: "linear-gradient(135deg, #12b8dc 0%, #287ff2 100%)",
-    color: "#ffffff",
+    color: "#ffffff !important",
     ...shorthands.borderColor("transparent"),
     boxShadow: "0 9px 17px rgba(24, 157, 221, 0.34)",
   },
@@ -195,6 +353,9 @@ export const useItineraryStyles = makeStyles({
       boxShadow: "none",
     },
   },
+  regenerateIcon: {
+    color: "#ffc107",
+  },
   timeline: {
     position: "relative",
     paddingLeft: "56px",
@@ -206,7 +367,7 @@ export const useItineraryStyles = makeStyles({
     bottom: "0",
     width: "2px",
     background:
-      "linear-gradient(180deg, #13c861 0%, #237cff 55%, #ffab2e 100%)",
+      "linear-gradient(180deg, #12b8dc 0%, #287ff2 58%, #b7d9ff 100%)",
     opacity: 0.9,
   },
   activityRow: {
@@ -217,8 +378,8 @@ export const useItineraryStyles = makeStyles({
     position: "absolute",
     left: "-56px",
     top: "0",
-    width: "36px",
-    height: "36px",
+    width: "38px",
+    height: "38px",
     ...shorthands.borderRadius("12px"),
     backgroundColor: "#ffffff",
     display: "flex",
@@ -226,17 +387,36 @@ export const useItineraryStyles = makeStyles({
     justifyContent: "center",
     boxShadow: "0 0 0 4px #eef7ff, 0 1px 5px rgba(33, 79, 130, 0.16)",
   },
+  markerIcon: {
+    fontSize: "19px",
+  },
   markerGreen: {
     color: "#48bf56",
     ...shorthands.border("1px", "solid", "#22cf62"),
+  },
+  markerPurple: {
+    color: "#ff6b32",
+    ...shorthands.border("1px", "solid", "#8d5bff"),
+    boxShadow: "0 0 0 4px #f4edff, 0 1px 5px rgba(94, 73, 192, 0.2)",
   },
   markerBlue: {
     color: "#2d79ff",
     ...shorthands.border("1px", "solid", "#347cff"),
   },
+  markerCyan: {
+    color: "#277df0",
+    ...shorthands.border("1px", "solid", "#13cfe7"),
+    boxShadow: "0 0 0 4px #e9fbff, 0 1px 5px rgba(28, 142, 177, 0.18)",
+  },
   markerOrange: {
-    color: "#ff8f2b",
+    color: "#ff6a3c",
     ...shorthands.border("1px", "solid", "#ffae30"),
+    boxShadow: "0 0 0 4px #fff6e8, 0 1px 5px rgba(205, 118, 21, 0.18)",
+  },
+  markerRed: {
+    color: "#db7b22",
+    ...shorthands.border("1px", "solid", "#ff5167"),
+    boxShadow: "0 0 0 4px #fff0f2, 0 1px 5px rgba(196, 58, 79, 0.18)",
   },
   activityCard: {
     minHeight: "135px",
@@ -248,6 +428,9 @@ export const useItineraryStyles = makeStyles({
     justifyContent: "space-between",
     gap: "20px",
     ...shorthands.padding("17px", "18px", "15px", "20px"),
+  },
+  activityContent: {
+    minWidth: 0,
   },
   activityMeta: {
     display: "flex",
@@ -272,21 +455,43 @@ export const useItineraryStyles = makeStyles({
     backgroundColor: "#edf3ff",
     color: "#4f74ff",
   },
+  categoryAmber: {
+    backgroundColor: "#fff6e5",
+    color: "#ff9800",
+  },
   categoryOrange: {
     backgroundColor: "#fff4e7",
     color: "#ff8a1a",
+  },
+  categoryRed: {
+    backgroundColor: "#ffecef",
+    color: "#ff4f66",
+  },
+  activityTime: {
+    color: "#8090ad",
+    fontSize: "11px",
+    lineHeight: "15px",
+    fontWeight: 700,
   },
   activityTitle: {
     color: "#020b22",
     fontSize: "15px",
     lineHeight: "20px",
     fontWeight: 800,
+    marginBottom: "11px",
+  },
+  activityDescription: {
+    color: "#4f6387",
+    fontSize: "13px",
+    lineHeight: "19px",
+    fontWeight: 400,
     marginBottom: "13px",
   },
   detailLine: {
     display: "flex",
     alignItems: "center",
     gap: "18px",
+    flexWrap: "wrap",
     color: "#536a8f",
     fontSize: "11px",
     lineHeight: "15px",
@@ -299,6 +504,22 @@ export const useItineraryStyles = makeStyles({
   },
   detailIcon: {
     color: "#e93e79",
+    fontSize: "14px",
+  },
+  trainIcon: {
+    color: "#277df0",
+    fontSize: "14px",
+  },
+  mutedIcon: {
+    color: "#91a0b7",
+    fontSize: "14px",
+  },
+  costIcon: {
+    color: "#f28b28",
+    fontSize: "14px",
+  },
+  weatherIcon: {
+    color: "#8191a9",
     fontSize: "14px",
   },
   cardActions: {
