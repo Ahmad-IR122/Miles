@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import health, itinerary, trip
 
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
