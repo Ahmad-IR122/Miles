@@ -71,7 +71,13 @@ export function ActivityCard({
         ? classes.categoryRed
         : normalized.category === "shopping"
           ? classes.categoryBlue
-          : "";
+          : normalized.category === "art"
+            ? classes.categoryBlue
+            : normalized.category === "sightseeing"
+              ? classes.categoryOrange
+              : normalized.category === "nature"
+                ? classes.categoryGreen
+                : "";
 
   return (
     <Box className={classes.activityCard}>

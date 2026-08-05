@@ -1,6 +1,8 @@
 import { Box } from "@mui/material";
 
 import ApartmentIcon from "@mui/icons-material/Apartment";
+import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
+import PaletteIcon from "@mui/icons-material/Palette";
 import PlaceIcon from "@mui/icons-material/Place";
 import RamenDiningIcon from "@mui/icons-material/RamenDining";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
@@ -33,6 +35,10 @@ const MarkerIcon = ({
     return <ApartmentIcon className={className} />;
   case "ramen":
     return <RamenDiningIcon className={className} />;
+  case "nature":
+    return <LocalFloristIcon className={className} />;
+  case "art":
+    return <PaletteIcon className={className} />;
   default:
     return <PlaceIcon className={className} />;
   }
@@ -55,7 +61,11 @@ export function Timeline({ day, destination }: TimelineProps) {
                 ? classes.markerCyan
                 : icon === "ramen"
                   ? classes.markerRed
-                  : classes.markerBlue;
+                  : icon === "nature"
+                    ? classes.markerGreen
+                    : icon === "art"
+                      ? classes.markerBlue
+                      : classes.markerBlue;
 
         return (
           <Box className={classes.activityRow} key={activityIndex}>
