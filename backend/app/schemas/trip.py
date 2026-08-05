@@ -2,6 +2,8 @@ from datetime import date
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+MAX_TRIP_DAYS = 31
+
 
 class TripRequest(BaseModel):
     origin: str = Field(..., min_length=1, max_length=100)
@@ -25,6 +27,9 @@ class TripRequest(BaseModel):
     def check_dates(self):
         if self.end_date < self.start_date:
             raise ValueError("end_date must be on or after start_date")
+        trip_length = (self.end_date - self.start_date).days + 1
+        if trip_length > MAX_TRIP_DAYS:
+            raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
         return self
 
     @model_validator(mode="after")
