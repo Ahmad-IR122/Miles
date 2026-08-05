@@ -1,4 +1,5 @@
 trigger: none
+
 pr:
   branches:
     include:
@@ -6,35 +7,45 @@ pr:
   paths:
     include:
       - backend/**
+
 variables:
-  pythonVersion: "3.11"
-  PIP_CACHE_DIR: $(Pipeline.Workspace)/.pipcache
-  group: BE-pipeline-env 
+  - group: BE-pipeline-env
+
+  - name: pythonVersion
+    value: "3.11"
+
+  - name: PIP_CACHE_DIR
+    value: "$(Pipeline.Workspace)/.pipcache"
+
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: $(pythonVersion)
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: "$(pythonVersion)"
+    displayName: Use Python
 
-- task: Cache@2
-  inputs:
-    key: 'pip | "$(Agent.OS)" | backend/requirements.txt'
-    restoreKeys: |
-      pip | "$(Agent.OS)"
-    path: $(PIP_CACHE_DIR)
+  - task: Cache@2
+    inputs:
+      key: 'pip | "$(Agent.OS)" | backend/requirements.txt'
+      restoreKeys: |
+        pip | "$(Agent.OS)"
+      path: "$(PIP_CACHE_DIR)"
+    displayName: Cache pip packages
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: Install backend dependencies
-  workingDirectory: backend
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+    displayName: Install backend dependencies
+    workingDirectory: backend
 
-- script: |
-    pip install ruff
-    ruff check .
-  displayName: Lint backend code
-  workingDirectory: backend
+  - script: |
+      pip install ruff
+      ruff check .
+    displayName: Lint backend code
+    workingDirectory: backend
 
-- script: |
-    python -c "from app.main import app"
-  displayName: Build check (verify app imports)
-  workingDirectory: backend
+  - script: |
+      python -c "from app.main import app"
+    displayName: Build check (verify app imports)
+    workingDirectory: backend
+    env:
+      DATABASE_URL: $(DATABASE_URL)
