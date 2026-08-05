@@ -1,5 +1,4 @@
 from datetime import date
-from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -11,8 +10,8 @@ class TripRequest(BaseModel):
     end_date: date
     adults: int = Field(..., ge=1)
     children: int = Field(0, ge=0)
-    interests: List[str] = Field(default_factory=list, max_length=3)
-    other_interest: Optional[str] = Field(default=None, max_length=100)
+    interests: list[str] = Field(default_factory=list, max_length=3)
+    other_interest: str | None = Field(default=None, max_length=100)
     budget: float = Field(..., gt=0)
 
     @field_validator("origin", "destination")
@@ -43,6 +42,6 @@ class TripRequestResponse(BaseModel):
     end_date: date
     adults: int
     children: int
-    interests: List[str]
-    other_interest: Optional[str] = None
+    interests: list[str]
+    other_interest: str | None = None
     budget: float

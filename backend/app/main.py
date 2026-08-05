@@ -2,10 +2,9 @@ import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.routers import health, itinerary, trip
@@ -44,6 +43,7 @@ app.include_router(health.router)
 app.include_router(itinerary.router)
 app.include_router(trip.router)
 
+
 @app.get("/")
 def root():
     return {"message": "FastAPI is running"}
@@ -53,9 +53,7 @@ def root():
 def test_database():
     try:
         with engine.connect() as connection:
-            result = connection.execute(
-                text("SELECT 1")
-            )
+            result = connection.execute(text("SELECT 1"))
 
             value = result.scalar()
 
@@ -68,5 +66,5 @@ def test_database():
     except SQLAlchemyError as error:
         raise HTTPException(
             status_code=500,
-            detail=f"Database connection failed: {str(error)}",
+            detail=f"Database connection failed: {error!s}",
         )
