@@ -1,5 +1,4 @@
 trigger: none
-
 pr:
   branches:
     include:
@@ -7,10 +6,9 @@ pr:
   paths:
     include:
       - backend/**
-
 variables:
   pythonVersion: "3.11"
-
+  PIP_CACHE_DIR: $(Pipeline.Workspace)/.pipcache
 steps:
 - task: UsePythonVersion@0
   inputs:
@@ -21,13 +19,21 @@ steps:
     key: 'pip | "$(Agent.OS)" | backend/requirements.txt'
     restoreKeys: |
       pip | "$(Agent.OS)"
-    path: ~/.cache/pip
+    path: $(PIP_CACHE_DIR)
 
 - script: |
-    cd backend
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: Install backend dependencies
+  workingDirectory: backend
 
+- script: |
+    pip install ruff
+    ruff check .
+  displayName: Lint backend code
+  workingDirectory: backend
 
-
+- script: |
+    python -c "from app.main import app"
+  displayName: Build check (verify app imports)
+  workingDirectory: backend
