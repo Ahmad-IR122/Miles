@@ -31,13 +31,17 @@ steps:
     path: $(npm_config_cache)
   displayName: Cache npm packages
 
+
 - task: Npm@1
   displayName: Install dependencies
   inputs:
     command: 'ci'
     workingDir: 'frontend'
 
-- script: |
-    cd frontend
-    npm run build
+- script: npm run lint
+  workingDirectory: frontend
+  displayName: Lint frontend
+
+- script: npm run build
+  workingDirectory: frontend
   displayName: Build frontend
