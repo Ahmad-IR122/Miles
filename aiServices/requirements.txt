@@ -1,5 +1,6 @@
 openai>=2.0.0
 azure-identity>=1.22.0
+azure-search-documents>=11.5.1
 pydantic>=2.10.0
 pydantic-settings>=2.8.0
 fastapi
