@@ -43,7 +43,7 @@ steps:
     displayName: Lint backend code
     workingDirectory: backend
 
-- script: |
-    python -c "from app.main import app"
-  displayName: Build check (verify app imports)
-  workingDirectory: backend
+  - script: |
+      python -c "from app.main import app"
+    displayName: Build check (verify app imports)
+    workingDirectory: backend
