@@ -5,7 +5,9 @@ type EmptyItineraryMessageProps = {
   message: string;
 };
 
-export function EmptyItineraryMessage({ message }: EmptyItineraryMessageProps) {
+export const EmptyItineraryMessage = ({
+  message,
+}: EmptyItineraryMessageProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -16,4 +18,4 @@ export function EmptyItineraryMessage({ message }: EmptyItineraryMessageProps) {
       <Typography className={classes.emptyMessage}>{message}</Typography>
     </Box>
   );
-}
+};

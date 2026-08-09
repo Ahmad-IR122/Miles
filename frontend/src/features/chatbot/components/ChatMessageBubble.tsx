@@ -16,7 +16,7 @@ const formatTime = (date: Date) =>
     minute: "2-digit",
   });
 
-export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
+export const ChatMessageBubble = ({ message }: ChatMessageBubbleProps) => {
   const classes = useChatbotStyles();
   const isAssistant = message.role === "assistant";
 
@@ -38,8 +38,12 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
           isAssistant ? classes.assistantBubble : classes.userBubble,
         )}
       >
-        <Typography className={classes.messageText}>{message.content}</Typography>
-        {message.itinerary && <ItineraryPreviewCard itinerary={message.itinerary} />}
+        <Typography className={classes.messageText}>
+          {message.content}
+        </Typography>
+        {message.itinerary && (
+          <ItineraryPreviewCard itinerary={message.itinerary} />
+        )}
         <Box className={classes.meta}>
           <span>{formatTime(message.timestamp)}</span>
           {message.status && <span>{message.status}</span>}
@@ -47,4 +51,4 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
       </Box>
     </Box>
   );
-}
+};

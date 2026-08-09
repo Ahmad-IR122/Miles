@@ -13,13 +13,13 @@ type ItineraryHeaderProps = {
   travelers?: number;
 };
 
-export function ItineraryHeader({
+export const ItineraryHeader = ({
   budget,
   dateRange,
   daysCount,
   destination,
   travelers,
-}: ItineraryHeaderProps) {
+}: ItineraryHeaderProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -60,4 +60,4 @@ export function ItineraryHeader({
       </Box>
     </Box>
   );
-}
+};

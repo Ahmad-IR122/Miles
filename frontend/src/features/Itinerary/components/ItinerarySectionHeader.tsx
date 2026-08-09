@@ -9,10 +9,10 @@ type ItinerarySectionHeaderProps = {
   dayNumber: number;
 };
 
-export function ItinerarySectionHeader({
+export const ItinerarySectionHeader = ({
   dateLabel,
   dayNumber,
-}: ItinerarySectionHeaderProps) {
+}: ItinerarySectionHeaderProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -45,4 +45,4 @@ export function ItinerarySectionHeader({
       </Box>
     </Box>
   );
-}
+};
