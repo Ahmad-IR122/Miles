@@ -7,7 +7,9 @@ type ItineraryPreviewCardProps = {
   itinerary: ItineraryPreview;
 };
 
-export function ItineraryPreviewCard({ itinerary }: ItineraryPreviewCardProps) {
+export const ItineraryPreviewCard = ({
+  itinerary,
+}: ItineraryPreviewCardProps) => {
   const classes = useChatbotStyles();
   const title = itinerary.tripTitle || itinerary.title || itinerary.destination;
   const image = itinerary.imageUrl || itinerary.image;
@@ -20,9 +22,18 @@ export function ItineraryPreviewCard({ itinerary }: ItineraryPreviewCardProps) {
 
   return (
     <Paper className={classes.previewCard} elevation={0}>
-      {image && <Box component="img" className={classes.previewImage} src={image} alt="" />}
+      {image && (
+        <Box
+          component="img"
+          className={classes.previewImage}
+          src={image}
+          alt=""
+        />
+      )}
       <Box className={classes.previewBody}>
-        {title && <Typography className={classes.previewTitle}>{title}</Typography>}
+        {title && (
+          <Typography className={classes.previewTitle}>{title}</Typography>
+        )}
         {meta.length > 0 && (
           <Box className={classes.previewMeta}>
             {meta.map((item) => (
@@ -33,11 +44,14 @@ export function ItineraryPreviewCard({ itinerary }: ItineraryPreviewCardProps) {
           </Box>
         )}
         {itinerary.itineraryUrl && (
-          <Button className={classes.previewButton} href={itinerary.itineraryUrl}>
+          <Button
+            className={classes.previewButton}
+            href={itinerary.itineraryUrl}
+          >
             View itinerary
           </Button>
         )}
       </Box>
     </Paper>
   );
-}
+};

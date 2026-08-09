@@ -5,7 +5,7 @@ import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 
 import { useChatbotStyles } from "../styles/Chatbot.styles";
 
-export function ChatHeader() {
+export const ChatHeader = () => {
   const classes = useChatbotStyles();
 
   return (
@@ -31,4 +31,4 @@ export function ChatHeader() {
       </Box>
     </Box>
   );
-}
+};

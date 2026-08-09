@@ -1,4 +1,10 @@
-import { Alert, Avatar, Box, CircularProgress, Typography } from "@mui/material";
+import {
+  Alert,
+  Avatar,
+  Box,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import { mergeClasses } from "@griffel/react";
@@ -13,7 +19,11 @@ type MessageListProps = {
   messages: ChatMessage[];
 };
 
-export function MessageList({ error, isLoading, messages }: MessageListProps) {
+export const MessageList = ({
+  error,
+  isLoading,
+  messages,
+}: MessageListProps) => {
   const classes = useChatbotStyles();
 
   return (
@@ -23,10 +33,12 @@ export function MessageList({ error, isLoading, messages }: MessageListProps) {
           <Avatar className={classes.emptyIcon}>
             <FlightTakeoffRoundedIcon />
           </Avatar>
-          <Typography className={classes.emptyTitle}>Where should we go?</Typography>
+          <Typography className={classes.emptyTitle}>
+            Where should we go?
+          </Typography>
           <Typography className={classes.emptyCopy}>
-            Ask for help planning a route, comparing destinations, or shaping a trip
-            around your dates and interests.
+            Ask for help planning a route, comparing destinations, or shaping a
+            trip around your dates and interests.
           </Typography>
         </Box>
       )}
@@ -38,7 +50,9 @@ export function MessageList({ error, isLoading, messages }: MessageListProps) {
           <Avatar className={classes.avatar}>
             <AutoAwesomeRoundedIcon fontSize="small" />
           </Avatar>
-          <Box className={mergeClasses(classes.bubble, classes.assistantBubble)}>
+          <Box
+            className={mergeClasses(classes.bubble, classes.assistantBubble)}
+          >
             <CircularProgress size={18} />
           </Box>
         </Box>
@@ -46,4 +60,4 @@ export function MessageList({ error, isLoading, messages }: MessageListProps) {
       {error && <Alert severity="error">{error}</Alert>}
     </Box>
   );
-}
+};

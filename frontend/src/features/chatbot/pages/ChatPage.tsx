@@ -9,13 +9,16 @@ import { useChatbotStyles } from "../styles/Chatbot.styles";
 import type { ChatMessage, ChatResponse } from "../types/Chatbot.types";
 import { getItineraryPreview, getResponseText } from "../utils/chatResponse";
 
-function ChatPage() {
+const ChatPage = () => {
   const classes = useChatbotStyles();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const canSend = useMemo(() => input.trim().length > 0 && !isLoading, [input, isLoading]);
+  const canSend = useMemo(
+    () => input.trim().length > 0 && !isLoading,
+    [input, isLoading],
+  );
 
   const handleSubmit = async () => {
     const prompt = input.trim();
@@ -77,6 +80,6 @@ function ChatPage() {
       </Box>
     </Box>
   );
-}
+};
 
 export default ChatPage;

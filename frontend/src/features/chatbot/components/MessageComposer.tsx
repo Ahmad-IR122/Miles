@@ -1,5 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
-import { Box, CircularProgress, IconButton, InputBase, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  InputBase,
+  Typography,
+} from "@mui/material";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
 import { useChatbotStyles } from "../styles/Chatbot.styles";
@@ -12,13 +18,13 @@ type MessageComposerProps = {
   onSubmit: () => void;
 };
 
-export function MessageComposer({
+export const MessageComposer = ({
   disabled,
   input,
   isLoading,
   onInputChange,
   onSubmit,
-}: MessageComposerProps) {
+}: MessageComposerProps) => {
   const classes = useChatbotStyles();
 
   return (
@@ -45,12 +51,17 @@ export function MessageComposer({
           disabled={disabled}
           onClick={onSubmit}
         >
-          {isLoading ? <CircularProgress color="inherit" size={20} /> : <SendRoundedIcon />}
+          {isLoading ? (
+            <CircularProgress color="inherit" size={20} />
+          ) : (
+            <SendRoundedIcon />
+          )}
         </IconButton>
       </Box>
       <Typography className={classes.disclaimer}>
-        AI travel guidance can make mistakes. Check important details before booking.
+        AI travel guidance can make mistakes. Check important details before
+        booking.
       </Typography>
     </Box>
   );
-}
+};
