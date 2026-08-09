@@ -35,7 +35,7 @@ type Trip = {
   days?: Day[];
 };
 
-function Itinerary() {
+const Itinerary = () => {
   const [itineraries, setItineraryData] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -150,6 +150,6 @@ function Itinerary() {
       </Stack>
     </Container>
   );
-}
+};
 
 export default Itinerary;

@@ -1,10 +1,7 @@
-const Home = () => {
-  return (
-    <section>
-      <h1>Home Page</h1>
-      <p>The React application is running successfully.</p>
-    </section>
-  );
+import Home from "../components/home/home";
+
+const HomeRoute = () => {
+  return <Home />;
 };
 
-export default Home;
+export default HomeRoute;
