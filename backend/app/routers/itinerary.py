@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 
+from app.schemas.itinerary import Itinerary
+
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
-itinerary_data = []  # this is a placeholder for the itinerary data, you can replace it with actual data or a database query in the future
+itinerary_data: list[Itinerary] = []
 
 
 @router.get("")
-def get_itinerary():
+def get_itineraries():
     return {"data": itinerary_data}

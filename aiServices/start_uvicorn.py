@@ -9,6 +9,7 @@ This runs: python -m uvicorn app.main:app --reload --app-dir Ai-services
 so the `app` package inside `Ai-services` is importable even when running
 from the repository root.
 """
+
 from __future__ import annotations
 import subprocess
 import sys
