@@ -7,21 +7,32 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "preview": "vite preview",
     "prepare": "cd .. && husky frontend/.husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "frontend/node_modules/.bin/eslint --config frontend/eslint.config.mjs --fix"
+    "*.{js,jsx,ts,tsx}": [
+      "npm --prefix frontend exec prettier -- --write",
+      "npm --prefix frontend exec eslint -- --config frontend/eslint.config.mjs --fix"
+    ],
+    "*.{cjs,mjs,json,css,scss,md,mdx,yml,yaml}": "npm --prefix frontend exec prettier -- --write"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@griffel/react": "^1.7.7",
-    "@mui/icons-material": "^9.3.0",
+    "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
+    "@mui/x-date-pickers": "^9.10.1",
     "axios": "^1.19.0",
+    "country-state-city": "^3.2.1",
+    "dayjs": "^1.11.21",
+    "i18next": "^26.3.6",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-i18next": "^17.0.11",
     "react-router-dom": "^7.11.0"
   },
   "devDependencies": {
@@ -36,6 +47,7 @@
     "globals": "^15.15.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
+    "prettier": "^3.9.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
     "vite": "^8.1.1"
