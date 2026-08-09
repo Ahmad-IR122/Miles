@@ -7,8 +7,8 @@ import PlaceIcon from "@mui/icons-material/Place";
 import RamenDiningIcon from "@mui/icons-material/RamenDining";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import TempleBuddhistIcon from "@mui/icons-material/TempleBuddhist";
-import type { Activity, Day } from "../pages/Itinerary";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
+import type { Activity, Day } from "../types/Itinerary.types";
 import { ActivityCard } from "./ActivityCard";
 
 type TimelineProps = {
@@ -44,7 +44,7 @@ const MarkerIcon = ({
   }
 };
 
-export function Timeline({ day, destination }: TimelineProps) {
+export const Timeline = ({ day, destination }: TimelineProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -84,4 +84,4 @@ export function Timeline({ day, destination }: TimelineProps) {
       })}
     </Box>
   );
-}
+};

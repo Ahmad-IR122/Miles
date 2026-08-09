@@ -7,8 +7,8 @@ import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SavingsIcon from "@mui/icons-material/Savings";
 import TrackChangesIcon from "@mui/icons-material/TrackChanges";
-import type { Activity, Trip } from "../pages/Itinerary";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
+import type { Activity, Trip } from "../types/Itinerary.types";
 
 type TripSummarySidebarProps = {
   trip: Trip;
@@ -51,7 +51,7 @@ const formatDuration = (startDate?: string, endDate?: string) => {
   )}`;
 };
 
-export function TripSummarySidebar({ trip }: TripSummarySidebarProps) {
+export const TripSummarySidebar = ({ trip }: TripSummarySidebarProps) => {
   const classes = useItineraryStyles();
   const activities = trip.days?.flatMap((day) => day.activities ?? []) ?? [];
   const calculatedSpent = activities.reduce(
@@ -76,7 +76,9 @@ export function TripSummarySidebar({ trip }: TripSummarySidebarProps) {
         <Box className={classes.summaryCard}>
           <SavingsIcon className={classes.summaryMoneyIcon} />
           <CheckIcon className={classes.summaryCheck} />
-          <Typography className={classes.summaryValue}>{budgetTotal}</Typography>
+          <Typography className={classes.summaryValue}>
+            {budgetTotal}
+          </Typography>
           <Typography className={classes.summaryLabel}>Total Budget</Typography>
           <Typography className={classes.summaryNote}>
             {estimatedSpent} estimated spent
@@ -150,4 +152,4 @@ export function TripSummarySidebar({ trip }: TripSummarySidebarProps) {
       </Button>
     </Box>
   );
-}
+};

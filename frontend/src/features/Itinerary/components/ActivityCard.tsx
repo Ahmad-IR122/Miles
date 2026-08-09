@@ -8,8 +8,8 @@ import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import PlaceIcon from "@mui/icons-material/Place";
 import TrainIcon from "@mui/icons-material/Train";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
-import type { Activity } from "../pages/Itinerary";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
+import type { Activity } from "../types/Itinerary.types";
 
 type ActivityCardProps = {
   activity: Activity;
@@ -40,7 +40,8 @@ const normalizeActivity = (
 
   return {
     title: activity.title,
-    category: activity.category ?? ["culture", "food", "dining"][activityIndex % 3],
+    category:
+      activity.category ?? ["culture", "food", "dining"][activityIndex % 3],
     time: activity.time ?? "",
     duration: activity.duration ?? "",
     description: activity.description ?? "",
@@ -51,12 +52,12 @@ const normalizeActivity = (
   };
 };
 
-export function ActivityCard({
+export const ActivityCard = ({
   activity,
   activityIndex,
   dayNumber,
   destination,
-}: ActivityCardProps) {
+}: ActivityCardProps) => {
   const classes = useItineraryStyles();
   const normalized = normalizeActivity(
     activity,
@@ -88,7 +89,9 @@ export function ActivityCard({
           </Box>
           {(normalized.time || normalized.duration) && (
             <Typography className={classes.activityTime}>
-              {[normalized.time, normalized.duration].filter(Boolean).join(" · ")}
+              {[normalized.time, normalized.duration]
+                .filter(Boolean)
+                .join(" · ")}
             </Typography>
           )}
         </Box>
@@ -162,4 +165,4 @@ export function ActivityCard({
       </Box>
     </Box>
   );
-}
+};

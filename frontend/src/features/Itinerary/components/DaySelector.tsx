@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import type { Day } from "../pages/Itinerary";
-import { formatDayDate } from "../pages/Itinerary";
 import { useItineraryStyles } from "../styles/Itinerary.styles";
+import type { Day } from "../types/Itinerary.types";
+import { formatDayDate } from "../utils/dateUtils";
 
 type DaySelectorProps = {
   days: Day[];
@@ -11,12 +11,12 @@ type DaySelectorProps = {
   startDate?: string;
 };
 
-export function DaySelector({
+export const DaySelector = ({
   days,
   selectedDay,
   setSelectedDay,
   startDate,
-}: DaySelectorProps) {
+}: DaySelectorProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -38,4 +38,4 @@ export function DaySelector({
       ))}
     </Box>
   );
-}
+};
