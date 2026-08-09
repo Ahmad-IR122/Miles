@@ -1,0 +1,53 @@
+import { useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
+
+import AppButton from "../../common/AppButton/AppButton";
+import TopNav from "../../common/TopNav/TopNav";
+import home from "../../assets/image.svg";
+import { routesPaths } from "../../routes/routesPaths";
+import { useHomeStyles } from "./home.styles";
+
+const Home = () => {
+  const navigate = useNavigate();
+  const styles = useHomeStyles();
+  const goToPlanner = () => navigate(routesPaths.planTrip);
+
+  return (
+    <div className={styles.page}>
+      <TopNav />
+      <section className={styles.hero}>
+        <div className={styles.intro}>
+          <Typography component="h1" className={styles.title}>
+            Plan your perfect
+            <br />
+            <span className={styles.gradientText}>trip with AI</span>
+          </Typography>
+          <Typography component="p" className={styles.description}>
+            Tell us where you&apos;re going and what you love, and get a
+            personalized itinerary with flights, activities, must-see places,
+            and hidden gems, all in one place.
+          </Typography>
+          <AppButton
+            appearance="primary"
+            onClick={goToPlanner}
+            className={styles.ctaButton}
+          >
+            Plan Your Trip
+          </AppButton>
+        </div>
+        <div className={styles.visual}>
+          <div className={styles.peachBlob} />
+          <div className={styles.roseBlob} />
+          <div className={styles.photoCard}>
+            <img
+              src={home}
+              alt="Wooden boat gliding across a calm mountain lake"
+              className={styles.photo}
+            />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+export default Home;

@@ -7,8 +7,11 @@ pr:
     include:
       - aiServices/**
 variables:
-  pythonVersion: "3.11"
-  PIP_CACHE_DIR: $(Pipeline.Workspace)/.pipcache
+- group: AI services environment variable
+- name: pythonVersion
+  value: "3.11"
+- name: PIP_CACHE_DIR
+  value: $(Pipeline.Workspace)/.pipcache
 
 steps:
 - task: UsePythonVersion@0
@@ -34,7 +37,10 @@ steps:
   displayName: Build check (verify app imports)
   workingDirectory: aiServices
   env:
-    AZURE_OPENAI_ENDPOINT: https://ci-placeholder.invalid
-    AZURE_OPENAI_DEPLOYMENT: ci-placeholder
-    AZURE_OPENAI_API_KEY: ci-placeholder
-    AZURE_OPENAI_API_VERSION: 2025-03-01-preview
+    AZURE_OPENAI_ENDPOINT: $(AZURE_OPENAI_ENDPOINT)
+    AZURE_OPENAI_DEPLOYMENT: $(AZURE_OPENAI_DEPLOYMENT)
+    AZURE_OPENAI_API_KEY: $(AZURE_OPENAI_API_KEY)
+    AZURE_OPENAI_API_VERSION: $(AZURE_OPENAI_API_VERSION)
+    AZURE_SEARCH_ENDPOINT: $(AZURE_SEARCH_ENDPOINT)
+    AZURE_SEARCH_API_KEY: $(AZURE_SEARCH_API_KEY)
+    AZURE_SEARCH_INDEX_NAME: $(AZURE_SEARCH_INDEX_NAME)
