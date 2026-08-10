@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING
-
 import uuid
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -38,19 +37,9 @@ class Conversation(Base):  # ChatSessions
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    user: Mapped["User"] = relationship(
-        back_populates="conversations"
-    )
+    user: Mapped["User"] = relationship(back_populates="conversations")
 
-    trip: Mapped["Trip | None"] = relationship(
-        back_populates="conversations"
-    )
-
-    messages: Mapped[list["Message"]] = relationship(
-        back_populates="conversation",
-        cascade="all, delete-orphan",
-        order_by="Message.created_at",
-    )
+    trip: Mapped["Trip | None"] = relationship(back_populates="conversations")
 
     messages: Mapped[list["Message"]] = relationship(
         back_populates="conversation",

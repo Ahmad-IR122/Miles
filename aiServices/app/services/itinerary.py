@@ -2,7 +2,7 @@ from pydantic import ValidationError
 
 from app.clients.azure_openai import get_client
 from app.config.config import settings
-from app.models.travel import Itinerary, ItineraryDay, TravelDataItem, TravelPreferences
+from app.models.travel import Itinerary, itinerary_day, TravelDataItem, TravelPreferences
 from app.prompts.itinerary_prompt import (
     build_itinerary_prompt,
     build_regenerate_day_prompt,
@@ -69,7 +69,7 @@ def regenerate_day(
     output_text = _call_model(prompt)
 
     try:
-        new_day = ItineraryDay.model_validate_json(output_text)
+        new_day = itinerary_day.model_validate_json(output_text)
     except ValidationError as e:
         raise ValueError(f"LLM returned a day that didn't match the expected format: {e}")
 

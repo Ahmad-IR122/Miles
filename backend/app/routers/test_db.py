@@ -26,4 +26,3 @@ def test_database():
             status_code=500,
             detail=f"Database connection failed: {error!s}",
         )
-

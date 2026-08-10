@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from app.models.itinerary import Itinerary
 
 
-class ItineraryDay(Base):
+class itinerary_day(Base):
     __tablename__ = "itinerary_days"
 
     id: Mapped[int] = mapped_column(
@@ -48,6 +48,6 @@ class ItineraryDay(Base):
         back_populates="days",
     )
     activities: Mapped[list["Activity"]] = relationship(
-    back_populates="itinerary_day",
-    cascade="all, delete-orphan",
-)
+        back_populates="itinerary_day",
+        cascade="all, delete-orphan",
+    )

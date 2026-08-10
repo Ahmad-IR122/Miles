@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.db import Base
 
 if TYPE_CHECKING:
-    from app.models.ItineraryDay import ItineraryDay
+    from app.models.itinerary_day import itinerary_day
     from app.models.trip import Trip
 
 
@@ -52,7 +52,7 @@ class Itinerary(Base):
         back_populates="itineraries",
     )
 
-    days: Mapped[list["ItineraryDay"]] = relationship(
+    days: Mapped[list["itinerary_day"]] = relationship(
         back_populates="itinerary",
         cascade="all, delete-orphan",
     )

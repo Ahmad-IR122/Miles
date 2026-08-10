@@ -29,13 +29,13 @@ class ItineraryActivity(BaseModel):
     estimated_cost: Optional[str] = None  
 
 
-class ItineraryDay(BaseModel):
+class itinerary_day(BaseModel):
     date: str
     activities: list[ItineraryActivity]
 
 
 class Itinerary(BaseModel):
-    days: list[ItineraryDay]
+    days: list[itinerary_day]
 
 
 class ItineraryRequest(BaseModel):

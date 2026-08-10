@@ -8,6 +8,7 @@ from app.db.db import Base
 if TYPE_CHECKING:
     from app.models.trip import Trip
 
+
 class TripPreference(Base):
     __tablename__ = "trip_preferences"
 
@@ -54,7 +55,7 @@ class TripPreference(Base):
     )
 
     trips: Mapped[list["Trip"]] = relationship(
-      "Trip",
-      back_populates="user",
-      cascade="all, delete-orphan",
-  )
+        "Trip",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

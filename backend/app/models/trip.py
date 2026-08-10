@@ -9,8 +9,9 @@ from app.db.db import Base
 from app.models.conversation import Conversation
 
 if TYPE_CHECKING:
-    from app.models.user import User
+    from app.models.itinerary import Itinerary
     from app.models.trip_preference import TripPreference
+    from app.models.user import User
 
 
 class Trip(Base):
@@ -76,23 +77,23 @@ class Trip(Base):
         onupdate=func.now(),
         nullable=False,
     )
-  
+
     user: Mapped["User"] = relationship(
         "User",
         back_populates="trips",
     )
-    
+
     preferences: Mapped["TripPreference | None"] = relationship(
-    back_populates="trip",
-    cascade="all, delete-orphan",
-    uselist=False,
-)
-    
+        back_populates="trip",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
     conversations: Mapped[list["Conversation"]] = relationship(
-    back_populates="trip",
-    cascade="all, delete-orphan",
-)
+        back_populates="trip",
+        cascade="all, delete-orphan",
+    )
     itineraries: Mapped[list["Itinerary"]] = relationship(
-    back_populates="trip",
-    cascade="all, delete-orphan",
-)
+        back_populates="trip",
+        cascade="all, delete-orphan",
+    )
