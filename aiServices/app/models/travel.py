@@ -41,3 +41,16 @@ class Itinerary(BaseModel):
 class ItineraryRequest(BaseModel):
     preferences: TravelPreferences
     travel_data: list[TravelDataItem] = []
+
+
+class RegenerateItineraryRequest(BaseModel):
+    itinerary: Itinerary
+    user_query: str
+    travel_data: list[TravelDataItem] = []
+
+
+class RegenerateDayRequest(BaseModel):
+    itinerary: Itinerary
+    day_number: int
+    user_query: str
+    travel_data: list[TravelDataItem] = []
