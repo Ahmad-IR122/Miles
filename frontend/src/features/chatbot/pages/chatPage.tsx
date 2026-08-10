@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Box } from "@mui/material";
 
 import { api } from "../../../api/api";
-import { ChatHeader } from "../components/ChatHeader";
-import { MessageComposer } from "../components/MessageComposer";
-import { MessageList } from "../components/MessageList";
+import { ChatHeader } from "../components/chatHeader";
+import { MessageComposer } from "../components/messageComposer";
+import { MessageList } from "../components/messageList";
 import { useChatbotStyles } from "../styles/chatbot.styles";
 import type { ChatMessage, ChatResponse } from "../types/chatbot.types";
 import { getItineraryPreview, getResponseText } from "../utils/chatResponse";

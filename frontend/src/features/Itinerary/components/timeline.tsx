@@ -9,7 +9,7 @@ import RestaurantIcon from "@mui/icons-material/Restaurant";
 import TempleBuddhistIcon from "@mui/icons-material/TempleBuddhist";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import type { Activity, Day } from "../types/itinerary.types";
-import { ActivityCard } from "./ActivityCard";
+import { ActivityCard } from "./activityCard";
 
 type TimelineProps = {
   day: Day;

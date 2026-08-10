@@ -9,7 +9,7 @@ import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import { mergeClasses } from "@griffel/react";
 
-import { ChatMessageBubble } from "./ChatMessageBubble";
+import { ChatMessageBubble } from "./chatMessageBubble";
 import { useChatbotStyles } from "../styles/chatbot.styles";
 import type { ChatMessage } from "../types/chatbot.types";
 

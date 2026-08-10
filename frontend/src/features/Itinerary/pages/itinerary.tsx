@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 
 import { Box, CircularProgress, Container } from "@mui/material";
-import { DaySelector } from "../components/DaySelector";
-import { EmptyItineraryMessage } from "../components/EmptyItineraryMessage";
-import { ItineraryHeader } from "../components/ItineraryHeader";
-import { ItinerarySectionHeader } from "../components/ItinerarySectionHeader";
-import { Timeline } from "../components/Timeline";
-import { TripSummarySidebar } from "../components/TripSummarySidebar";
+import { DaySelector } from "../components/daySelector";
+import { EmptyItineraryMessage } from "../components/emptyItineraryMessage";
+import { ItineraryHeader } from "../components/itineraryHeader";
+import { ItinerarySectionHeader } from "../components/itinerarySectionHeader";
+import { Timeline } from "../components/timeline";
+import { TripSummarySidebar } from "../components/tripSummarySidebar";
 import { useItinerary } from "../hooks/useItinerary";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange, formatDayDate } from "../utils/dateUtils";

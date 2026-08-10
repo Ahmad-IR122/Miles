@@ -2,7 +2,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import { mergeClasses } from "@griffel/react";
 
-import { ItineraryPreviewCard } from "./ItineraryPreviewCard";
+import { ItineraryPreviewCard } from "./itineraryPreviewCard";
 import { useChatbotStyles } from "../styles/chatbot.styles";
 import type { ChatMessage } from "../types/chatbot.types";
 

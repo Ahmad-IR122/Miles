@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./home";
-import Itinerary from "../features/Itinerary/pages/Itinerary";
-import ChatPage from "../features/chatbot/pages/ChatPage";
+import Itinerary from "../features/Itinerary/pages/itinerary";
+import ChatPage from "../features/chatbot/pages/chatPage";
 import PlanTrip from "./plan-trip";
 import { routesPaths } from "./routesPaths";
 
