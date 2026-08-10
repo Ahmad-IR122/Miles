@@ -1,7 +1,8 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
 const coralGradient = "linear-gradient(135deg, #ff6b6b 0%, #f06292 100%)";
-const peachGradient = "linear-gradient(135deg, #ff8a65 0%, #ff6b6b 52%, #f06292 100%)";
+const peachGradient =
+  "linear-gradient(135deg, #ff8a65 0%, #ff6b6b 52%, #f06292 100%)";
 
 export const useItineraryStyles = makeStyles({
   page: {
@@ -426,7 +427,8 @@ export const useItineraryStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 0 0 5px rgba(255, 240, 234, 0.9), 0 10px 22px rgba(140, 82, 54, 0.14)",
+    boxShadow:
+      "0 0 0 5px rgba(255, 240, 234, 0.9), 0 10px 22px rgba(140, 82, 54, 0.14)",
     "@media (max-width: 560px)": {
       left: "-42px",
       width: "34px",
