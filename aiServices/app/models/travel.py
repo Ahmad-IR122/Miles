@@ -24,8 +24,11 @@ class ItineraryActivity(BaseModel):
     time: str
     duration_minutes: int
     activity: str
+    category: str  
+    tags: list[str]  
     location: str
     recommendation: str
+    estimated_cost: Optional[str] = None  
 
 
 class ItineraryDay(BaseModel):
