@@ -9,8 +9,6 @@ class TravelPreferences(BaseModel):
     interests: list[str]
     budget: str
 
-   
-
 
 class TravelDataItem(BaseModel):
     name: str
@@ -24,8 +22,11 @@ class ItineraryActivity(BaseModel):
     time: str
     duration_minutes: int
     activity: str
+    category: str  
+    tags: list[str]  
     location: str
     recommendation: str
+    estimated_cost: Optional[str] = None  
 
 
 class ItineraryDay(BaseModel):
@@ -35,3 +36,8 @@ class ItineraryDay(BaseModel):
 
 class Itinerary(BaseModel):
     days: list[ItineraryDay]
+
+
+class ItineraryRequest(BaseModel):
+    preferences: TravelPreferences
+    travel_data: list[TravelDataItem] = []
