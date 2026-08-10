@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.db import get_db
-from app.schemas.conversation import ConversationResponse, MessageCreate, MessageResponse
+from app.schemas.conversation import (
+    ConversationResponse,
+    MessageCreate,
+    MessageResponse,
+)
 from app.services import conversation_service
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
