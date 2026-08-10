@@ -19,17 +19,17 @@ variables:
 
 steps:
   - task: UsePythonVersion@0
+    displayName: Use Python
     inputs:
       versionSpec: "$(pythonVersion)"
-    displayName: Use Python
 
   - task: Cache@2
+    displayName: Cache pip packages
     inputs:
       key: 'pip | "$(Agent.OS)" | backend/requirements.txt'
       restoreKeys: |
         pip | "$(Agent.OS)"
       path: "$(PIP_CACHE_DIR)"
-    displayName: Cache pip packages
 
   - script: |
       python -m pip install --upgrade pip
@@ -47,3 +47,5 @@ steps:
       python -c "from app.main import app"
     displayName: Build check (verify app imports)
     workingDirectory: backend
+    env:
+      DATABASE_URL: $(DATABASE_URL)

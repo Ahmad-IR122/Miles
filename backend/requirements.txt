@@ -20,3 +20,5 @@ typing_extensions==4.16.0
 uvicorn==0.52.0
 watchfiles==1.2.0
 websockets==16.1.1
+SQLAlchemy==2.0.43
+psycopg[binary]==3.2.9

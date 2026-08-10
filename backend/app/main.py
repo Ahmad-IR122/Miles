@@ -1,8 +1,11 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import health, itinerary, trip
+from app.routers import health, itinerary, test_db, trip
+
+load_dotenv()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -26,3 +29,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(itinerary.router)
 app.include_router(trip.router)
+app.include_router(test_db.router)
