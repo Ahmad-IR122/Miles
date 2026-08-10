@@ -13,6 +13,8 @@ from app.models.conversation import Conversation
 from app.models.conversation import Message
 from app.models.interest import Interest
 from app.models.trip_interest import TripInterest
+from app.models.itinerary import Itinerary
+from app.models.ItineraryDay import ItineraryDay
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

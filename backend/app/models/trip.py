@@ -92,3 +92,7 @@ class Trip(Base):
     back_populates="trip",
     cascade="all, delete-orphan",
 )
+    itineraries: Mapped[list["Itinerary"]] = relationship(
+    back_populates="trip",
+    cascade="all, delete-orphan",
+)
