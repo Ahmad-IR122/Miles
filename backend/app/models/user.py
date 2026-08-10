@@ -1,9 +1,14 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.db import Base
+from app.models.conversation import Conversation
+
+if TYPE_CHECKING:
+    from app.models.trip import Trip
 
 
 class User(Base):
@@ -50,3 +55,14 @@ class User(Base):
         onupdate=func.now(),
         nullable=False,
     )
+  
+  trips: Mapped[list["Trip"]] = relationship(
+      "Trip",
+      back_populates="user",
+      cascade="all, delete-orphan",
+  )
+  
+  conversations: Mapped[list["Conversation"]] = relationship(
+    back_populates="user",
+    cascade="all, delete-orphan",
+)
