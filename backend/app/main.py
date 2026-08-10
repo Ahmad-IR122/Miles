@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import health, itinerary, test_db, trip
+from app.routers import conversation, health, itinerary, test_db, trip
 
 load_dotenv()
 
@@ -26,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(conversation.router)
 app.include_router(health.router)
 app.include_router(itinerary.router)
 app.include_router(trip.router)
