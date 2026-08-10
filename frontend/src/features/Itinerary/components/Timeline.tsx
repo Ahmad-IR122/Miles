@@ -7,8 +7,8 @@ import PlaceIcon from "@mui/icons-material/Place";
 import RamenDiningIcon from "@mui/icons-material/RamenDining";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import TempleBuddhistIcon from "@mui/icons-material/TempleBuddhist";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
-import type { Activity, Day } from "../types/Itinerary.types";
+import { useItineraryStyles } from "../styles/itinerary.styles";
+import type { Activity, Day } from "../types/itinerary.types";
 import { ActivityCard } from "./ActivityCard";
 
 type TimelineProps = {

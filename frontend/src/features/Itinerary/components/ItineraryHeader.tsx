@@ -3,7 +3,7 @@ import { Box, Button, Typography } from "@mui/material";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
+import { useItineraryStyles } from "../styles/itinerary.styles";
 
 type ItineraryHeaderProps = {
   budget?: string;

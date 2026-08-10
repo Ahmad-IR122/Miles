@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../../api/api";
-import type { Trip } from "../types/Itinerary.types";
+import type { Trip } from "../types/itinerary.types";
 
 const itineraryLoadError =
   "We couldn't load the itinerary. Please check that the backend is running and try again.";

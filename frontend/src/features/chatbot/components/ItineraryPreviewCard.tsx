@@ -1,7 +1,7 @@
 import { Box, Button, Paper, Typography } from "@mui/material";
 
-import { useChatbotStyles } from "../styles/Chatbot.styles";
-import type { ItineraryPreview } from "../types/Chatbot.types";
+import { useChatbotStyles } from "../styles/chatbot.styles";
+import type { ItineraryPreview } from "../types/chatbot.types";
 
 type ItineraryPreviewCardProps = {
   itinerary: ItineraryPreview;

@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import type { Dispatch, SetStateAction } from "react";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
-import type { Day } from "../types/Itinerary.types";
+import { useItineraryStyles } from "../styles/itinerary.styles";
+import type { Day } from "../types/itinerary.types";
 import { formatDayDate } from "../utils/dateUtils";
 
 type DaySelectorProps = {

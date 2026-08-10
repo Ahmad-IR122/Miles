@@ -3,8 +3,8 @@ import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import { mergeClasses } from "@griffel/react";
 
 import { ItineraryPreviewCard } from "./ItineraryPreviewCard";
-import { useChatbotStyles } from "../styles/Chatbot.styles";
-import type { ChatMessage } from "../types/Chatbot.types";
+import { useChatbotStyles } from "../styles/chatbot.styles";
+import type { ChatMessage } from "../types/chatbot.types";
 
 type ChatMessageBubbleProps = {
   message: ChatMessage;

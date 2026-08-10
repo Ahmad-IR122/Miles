@@ -2,7 +2,7 @@ import { Box, Button, Typography } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
+import { useItineraryStyles } from "../styles/itinerary.styles";
 
 type ItinerarySectionHeaderProps = {
   dateLabel?: string;

@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
+import { useItineraryStyles } from "../styles/itinerary.styles";
 
 type EmptyItineraryMessageProps = {
   message: string;

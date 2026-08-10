@@ -3,7 +3,7 @@ import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 
-import { useChatbotStyles } from "../styles/Chatbot.styles";
+import { useChatbotStyles } from "../styles/chatbot.styles";
 
 export const ChatHeader = () => {
   const classes = useChatbotStyles();

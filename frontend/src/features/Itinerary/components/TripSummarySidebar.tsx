@@ -7,8 +7,8 @@ import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SavingsIcon from "@mui/icons-material/Savings";
 import TrackChangesIcon from "@mui/icons-material/TrackChanges";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
-import type { Activity, Trip } from "../types/Itinerary.types";
+import { useItineraryStyles } from "../styles/itinerary.styles";
+import type { Activity, Trip } from "../types/itinerary.types";
 
 type TripSummarySidebarProps = {
   trip: Trip;

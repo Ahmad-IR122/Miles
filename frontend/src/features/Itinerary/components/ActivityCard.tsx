@@ -8,8 +8,8 @@ import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import PlaceIcon from "@mui/icons-material/Place";
 import TrainIcon from "@mui/icons-material/Train";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
-import type { Activity } from "../types/Itinerary.types";
+import { useItineraryStyles } from "../styles/itinerary.styles";
+import type { Activity } from "../types/itinerary.types";
 
 type ActivityCardProps = {
   activity: Activity;

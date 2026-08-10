@@ -7,8 +7,8 @@ import { ItineraryHeader } from "../components/ItineraryHeader";
 import { ItinerarySectionHeader } from "../components/ItinerarySectionHeader";
 import { Timeline } from "../components/Timeline";
 import { TripSummarySidebar } from "../components/TripSummarySidebar";
-import { useItinerary } from "../hooks/useItinerary.hooks";
-import { useItineraryStyles } from "../styles/Itinerary.styles";
+import { useItinerary } from "../hooks/useItinerary";
+import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange, formatDayDate } from "../utils/dateUtils";
 
 const Itinerary = () => {

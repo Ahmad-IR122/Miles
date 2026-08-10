@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
-import { useChatbotStyles } from "../styles/Chatbot.styles";
+import { useChatbotStyles } from "../styles/chatbot.styles";
 
 type MessageComposerProps = {
   disabled: boolean;

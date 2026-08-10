@@ -5,8 +5,8 @@ import { api } from "../../../api/api";
 import { ChatHeader } from "../components/ChatHeader";
 import { MessageComposer } from "../components/MessageComposer";
 import { MessageList } from "../components/MessageList";
-import { useChatbotStyles } from "../styles/Chatbot.styles";
-import type { ChatMessage, ChatResponse } from "../types/Chatbot.types";
+import { useChatbotStyles } from "../styles/chatbot.styles";
+import type { ChatMessage, ChatResponse } from "../types/chatbot.types";
 import { getItineraryPreview, getResponseText } from "../utils/chatResponse";
 
 const ChatPage = () => {

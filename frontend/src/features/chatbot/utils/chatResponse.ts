@@ -1,4 +1,4 @@
-import type { ChatResponse, ItineraryPreview } from "../types/Chatbot.types";
+import type { ChatResponse, ItineraryPreview } from "../types/chatbot.types";
 
 export const getResponseText = (payload: ChatResponse) =>
   payload.response ||
