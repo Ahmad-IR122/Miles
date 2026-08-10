@@ -14,10 +14,10 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "frontend/node_modules/.bin/prettier --write",
-      "frontend/node_modules/.bin/eslint --config frontend/eslint.config.mjs --fix"
+      "npm --prefix frontend exec prettier -- --write",
+      "npm --prefix frontend exec eslint -- --config frontend/eslint.config.mjs --fix"
     ],
-    "*.{cjs,mjs,json,css,scss,md,mdx,yml,yaml}": "frontend/node_modules/.bin/prettier --write"
+    "*.{cjs,mjs,json,css,scss,md,mdx,yml,yaml}": "npm --prefix frontend exec prettier -- --write"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

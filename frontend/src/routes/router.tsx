@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./home";
+import Itinerary from "../features/Itinerary/pages/itinerary";
+import ChatPage from "../features/chatbot/pages/chatPage";
 import PlanTrip from "./plan-trip";
-import Itinerary from "./Itinerary";
 import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: routesPaths.itinerary,
     element: <Itinerary />,
+  },
+  {
+    path: routesPaths.chatbot,
+    element: <ChatPage />,
   },
 ]);
 
