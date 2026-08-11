@@ -54,3 +54,11 @@ class RegenerateDayRequest(BaseModel):
     day_number: int
     user_query: str
     travel_data: list[TravelDataItem] = []
+
+
+class RegenerateActivityRequest(BaseModel):
+    itinerary: Itinerary
+    day_number: int
+    activity_index: int
+    user_query: str
+    travel_data: list[TravelDataItem] = []

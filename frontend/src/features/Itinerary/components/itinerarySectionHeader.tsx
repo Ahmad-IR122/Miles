@@ -7,11 +7,17 @@ import { useItineraryStyles } from "../styles/itinerary.styles";
 type ItinerarySectionHeaderProps = {
   dateLabel?: string;
   dayNumber: number;
+  isRegenerating?: boolean;
+  onRegenerateDay?: () => void;
+  regenerateDisabled?: boolean;
 };
 
 export const ItinerarySectionHeader = ({
   dateLabel,
   dayNumber,
+  isRegenerating = false,
+  onRegenerateDay,
+  regenerateDisabled = false,
 }: ItinerarySectionHeaderProps) => {
   const classes = useItineraryStyles();
 
@@ -32,6 +38,8 @@ export const ItinerarySectionHeader = ({
         </Button>
         <Button
           className={`${classes.compactButton} ${classes.outlineBlueButton}`}
+          disabled={regenerateDisabled}
+          onClick={onRegenerateDay}
           startIcon={
             <AutoAwesomeIcon
               className={classes.regenerateIcon}
@@ -40,7 +48,7 @@ export const ItinerarySectionHeader = ({
           }
           variant="contained"
         >
-          Regenerate Day
+          {isRegenerating ? "Regenerating..." : "Regenerate Day"}
         </Button>
       </Box>
     </Box>

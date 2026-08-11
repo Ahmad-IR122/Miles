@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Box, IconButton, Stack, TextField, Typography } from "@mui/material";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -20,12 +21,15 @@ type ActivityCardProps = {
   dayIndex: number;
   dayNumber: number;
   destination?: string;
+  isRegenerating?: boolean;
   onDelete: (dayIndex: number, activityIndex: number) => void;
+  onRegenerate?: (dayIndex: number, activityIndex: number) => void;
   onUpdate: (
     dayIndex: number,
     activityIndex: number,
     updates: { title: string; description: string },
   ) => void;
+  regenerateDisabled?: boolean;
 };
 
 const normalizeActivity = (
@@ -68,8 +72,11 @@ export const ActivityCard = ({
   dayIndex,
   dayNumber,
   destination,
+  isRegenerating = false,
   onDelete,
+  onRegenerate,
   onUpdate,
+  regenerateDisabled = false,
 }: ActivityCardProps) => {
   const classes = useItineraryStyles();
   const normalized = normalizeActivity(
@@ -155,7 +162,7 @@ export const ActivityCard = ({
         ) : (
           <>
             <Typography className={classes.activityTitle} component="h3">
-              {normalized.title}
+              {isRegenerating ? "Regenerating..." : normalized.title}
             </Typography>
 
             {normalized.description && (
@@ -230,6 +237,17 @@ export const ActivityCard = ({
             >
               <EditIcon className={classes.editIcon} />
             </IconButton>
+            {onRegenerate && (
+              <IconButton
+                aria-label={`Regenerate ${normalized.title}`}
+                className={classes.iconButton}
+                disabled={regenerateDisabled}
+                onClick={() => onRegenerate(dayIndex, activityIndex)}
+                size="small"
+              >
+                <AutoAwesomeIcon className={classes.regenerateIcon} />
+              </IconButton>
+            )}
             <IconButton
               aria-label="Schedule activity"
               className={classes.iconButton}
