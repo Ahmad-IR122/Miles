@@ -13,7 +13,8 @@ import { formatDateRange, formatDayDate } from "../utils/dateUtils";
 
 const Itinerary = () => {
   const classes = useItineraryStyles();
-  const { errorMessage, itineraries, loading } = useItinerary();
+  const { errorMessage, itineraries, loading, updateActivity, deleteActivity } =
+    useItinerary();
   const [selectedDay, setSelectedDay] = useState(0);
 
   const trip = itineraries[0];
@@ -67,7 +68,13 @@ const Itinerary = () => {
                       dateLabel={formatDayDate(trip.startDate, selectedDay)}
                       dayNumber={activeDay.day}
                     />
-                    <Timeline day={activeDay} destination={trip.destination} />
+                    <Timeline
+                      day={activeDay}
+                      dayIndex={selectedDay}
+                      destination={trip.destination}
+                      onDeleteActivity={deleteActivity}
+                      onUpdateActivity={updateActivity}
+                    />
                   </>
                 ) : (
                   <EmptyItineraryMessage message="This itinerary does not include any days yet. Add trip days to display activities here." />

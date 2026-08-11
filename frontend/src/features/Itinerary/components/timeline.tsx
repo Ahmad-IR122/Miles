@@ -13,7 +13,14 @@ import { ActivityCard } from "./activityCard";
 
 type TimelineProps = {
   day: Day;
+  dayIndex: number;
   destination?: string;
+  onDeleteActivity: (dayIndex: number, activityIndex: number) => void;
+  onUpdateActivity: (
+    dayIndex: number,
+    activityIndex: number,
+    updates: { title: string; description: string },
+  ) => void;
 };
 
 const getActivityIcon = (activity: Activity) =>
@@ -44,7 +51,13 @@ const MarkerIcon = ({
   }
 };
 
-export const Timeline = ({ day, destination }: TimelineProps) => {
+export const Timeline = ({
+  day,
+  dayIndex,
+  destination,
+  onDeleteActivity,
+  onUpdateActivity,
+}: TimelineProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -76,8 +89,11 @@ export const Timeline = ({ day, destination }: TimelineProps) => {
             <ActivityCard
               activity={activity}
               activityIndex={activityIndex}
+              dayIndex={dayIndex}
               dayNumber={day.day}
               destination={destination}
+              onDelete={onDeleteActivity}
+              onUpdate={onUpdateActivity}
             />
           </Box>
         );

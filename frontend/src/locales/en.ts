@@ -18,6 +18,19 @@ const en = {
         imageAlt: "Wooden boat gliding across a calm mountain lake",
       },
     },
+    itinerary: {
+      title: "Travel Itineraries",
+      subtitle: "Your planned trips and daily activities.",
+      editTooltip: "Edit itinerary",
+      startLabel: "Start: {{date}}",
+      endLabel: "End: {{date}}",
+      dayLabel: "Day {{number}}",
+      activityPlaceholder: "Enter activity",
+      replaceTooltip: "Replace activity",
+      defaultActivity: "Just Chilling",
+      cancel: "Cancel",
+      saveSuccess: "Itinerary saved",
+    },
     tripPlanningForm: {
       title: "Plan Your Trip",
       header: {
