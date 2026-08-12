@@ -1,2 +1,7 @@
+line-length = 88
+
+[lint]
+select = ["E", "F", "I"]
+
 [lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
+extend-immutable-calls = []
