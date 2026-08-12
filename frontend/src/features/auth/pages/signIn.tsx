@@ -1,10 +1,10 @@
-import { SignUp } from "@clerk/clerk-react";
+import { SignIn } from "@clerk/clerk-react";
 import { Box } from "@mui/material";
 import TopNav from "../../../common/TopNav/topNav";
 import { clerkAppearance } from "../styles/clerkAppearance.styles";
 import { routesPaths } from "../../../routes/routesPaths";
 
-const SignUpPage = () => {
+const SignInPage = () => {
   return (
     <Box
       sx={{
@@ -15,9 +15,9 @@ const SignUpPage = () => {
       }}
     >
       <TopNav homeLink />
-      <SignUp appearance={clerkAppearance} signInUrl={routesPaths.signIn} />
+      <SignIn appearance={clerkAppearance} signUpUrl={routesPaths.signUp} />
     </Box>
   );
 };
 
-export default SignUpPage;
+export default SignInPage;
