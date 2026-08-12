@@ -8,7 +8,7 @@ import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.itinerary import Itinerary
+from app.models.itinerary_models import Itinerary
 from app.schemas.itinerary import ItineraryCreate, ItineraryUpdate
 
 

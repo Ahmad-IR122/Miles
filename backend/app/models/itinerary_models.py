@@ -7,8 +7,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.db import Base
 
 if TYPE_CHECKING:
-    from app.models.itinerary_day import itinerary_day
-    from app.models.trip import Trip
+    from app.models.itinerary_day_models import itinerary_day
+    from app.models.trip_models import Trip
 
 
 class Itinerary(Base):
