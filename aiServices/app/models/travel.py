@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 class TravelPreferences(BaseModel):
@@ -14,39 +13,40 @@ class TravelDataItem(BaseModel):
     name: str
     type: str
     description: str
-    location: Optional[str] = None
-    tags: Optional[list[str]] = None
+    location: str | None = None
+    tags: list[str] | None = None
 
-    category: Optional[str] = None
-    estimated_duration_minutes: Optional[int] = None
-    time_of_day: Optional[str] = None
-    rating: Optional[float] = None
-    review_count: Optional[float] = None
-    indoor_outdoor: Optional[str] = None
+    category: str | None = None
+    estimated_duration_minutes: int | None = None
+    time_of_day: str | None = None
+    rating: float | None = None
+    review_count: float | None = None
+    indoor_outdoor: str | None = None
 
-    cuisines: Optional[str] = None
-    price_range: Optional[str] = None
-    meal_type: Optional[str] = None
-    budget_level: Optional[str] = None
+    cuisines: str | None = None
+    price_range: str | None = None
+    meal_type: str | None = None
+    budget_level: str | None = None
+
 
 class ItineraryActivity(BaseModel):
     time: str
     duration_minutes: int
     activity: str
-    category: str  
-    tags: list[str]  
+    category: str
+    tags: list[str]
     location: str
     recommendation: str
-    estimated_cost: Optional[str] = None  
+    estimated_cost: str | None = None
 
 
-class itinerary_day(BaseModel):
+class ItineraryDay(BaseModel):
     date: str
     activities: list[ItineraryActivity]
 
 
 class Itinerary(BaseModel):
-    days: list[itinerary_day]
+    days: list[ItineraryDay]
 
 
 class ItineraryRequest(BaseModel):

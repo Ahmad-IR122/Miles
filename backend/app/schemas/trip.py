@@ -53,6 +53,7 @@ class TripRequestResponse(BaseModel):
     other_interest: str | None = None
     budget: float
 
+
 class TripRequestUpdate(BaseModel):
     interests: list[str] = Field(default_factory=list, max_length=3)
     other_interest: str | None = Field(default=None, max_length=100)

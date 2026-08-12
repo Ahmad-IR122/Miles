@@ -1,17 +1,17 @@
 from uuid import UUID
 
-from app.schemas.itinerary import DayPlan, Itinerary
-from app.services.ai_client import from_itinerary, post, to_day
-from app.services.store import get_itinerary, get_trip_request, save_itinerary
-import uuid
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.itinerary_models import Itinerary
-from app.schemas.itinerary import ItineraryCreate, ItineraryUpdate
-
-
+from app.models.itinerary_models import Itinerary as DBItinerary
+from app.schemas.itinerary import (
+    DayPlan,
+    Itinerary,
+    ItineraryCreate,
+    ItineraryUpdate,
+)
+from app.services.ai_client import from_itinerary, post, to_day
+from app.services.store import get_itinerary, get_trip_request, save_itinerary
 
 
 class NotFound(LookupError):
@@ -55,7 +55,12 @@ def _merge_days(itinerary: Itinerary, raw_days: list[dict]) -> list[DayPlan]:
     return merged
 
 
-def _regenerate(itinerary: Itinerary, path: str, extra: dict, user_query: str) -> Itinerary:
+def _regenerate(
+    itinerary: Itinerary,
+    path: str,
+    extra: dict,
+    user_query: str,
+) -> Itinerary:
     raw = post(
         path,
         {
@@ -74,8 +79,8 @@ def regenerate_trip(itinerary_id: UUID) -> Itinerary:
         itinerary,
         "/itinerary/regenerate",
         {},
-        "Rebuild this itinerary with different activities from the ones currently listed, "
-        "keeping the same dates and the same number of days.",
+        "Rebuild this itinerary with different activities from the ones "
+        "currently listed, keeping the same dates and the same number of days.",
     )
 
 
@@ -111,12 +116,14 @@ def regenerate_activity(
         "and duration.",
     )
 
+
 """
 AHMAD IRSHAID SPACE FOR NEW CODE
 """
-    
+
+
 def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
-    itinerary = Itinerary(**itinerary_data.model_dump())
+    itinerary = DBItinerary(**itinerary_data.model_dump())
 
     db.add(itinerary)
     db.commit()
@@ -126,15 +133,11 @@ def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
 
 
 def get_all_itineraries(db: Session):
-    return db.query(Itinerary).all()
+    return db.query(DBItinerary).all()
 
 
 def get_itinerary_by_id(db: Session, itinerary_id: int):
-    itinerary = (
-        db.query(Itinerary)
-        .filter(Itinerary.id == itinerary_id)
-        .first()
-    )
+    itinerary = db.query(DBItinerary).filter(DBItinerary.id == itinerary_id).first()
 
     if not itinerary:
         raise HTTPException(

@@ -1,34 +1,36 @@
-from app.models.travel import Itinerary, TravelPreferences
 from typing import Union
 
+from app.models.travel import Itinerary, TravelPreferences
 
 # Type hint for activity or restaurant data
-TravelDataItem = Union['ActivityItem', 'RestaurantItem']
+TravelDataItem = Union["ActivityItem", "RestaurantItem"]
 
 
 class ActivityItem:
     """Represents an activity from activities_30_enriched.csv"""
+
     name: str
-    category: str  
+    category: str
     description: str
     estimated_duration_minutes: int
-    time_of_day: str 
-    rating: float 
+    time_of_day: str
+    rating: float
     review_count: float
-    indoor_outdoor: str  
-    
+    indoor_outdoor: str
+
 
 class RestaurantItem:
     """Represents a restaurant from restaurants_final_enriched.csv"""
+
     name: str
-    cuisines: str 
-    price_range: str  
+    cuisines: str
+    price_range: str
     description: str
-    rating: float 
+    rating: float
     review_count: float
     estimated_duration_minutes: int
-    meal_type: str  
-    budget_level: str  
+    meal_type: str
+    budget_level: str
 
 
 def _is_restaurant(item: TravelDataItem) -> bool:
@@ -39,9 +41,9 @@ def _is_restaurant(item: TravelDataItem) -> bool:
 def _format_item_for_prompt(item: TravelDataItem) -> str:
     """Format a single activity or restaurant for the prompt"""
     line = f"- {item.name}"
-    
+
     if _is_restaurant(item):
-        line += f" (Restaurant)"
+        line += " (Restaurant)"
         if item.cuisines:
             line += f" | {item.cuisines}"
         if item.price_range:
@@ -53,7 +55,7 @@ def _format_item_for_prompt(item: TravelDataItem) -> str:
         if item.estimated_duration_minutes:
             line += f" | {item.estimated_duration_minutes} min"
     else:
-        line += f" (Activity)"
+        line += " (Activity)"
         if item.category:
             line += f" | {item.category}"
         if item.time_of_day and item.time_of_day != "any":
@@ -64,22 +66,29 @@ def _format_item_for_prompt(item: TravelDataItem) -> str:
             line += f" | {item.indoor_outdoor}"
         if item.estimated_duration_minutes:
             line += f" | {item.estimated_duration_minutes} min"
-    
+
     line += f"\n  {item.description}"
     return line
 
 
-def build_itinerary_prompt(preferences: TravelPreferences, travel_data: list[TravelDataItem]) -> str:
+def build_itinerary_prompt(
+    preferences: TravelPreferences, travel_data: list[TravelDataItem]
+) -> str:
     if travel_data:
         data_lines = "\n".join(_format_item_for_prompt(item) for item in travel_data)
     else:
         data_lines = "No travel data found."
 
-    from datetime import datetime
-    start = datetime.strptime(preferences.start_date, "%Y-%m-%d")
-    end = datetime.strptime(preferences.end_date, "%Y-%m-%d")
+    from datetime import date
+
+    start = date.fromisoformat(preferences.start_date)
+    end = date.fromisoformat(preferences.end_date)
     num_days = (end - start).days + 1
-    interests_str = ", ".join(preferences.interests) if preferences.interests else "general sightseeing"
+    interests_str = (
+        ", ".join(preferences.interests)
+        if preferences.interests
+        else "general sightseeing"
+    )
 
     return f"""You are a professional travel itinerary planner. Create a detailed, realistic, and engaging day-by-day itinerary.
 
@@ -168,9 +177,9 @@ CRITICAL REQUIREMENTS:
 def _format_travel_data(travel_data: list[TravelDataItem]) -> str:
     """Format travel data for regeneration prompts"""
     data_lines = "\n".join(
-        f"- {item.name}: {item.description}" +
-        (f" (Category: {item.category})" if hasattr(item, 'category') else "") +
-        (f" (Cuisines: {item.cuisines})" if hasattr(item, 'cuisines') else "")
+        f"- {item.name}: {item.description}"
+        + (f" (Category: {item.category})" if hasattr(item, "category") else "")
+        + (f" (Cuisines: {item.cuisines})" if hasattr(item, "cuisines") else "")
         for item in travel_data
     )
     return data_lines or "No specific travel data was found for this destination."
@@ -234,7 +243,11 @@ def build_regenerate_day_prompt(
     travel_data: list[TravelDataItem],
 ) -> str:
     day_index = day_number - 1
-    target_day = existing_itinerary.days[day_index] if 0 <= day_index < len(existing_itinerary.days) else None
+    target_day = (
+        existing_itinerary.days[day_index]
+        if 0 <= day_index < len(existing_itinerary.days)
+        else None
+    )
     target_day_json = target_day.model_dump_json(indent=2) if target_day else "null"
 
     return f"""You are a travel planning assistant. A user has a multi-day itinerary and wants ONLY
@@ -290,7 +303,11 @@ def build_regenerate_activity_prompt(
     travel_data: list[TravelDataItem],
 ) -> str:
     day_index = day_number - 1
-    target_day = existing_itinerary.days[day_index] if 0 <= day_index < len(existing_itinerary.days) else None
+    target_day = (
+        existing_itinerary.days[day_index]
+        if 0 <= day_index < len(existing_itinerary.days)
+        else None
+    )
     target_day_json = target_day.model_dump_json(indent=2) if target_day else "null"
 
     target_activity = (
@@ -298,7 +315,9 @@ def build_regenerate_activity_prompt(
         if target_day and 0 <= activity_index < len(target_day.activities)
         else None
     )
-    target_activity_json = target_activity.model_dump_json(indent=2) if target_activity else "null"
+    target_activity_json = (
+        target_activity.model_dump_json(indent=2) if target_activity else "null"
+    )
 
     return f"""You are a travel planning assistant. A user has a multi-day itinerary and wants ONLY
 a single activity changed. Every other activity, on this day and on every other day, must stay

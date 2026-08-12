@@ -1,15 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from app.services.itinerary import (
-    generate_itinerary,
-    regenerate_activity,
-    regenerate_day,
-    regenerate_itinerary,
-)
+
 from app.models.travel import (
     ItineraryRequest,
     RegenerateActivityRequest,
     RegenerateDayRequest,
     RegenerateItineraryRequest,
+)
+from app.services.itinerary import (
+    generate_itinerary,
+    regenerate_activity,
+    regenerate_day,
+    regenerate_itinerary,
 )
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
@@ -24,7 +25,9 @@ def itinerary(request: ItineraryRequest):
 @router.post("/regenerate")
 def itinerary_regenerate(request: RegenerateItineraryRequest):
     try:
-        result = regenerate_itinerary(request.itinerary, request.user_query, request.travel_data)
+        result = regenerate_itinerary(
+            request.itinerary, request.user_query, request.travel_data
+        )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     return result
@@ -34,7 +37,10 @@ def itinerary_regenerate(request: RegenerateItineraryRequest):
 def itinerary_regenerate_day(request: RegenerateDayRequest):
     try:
         result = regenerate_day(
-            request.itinerary, request.day_number, request.user_query, request.travel_data
+            request.itinerary,
+            request.day_number,
+            request.user_query,
+            request.travel_data,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

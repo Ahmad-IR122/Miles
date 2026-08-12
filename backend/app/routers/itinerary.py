@@ -1,10 +1,18 @@
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
-from app.schemas.itinerary import Itinerary
+from app.db.db import get_db
+from app.schemas.itinerary import (
+    Itinerary,
+    ItineraryCreate,
+    ItineraryResponse,
+    ItineraryUpdate,
+)
+from app.services import itinerary_service
 from app.services.ai_client import post, preferences_from, to_day
 from app.services.itinerary_service import (
     NotFound,
@@ -12,20 +20,7 @@ from app.services.itinerary_service import (
     regenerate_day,
     regenerate_trip,
 )
-from app.services.store import get_trip_request, list_itineraries, save_itinerary 
-
-import uuid
-
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from app.db.db import get_db
-from app.schemas.itinerary import (
-    ItineraryCreate,
-    ItineraryResponse,
-    ItineraryUpdate,
-)
-from app.services import itinerary_service
+from app.services.store import get_trip_request, list_itineraries, save_itinerary
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
@@ -53,12 +48,12 @@ def _guard(action):
 
 
 @router.get("")
-def get_itineraries():
+def get_stored_itineraries():
     return {"data": list_itineraries()}
 
 
 @router.post("", response_model=Itinerary, status_code=status.HTTP_201_CREATED)
-def create_itinerary(payload: CreateItineraryRequest):
+def create_generated_itinerary(payload: CreateItineraryRequest):
     trip = get_trip_request(payload.trip_request_id)
     if trip is None:
         raise HTTPException(
@@ -100,8 +95,9 @@ def regenerate_single_activity(itinerary_id: UUID, day_number: int, activity_id:
 AHMAD IRSHAID SPACE FOR NEW CODE
 """
 
+
 @router.post("/create_itinerary/", response_model=ItineraryResponse)
-def create_itinerary(
+def create_db_itinerary(
     itinerary_data: ItineraryCreate,
     db: Session = Depends(get_db),
 ):
@@ -110,11 +106,13 @@ def create_itinerary(
         itinerary_data,
     )
 
+
 @router.get("/get_all_itineraries/", response_model=list[ItineraryResponse])
-def get_itineraries(
+def get_all_db_itineraries(
     db: Session = Depends(get_db),
 ):
     return itinerary_service.get_all_itineraries(db)
+
 
 @router.get("/get_itinerary/{itinerary_id}", response_model=ItineraryResponse)
 def get_itinerary(
@@ -125,6 +123,7 @@ def get_itinerary(
         db,
         itinerary_id,
     )
+
 
 @router.put("/update_itinerary/{itinerary_id}", response_model=ItineraryResponse)
 def update_itinerary(
@@ -137,6 +136,7 @@ def update_itinerary(
         itinerary_id,
         itinerary_data,
     )
+
 
 @router.delete("/delete_itinerary/{itinerary_id}")
 def delete_itinerary(
