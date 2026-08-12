@@ -1,19 +1,77 @@
-from app.models.travel import Itinerary, TravelDataItem, TravelPreferences
+from app.models.travel import Itinerary, TravelPreferences
+from typing import Union
+
+
+# Type hint for activity or restaurant data
+TravelDataItem = Union['ActivityItem', 'RestaurantItem']
+
+
+class ActivityItem:
+    """Represents an activity from activities_30_enriched.csv"""
+    name: str
+    category: str  
+    description: str
+    estimated_duration_minutes: int
+    time_of_day: str 
+    rating: float 
+    review_count: float
+    indoor_outdoor: str  
+    
+
+class RestaurantItem:
+    """Represents a restaurant from restaurants_final_enriched.csv"""
+    name: str
+    cuisines: str 
+    price_range: str  
+    description: str
+    rating: float 
+    review_count: float
+    estimated_duration_minutes: int
+    meal_type: str  
+    budget_level: str  
+
+
+def _is_restaurant(item: TravelDataItem) -> bool:
+    """Distinguish between activity and restaurant items"""
+    return item.type.lower() == "restaurant"
+
+
+def _format_item_for_prompt(item: TravelDataItem) -> str:
+    """Format a single activity or restaurant for the prompt"""
+    line = f"- {item.name}"
+    
+    if _is_restaurant(item):
+        line += f" (Restaurant)"
+        if item.cuisines:
+            line += f" | {item.cuisines}"
+        if item.price_range:
+            line += f" | {item.price_range}"
+        if item.rating:
+            line += f" | ⭐{item.rating}"
+        if item.meal_type:
+            line += f" | {item.meal_type}"
+        if item.estimated_duration_minutes:
+            line += f" | {item.estimated_duration_minutes} min"
+    else:
+        line += f" (Activity)"
+        if item.category:
+            line += f" | {item.category}"
+        if item.time_of_day and item.time_of_day != "any":
+            line += f" | Best: {item.time_of_day}"
+        if item.rating:
+            line += f" | ⭐{item.rating}"
+        if item.indoor_outdoor:
+            line += f" | {item.indoor_outdoor}"
+        if item.estimated_duration_minutes:
+            line += f" | {item.estimated_duration_minutes} min"
+    
+    line += f"\n  {item.description}"
+    return line
 
 
 def build_itinerary_prompt(preferences: TravelPreferences, travel_data: list[TravelDataItem]) -> str:
     if travel_data:
-        data_lines = "\n".join(
-            f"- {item.name} ({item.type})"
-            + (f" | {item.estimated_duration_minutes} min" if item.estimated_duration_minutes else "")
-            + (f" | Best: {item.time_of_day}" if item.time_of_day else "")
-            + (f" | ⭐{item.rating}" if item.rating else "")
-            + (f" | Category: {item.category}" if item.category else "")
-            + (f" | {item.price_range}" if item.price_range else "")
-            + (f" | {item.cuisines}" if item.cuisines else "")
-            + f"\n  {item.description}"
-            for item in travel_data
-        )
+        data_lines = "\n".join(_format_item_for_prompt(item) for item in travel_data)
     else:
         data_lines = "No travel data found."
 
@@ -33,7 +91,7 @@ TRIP DETAILS:
 - Interests: {interests_str}
 - Total Budget: {preferences.budget}
 
-AVAILABLE ATTRACTIONS & ACTIVITIES:
+AVAILABLE ATTRACTIONS, ACTIVITIES & RESTAURANTS:
 {data_lines}
 
 YOUR RESPONSIBILITIES:
@@ -47,19 +105,21 @@ YOUR RESPONSIBILITIES:
 
 2. USE PROVIDED DATA:
    - Use estimated_duration_minutes from data
-   - Respect time_of_day recommendations
+   - Respect time_of_day recommendations for activities (morning/afternoon/evening)
    - Use ratings to prioritize quality attractions
-   - Use price_range and budget_level for cost estimates
+   - Use price_range for restaurants and budget_level for activities
 
 3. CATEGORIZE ACTIVITIES:
-   - Assign primary category: "culture" / "food" / "shopping" / "adventure" / "nightlife" / "nature"
+   - For activities: Use provided category tags or split "/" delimited categories
+   - For meals: Categorize as "food"
    - Add 2-3 relevant tags per activity
-   - Examples: ["Sightseeing", "Walking"], ["Dining", "Restaurant"], ["Market", "Food"]
+   - Examples: ["Museum", "Art", "Walking"], ["Restaurant", "Dinner"], ["Cafe", "Brunch"]
 
 4. COST ESTIMATION:
-   - For restaurants: Use price_range (e.g., "¥1000-¥1500", "$50-$100")
-   - For activities: Use budget_level formatted as price (e.g., "Free", "$15-$30")
+   - For restaurants: Use price_range directly (e.g., "€12-€30", "$15-$40")
+   - For activities: Estimate reasonable costs (e.g., "Free", "$10-$25", "€8-€15")
    - Distribute costs across budget
+   - Note: Prices in provided data vary by currency/region
 
 5. LOCATION SPECIFICITY:
    - Use specific neighborhoods: "Asakusa, Tokyo" not "Tokyo"
@@ -89,7 +149,7 @@ RESPONSE FORMAT (JSON ONLY):
           "tags": ["tag1", "tag2", "tag3"],
           "location": "specific location, neighborhood, city",
           "recommendation": "engaging 1-2 sentence description",
-          "estimated_cost": "Free / $XX / ¥XXX"
+          "estimated_cost": "Free / €XX / $XX / other currency"
         }}
       ]
     }}
@@ -98,7 +158,7 @@ RESPONSE FORMAT (JSON ONLY):
 
 CRITICAL REQUIREMENTS:
 - Generate exactly {num_days} days
-- Each day: 3-5 activities
+- Each day: 3-5 activities (mix of attractions, meals, experiences)
 - Dates match trip dates ({preferences.start_date} to {preferences.end_date})
 - Times in chronological order, no overlaps
 - All locations are real places in {preferences.destination}
@@ -106,8 +166,11 @@ CRITICAL REQUIREMENTS:
 
 
 def _format_travel_data(travel_data: list[TravelDataItem]) -> str:
+    """Format travel data for regeneration prompts"""
     data_lines = "\n".join(
-        f"- {item.name} ({item.type}): {item.description}"
+        f"- {item.name}: {item.description}" +
+        (f" (Category: {item.category})" if hasattr(item, 'category') else "") +
+        (f" (Cuisines: {item.cuisines})" if hasattr(item, 'cuisines') else "")
         for item in travel_data
     )
     return data_lines or "No specific travel data was found for this destination."
@@ -138,6 +201,7 @@ Rules:
 - Keep everything the user did not ask to change as close to the original as possible.
 - Every activity's location/recommendation must come from the available travel data or the
   current itinerary, not be invented.
+- Respect actual price ranges and duration estimates from the data.
 
 Return the full updated itinerary as JSON matching this exact structure:
 {{
@@ -153,7 +217,7 @@ Return the full updated itinerary as JSON matching this exact structure:
           "tags": ["tag1", "tag2"],
           "location": "string",
           "recommendation": "string",
-          "estimated_cost": "Free / $XX / ¥XXX"
+          "estimated_cost": "Free / €XX / $XX"
         }}
       ]
     }}
@@ -196,6 +260,7 @@ Rules:
 - Avoid duplicating activities/locations already used on other days unless the user asked for that.
 - Every activity's location/recommendation must come from the available travel data or the
   current itinerary, not be invented.
+- Respect actual price ranges and duration estimates from the data.
 
 Return ONLY the updated day as JSON matching this exact structure:
 {{
@@ -209,7 +274,7 @@ Return ONLY the updated day as JSON matching this exact structure:
       "tags": ["tag1", "tag2"],
       "location": "string",
       "recommendation": "string",
-      "estimated_cost": "Free / $XX / ¥XXX"
+      "estimated_cost": "Free / €XX / $XX"
     }}
   ]
 }}
