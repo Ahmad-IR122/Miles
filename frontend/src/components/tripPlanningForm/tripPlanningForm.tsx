@@ -19,8 +19,8 @@ import { Country, type ICountry } from "country-state-city";
 import type { Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 
-import AppButton from "../../common/AppButton/AppButton";
-import TopNav from "../../common/TopNav/TopNav";
+import AppButton from "../../common/AppButton/appButton";
+import TopNav from "../../common/TopNav/topNav";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
 

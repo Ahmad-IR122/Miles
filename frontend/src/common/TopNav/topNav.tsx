@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
-import AppButton from "../AppButton/AppButton";
-import { useTopNavStyles } from "./TopNav.styles";
+import AppButton from "../AppButton/appButton";
+import { useTopNavStyles } from "./topNav.styles";
 
 type TopNavProps = {
   homeLink?: boolean;

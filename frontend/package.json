@@ -20,6 +20,7 @@
     "*.{cjs,mjs,json,css,scss,md,mdx,yml,yaml}": "npm --prefix frontend exec prettier -- --write"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@griffel/react": "^1.7.7",
