@@ -100,7 +100,7 @@ def regenerate_single_activity(itinerary_id: UUID, day_number: int, activity_id:
 AHMAD IRSHAID SPACE FOR NEW CODE
 """
 
-@router.post("/", response_model=ItineraryResponse)
+@router.post("create_itinerary/", response_model=ItineraryResponse)
 def create_itinerary(
     itinerary_data: ItineraryCreate,
     db: Session = Depends(get_db),
@@ -108,4 +108,42 @@ def create_itinerary(
     return itinerary_service.create_itinerary(
         db,
         itinerary_data,
+    )
+
+@router.get("get_all_itineraries/", response_model=list[ItineraryResponse])
+def get_itineraries(
+    db: Session = Depends(get_db),
+):
+    return itinerary_service.get_all_itineraries(db)
+
+@router.get("get_itinerary/{itinerary_id}", response_model=ItineraryResponse)
+def get_itinerary(
+    itinerary_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    return itinerary_service.get_itinerary_by_id(
+        db,
+        itinerary_id,
+    )
+
+@router.put("update_itinerary/{itinerary_id}", response_model=ItineraryResponse)
+def update_itinerary(
+    itinerary_id: uuid.UUID,
+    itinerary_data: ItineraryUpdate,
+    db: Session = Depends(get_db),
+):
+    return itinerary_service.update_itinerary(
+        db,
+        itinerary_id,
+        itinerary_data,
+    )
+
+@router.delete("delete_itinerary/{itinerary_id}")
+def delete_itinerary(
+    itinerary_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    return itinerary_service.delete_itinerary(
+        db,
+        itinerary_id,
     )

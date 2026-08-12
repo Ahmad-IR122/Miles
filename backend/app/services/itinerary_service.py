@@ -110,6 +110,10 @@ def regenerate_activity(
         f"Replace '{activity.name}' with a different activity, keeping a similar time "
         "and duration.",
     )
+
+"""
+AHMAD IRSHAID SPACE FOR NEW CODE
+"""
     
 def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
     itinerary = Itinerary(**itinerary_data.model_dump())
