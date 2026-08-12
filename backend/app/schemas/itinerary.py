@@ -32,21 +32,21 @@ class Itinerary(BaseModel):
 
 
 class ItineraryCreate(BaseModel):
-    destination: str
-    start_date: str
-    end_date: str
+    trip_id: int
+    version: int = 1
+    generated_by: str | None = None
 
 
 class ItineraryUpdate(BaseModel):
-    destination: str | None = None
-    start_date: str | None = None
-    end_date: str | None = None
+    trip_id: int | None = None
+    version: int | None = None
+    generated_by: str | None = None
 
 
 class ItineraryResponse(BaseModel):
-    id: uuid.UUID
-    destination: str
-    start_date: str
-    end_date: str
+    id: int
+    trip_id: int
+    version: int
+    generated_by: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

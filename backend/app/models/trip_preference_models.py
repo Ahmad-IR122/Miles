@@ -20,7 +20,6 @@ class TripPreference(Base):
     trip_id: Mapped[int] = mapped_column(
         ForeignKey("trips.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
         index=True,
     )
 
@@ -54,8 +53,7 @@ class TripPreference(Base):
         nullable=True,
     )
 
-    trips: Mapped[list["Trip"]] = relationship(
+    trip: Mapped["Trip"] = relationship(
         "Trip",
-        back_populates="user",
-        cascade="all, delete-orphan",
+        back_populates="preferences",
     )

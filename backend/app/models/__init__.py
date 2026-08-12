@@ -1,7 +1,7 @@
 from app.models.activity_models import Activity
 from app.models.conversation_models import Conversation, Message
 from app.models.interest_models import Interest
-from app.models.itinerary_day_models import itinerary_day
+from app.models.itinerary_day_models import ItineraryDay
 from app.models.itinerary_models import Itinerary
 from app.models.trip_interest_models import TripInterest
 from app.models.trip_models import Trip
@@ -18,5 +18,5 @@ __all__ = [
     "TripInterest",
     "TripPreference",
     "User",
-    "itinerary_day",
+    "ItineraryDay",
 ]

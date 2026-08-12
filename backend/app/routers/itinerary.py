@@ -118,7 +118,7 @@ def get_itineraries(
 
 @router.get("/get_itinerary/{itinerary_id}", response_model=ItineraryResponse)
 def get_itinerary(
-    itinerary_id: uuid.UUID,
+    itinerary_id: int,
     db: Session = Depends(get_db),
 ):
     return itinerary_service.get_itinerary_by_id(
@@ -128,7 +128,7 @@ def get_itinerary(
 
 @router.put("/update_itinerary/{itinerary_id}", response_model=ItineraryResponse)
 def update_itinerary(
-    itinerary_id: uuid.UUID,
+    itinerary_id: int,
     itinerary_data: ItineraryUpdate,
     db: Session = Depends(get_db),
 ):
@@ -140,7 +140,7 @@ def update_itinerary(
 
 @router.delete("/delete_itinerary/{itinerary_id}")
 def delete_itinerary(
-    itinerary_id: uuid.UUID,
+    itinerary_id: int,
     db: Session = Depends(get_db),
 ):
     return itinerary_service.delete_itinerary(

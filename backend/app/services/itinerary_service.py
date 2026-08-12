@@ -129,7 +129,7 @@ def get_all_itineraries(db: Session):
     return db.query(Itinerary).all()
 
 
-def get_itinerary_by_id(db: Session, itinerary_id: uuid.UUID):
+def get_itinerary_by_id(db: Session, itinerary_id: int):
     itinerary = (
         db.query(Itinerary)
         .filter(Itinerary.id == itinerary_id)
@@ -147,7 +147,7 @@ def get_itinerary_by_id(db: Session, itinerary_id: uuid.UUID):
 
 def update_itinerary(
     db: Session,
-    itinerary_id: uuid.UUID,
+    itinerary_id: int,
     itinerary_data: ItineraryUpdate,
 ):
     itinerary = get_itinerary_by_id(db, itinerary_id)
@@ -163,7 +163,7 @@ def update_itinerary(
     return itinerary
 
 
-def delete_itinerary(db: Session, itinerary_id: uuid.UUID):
+def delete_itinerary(db: Session, itinerary_id: int):
     itinerary = get_itinerary_by_id(db, itinerary_id)
 
     db.delete(itinerary)
