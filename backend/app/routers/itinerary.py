@@ -12,7 +12,20 @@ from app.services.itinerary_service import (
     regenerate_day,
     regenerate_trip,
 )
-from app.services.store import get_trip_request, list_itineraries, save_itinerary
+from app.services.store import get_trip_request, list_itineraries, save_itinerary 
+
+import uuid
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.db.db import get_db
+from app.schemas.itinerary import (
+    ItineraryCreate,
+    ItineraryResponse,
+    ItineraryUpdate,
+)
+from app.services import itinerary_service
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
@@ -81,3 +94,18 @@ def regenerate_single_day(itinerary_id: UUID, day_number: int):
 )
 def regenerate_single_activity(itinerary_id: UUID, day_number: int, activity_id: UUID):
     return _guard(lambda: regenerate_activity(itinerary_id, day_number, activity_id))
+
+
+"""
+AHMAD IRSHAID SPACE FOR NEW CODE
+"""
+
+@router.post("/", response_model=ItineraryResponse)
+def create_itinerary(
+    itinerary_data: ItineraryCreate,
+    db: Session = Depends(get_db),
+):
+    return itinerary_service.create_itinerary(
+        db,
+        itinerary_data,
+    )
