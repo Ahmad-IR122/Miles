@@ -13,7 +13,17 @@ import { ActivityCard } from "./activityCard";
 
 type TimelineProps = {
   day: Day;
+  dayIndex: number;
   destination?: string;
+  isActivityRegenerating?: (activityIndex: number) => boolean;
+  onDeleteActivity: (dayIndex: number, activityIndex: number) => void;
+  onRegenerateActivity?: (dayIndex: number, activityIndex: number) => void;
+  onUpdateActivity: (
+    dayIndex: number,
+    activityIndex: number,
+    updates: { title: string; description: string },
+  ) => void;
+  regenerateDisabled?: boolean;
 };
 
 const getActivityIcon = (activity: Activity) =>
@@ -44,7 +54,16 @@ const MarkerIcon = ({
   }
 };
 
-export const Timeline = ({ day, destination }: TimelineProps) => {
+export const Timeline = ({
+  day,
+  dayIndex,
+  destination,
+  isActivityRegenerating,
+  onDeleteActivity,
+  onRegenerateActivity,
+  onUpdateActivity,
+  regenerateDisabled = false,
+}: TimelineProps) => {
   const classes = useItineraryStyles();
 
   return (
@@ -76,8 +95,14 @@ export const Timeline = ({ day, destination }: TimelineProps) => {
             <ActivityCard
               activity={activity}
               activityIndex={activityIndex}
+              dayIndex={dayIndex}
               dayNumber={day.day}
               destination={destination}
+              isRegenerating={isActivityRegenerating?.(activityIndex) ?? false}
+              onDelete={onDeleteActivity}
+              onRegenerate={onRegenerateActivity}
+              onUpdate={onUpdateActivity}
+              regenerateDisabled={regenerateDisabled}
             />
           </Box>
         );

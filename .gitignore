@@ -35,3 +35,4 @@ __pycache__/
 *.sln
 *.sw?
 .ruff_cache/
+.claude/

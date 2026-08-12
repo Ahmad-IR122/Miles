@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
@@ -10,6 +11,9 @@ type ItineraryHeaderProps = {
   dateRange: string;
   daysCount: number;
   destination?: string;
+  isRegenerating?: boolean;
+  onRegeneratePlan?: () => void;
+  regenerateDisabled?: boolean;
   travelers?: number;
 };
 
@@ -18,6 +22,9 @@ export const ItineraryHeader = ({
   dateRange,
   daysCount,
   destination,
+  isRegenerating = false,
+  onRegeneratePlan,
+  regenerateDisabled = false,
   travelers,
 }: ItineraryHeaderProps) => {
   const classes = useItineraryStyles();
@@ -43,6 +50,22 @@ export const ItineraryHeader = ({
       </Box>
 
       <Box className={classes.headerActions}>
+        {onRegeneratePlan && (
+          <Button
+            className={`${classes.button} ${classes.outlineBlueButton}`}
+            disabled={regenerateDisabled}
+            onClick={onRegeneratePlan}
+            startIcon={
+              <AutoAwesomeIcon
+                className={classes.regenerateIcon}
+                fontSize="small"
+              />
+            }
+            variant="contained"
+          >
+            {isRegenerating ? "Regenerating..." : "Regenerate Plan"}
+          </Button>
+        )}
         <Button
           className={`${classes.button} ${classes.ghostButton}`}
           startIcon={<FileDownloadOutlinedIcon fontSize="small" />}

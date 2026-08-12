@@ -4,6 +4,7 @@ export type ActivityCategory =
 export type Activity =
   | string
   | {
+      id?: string;
       title: string;
       category?: ActivityCategory | string;
       time?: string;
@@ -17,11 +18,15 @@ export type Activity =
     };
 
 export type Day = {
+  id?: string;
   day: number;
+  date?: string;
   activities: Activity[];
 };
 
 export type Trip = {
+  id?: string;
+  tripRequestId?: string;
   destination?: string;
   startDate?: string;
   endDate?: string;

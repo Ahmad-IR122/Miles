@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Typography } from "@mui/material";
 
-import AppButton from "../../common/AppButton/AppButton";
-import TopNav from "../../common/TopNav/TopNav";
+import AppButton from "../../common/AppButton/appButton";
+import TopNav from "../../common/TopNav/topNav";
 import home from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import { useHomeStyles } from "./home.styles";

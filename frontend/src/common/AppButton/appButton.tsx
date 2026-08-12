@@ -1,7 +1,7 @@
 import { mergeClasses } from "@griffel/react";
 import Button, { type ButtonProps } from "@mui/material/Button";
 
-import { useAppButtonStyles } from "./AppButton.styles";
+import { useAppButtonStyles } from "./appButton.styles";
 
 type AppButtonProps = ButtonProps & {
   appearance?: "primary" | "secondary";

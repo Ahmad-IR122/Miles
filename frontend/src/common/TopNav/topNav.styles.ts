@@ -34,7 +34,6 @@ export const useTopNavStyles = makeStyles({
   homeButtonLayout: {
     alignSelf: "center",
     marginLeft: "auto",
-    marginTop: layout.gap.sm,
   },
 
   brand: {

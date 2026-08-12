@@ -52,3 +52,15 @@ class TripRequestResponse(BaseModel):
     interests: list[str]
     other_interest: str | None = None
     budget: float
+
+class TripRequestUpdate(BaseModel):
+    interests: list[str] = Field(default_factory=list, max_length=3)
+    other_interest: str | None = Field(default=None, max_length=100)
+
+    @model_validator(mode="after")
+    def check_interests(self):
+        if not self.interests and not (
+            self.other_interest and self.other_interest.strip()
+        ):
+            raise ValueError("select at least one interest, or fill in other_interest")
+        return self

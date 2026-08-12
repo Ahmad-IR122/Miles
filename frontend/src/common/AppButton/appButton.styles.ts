@@ -5,7 +5,6 @@ import { typography, layout } from "../theme/typography";
 export const useAppButtonStyles = makeStyles({
   base: {
     "&.MuiButton-root": {
-      alignSelf: "flex-start",
       fontFamily: typography.fontFamily.sans,
       fontWeight: typography.fontWeight.semibold,
       borderRadius: layout.radius.full,

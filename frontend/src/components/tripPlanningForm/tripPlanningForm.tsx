@@ -17,9 +17,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Country, type ICountry } from "country-state-city";
 import type { Dayjs } from "dayjs";
+import { interestOptions } from "../../constants/interests";
 
-import AppButton from "../../common/AppButton/AppButton";
-import TopNav from "../../common/TopNav/TopNav";
+import AppButton from "../../common/AppButton/appButton";
+import TopNav from "../../common/TopNav/topNav";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
 
@@ -29,18 +30,6 @@ type CityOption = {
   cityId: number;
   name: string;
 };
-
-const interestOptions = [
-  "Adventure",
-  "History",
-  "Food",
-  "Nature",
-  "Nightlife",
-  "Shopping",
-  "Art & Culture",
-  "Relaxation",
-  "Other",
-];
 
 const steps = [
   { num: 1, label: "Trip Details" },

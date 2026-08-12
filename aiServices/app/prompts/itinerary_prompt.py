@@ -215,3 +215,68 @@ Return ONLY the updated day as JSON matching this exact structure:
 }}
 
 Only return valid JSON, no extra commentary."""
+
+
+def build_regenerate_activity_prompt(
+    existing_itinerary: Itinerary,
+    day_number: int,
+    activity_index: int,
+    user_query: str,
+    travel_data: list[TravelDataItem],
+) -> str:
+    day_index = day_number - 1
+    target_day = existing_itinerary.days[day_index] if 0 <= day_index < len(existing_itinerary.days) else None
+    target_day_json = target_day.model_dump_json(indent=2) if target_day else "null"
+
+    target_activity = (
+        target_day.activities[activity_index]
+        if target_day and 0 <= activity_index < len(target_day.activities)
+        else None
+    )
+    target_activity_json = target_activity.model_dump_json(indent=2) if target_activity else "null"
+
+    return f"""You are a travel planning assistant. A user has a multi-day itinerary and wants ONLY
+a single activity changed. Every other activity, on this day and on every other day, must stay
+exactly as it is.
+
+Full current itinerary (for context, so you don't repeat places already used elsewhere or
+create scheduling conflicts):
+{existing_itinerary.model_dump_json(indent=2)}
+
+The day containing the activity (day {day_number}):
+{target_day_json}
+
+The activity to replace:
+{target_activity_json}
+
+User's requested change for this activity:
+"{user_query}"
+
+Available travel data (ground your changes in these real options where relevant; do not
+invent places that are not in this list or already in the current itinerary):
+{_format_travel_data(travel_data)}
+
+Rules:
+- Return exactly one replacement activity. Do not return the day or the itinerary.
+- Apply the user's requested change to that activity.
+- Keep the replacement geographically and chronologically sensible next to the activities
+  before and after it on day {day_number}.
+- Stay close to the original time and duration unless the user asked to change them.
+- Avoid duplicating activities/locations already used elsewhere in the itinerary unless the
+  user asked for that.
+- The location/recommendation must come from the available travel data or the current
+  itinerary, not be invented.
+
+Return ONLY the replacement activity as JSON matching this exact structure:
+{{
+  "time": "HH:MM AM/PM",
+  "duration_minutes": 60,
+  "activity": "string",
+  "category": "culture/food/shopping/adventure/nightlife/nature",
+  "tags": ["tag1", "tag2"],
+  "location": "string",
+  "recommendation": "string",
+  "estimated_cost": "Free / $XX / ¥XXX"
+}}
+
+Only return valid JSON, no extra commentary."""
