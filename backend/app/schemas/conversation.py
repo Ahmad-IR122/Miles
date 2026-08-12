@@ -5,14 +5,14 @@ from pydantic import BaseModel, Field
 
 
 class MessageCreate(BaseModel):
-    role: str = Field(..., min_length=1, max_length=20)
-    content: str = Field(..., min_length=1)
+    user_query: str = Field(..., min_length=1)
+    answer: str = Field(..., min_length=1)
 
 
 class MessageResponse(BaseModel):
     id: uuid.UUID
-    role: str
-    content: str
+    user_query: str
+    answer: str
     created_at: datetime
 
     model_config = {"from_attributes": True}

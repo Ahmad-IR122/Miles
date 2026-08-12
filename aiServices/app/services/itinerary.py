@@ -76,7 +76,7 @@ def regenerate_day(
     output_text = _call_model(prompt)
 
     try:
-        new_day = ItineraryDay.model_validate_json(output_text)
+        new_day = itinerary_day.model_validate_json(output_text)
     except ValidationError as e:
         raise ValueError(f"LLM returned a day that didn't match the expected format: {e}")
 

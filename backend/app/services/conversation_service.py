@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.conversation import Conversation, Message
+from app.models.conversation_models import Conversation, Message
 from app.schemas.conversation import MessageCreate
 
 
@@ -31,8 +31,8 @@ def add_message(
 
     new_message = Message(
         conversation_id=conversation_id,
-        role=message.role,
-        content=message.content,
+        user_query=message.user_query,
+        answer=message.answer,
     )
     db.add(new_message)
     db.commit()
