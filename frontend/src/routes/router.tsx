@@ -4,6 +4,7 @@ import Itinerary from "../features/Itinerary/pages/itinerary";
 import ChatPage from "../features/chatbot/pages/chatPage";
 import PlanTrip from "./plan-trip";
 import SignUpPage from "../features/auth/pages/signUp";
+import SignInPage from "../features/auth/pages/signIn";
 import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: routesPaths.signUp,
     element: <SignUpPage />,
+  },
+  {
+    path: routesPaths.signIn,
+    element: <SignInPage />,
   },
 ]);
 

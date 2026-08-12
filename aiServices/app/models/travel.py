@@ -17,6 +17,17 @@ class TravelDataItem(BaseModel):
     location: Optional[str] = None
     tags: Optional[list[str]] = None
 
+    category: Optional[str] = None
+    estimated_duration_minutes: Optional[int] = None
+    time_of_day: Optional[str] = None
+    rating: Optional[float] = None
+    review_count: Optional[float] = None
+    indoor_outdoor: Optional[str] = None
+
+    cuisines: Optional[str] = None
+    price_range: Optional[str] = None
+    meal_type: Optional[str] = None
+    budget_level: Optional[str] = None
 
 class ItineraryActivity(BaseModel):
     time: str

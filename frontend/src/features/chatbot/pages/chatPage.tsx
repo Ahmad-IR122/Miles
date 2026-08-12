@@ -40,7 +40,9 @@ const ChatPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post<ChatResponse>("/chat", { prompt });
+      const response = await api.post<ChatResponse>("/chat", {
+        message: prompt,
+      });
       const payload = response.data;
       const content = getResponseText(payload);
       const itinerary = getItineraryPreview(payload);
