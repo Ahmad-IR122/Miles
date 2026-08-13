@@ -34,10 +34,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(clerk_webhook.router)
 app.include_router(conversation.router)
 app.include_router(health.router)
 app.include_router(itinerary.router)
 app.include_router(trip.router)
 app.include_router(test_db.router)
 app.include_router(activity.router)
+app.include_router(clerk_webhook.router)

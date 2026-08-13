@@ -1,20 +1,87 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.schemas.trip import TripRequest, TripRequestResponse, TripRequestUpdate
+from app.db.db import get_db
+from app.schemas.trip import (
+    TripCreate,
+    TripRequest,
+    TripRequestResponse,
+    TripRequestUpdate,
+    TripResponse,
+    TripUpdate,
+)
+from app.services import trip_service
 from app.services.store import get_trip_request, save_trip_request
-from app.services.trip_service import create_trip_request
 
 router = APIRouter(prefix="/trips", tags=["trips"])
 
 
-@router.post(
+@router.post("", response_model=TripResponse, status_code=status.HTTP_201_CREATED)
+def create_trip(payload: TripCreate, db: Session = Depends(get_db)):
+    trip = trip_service.create_trip(db, payload)
+    if trip is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"user {payload.user_id} not found",
+        )
+    return trip
+
+
+@router.get("", response_model=list[TripResponse])
+def list_trips(user_id: int | None = None, db: Session = Depends(get_db)):
+    return trip_service.list_trips(db, user_id)
+
+
+@router.get("/{trip_id}", response_model=TripResponse)
+def read_trip(trip_id: int, db: Session = Depends(get_db)):
+    trip = trip_service.get_trip(db, trip_id)
+    if trip is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+    return trip
+
+
+@router.patch("/{trip_id}", response_model=TripResponse)
+def update_trip(trip_id: int, payload: TripUpdate, db: Session = Depends(get_db)):
+    try:
+        trip = trip_service.update_trip(db, trip_id, payload)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(error),
+        ) from error
+
+    if trip is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+    return trip
+
+
+@router.delete("/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_trip(trip_id: int, db: Session = Depends(get_db)) -> None:
+    if not trip_service.delete_trip(db, trip_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+
+
+# Pre-database trip requests, kept until the frontend moves onto /trips.
+legacy_router = APIRouter(prefix="/trip-requests", tags=["trip-requests"])
+
+
+@legacy_router.post(
     "", response_model=TripRequestResponse, status_code=status.HTTP_201_CREATED
 )
 def submit_trip_request(payload: TripRequest) -> TripRequestResponse:
-    return create_trip_request(payload)
+    return trip_service.create_trip_request(payload)
 
 
-@router.get("/{request_id}", response_model=TripRequestResponse)
+@legacy_router.get("/{request_id}", response_model=TripRequestResponse)
 def read_trip_request(request_id: str) -> TripRequestResponse:
     trip = get_trip_request(request_id)
     if trip is None:
@@ -22,7 +89,7 @@ def read_trip_request(request_id: str) -> TripRequestResponse:
     return trip
 
 
-@router.patch("/{request_id}", response_model=TripRequestResponse)
+@legacy_router.patch("/{request_id}", response_model=TripRequestResponse)
 def update_trip_request(
     request_id: str, payload: TripRequestUpdate
 ) -> TripRequestResponse:
