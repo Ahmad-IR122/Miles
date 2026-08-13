@@ -5,6 +5,7 @@ import ChatPage from "../features/chatbot/pages/chatPage";
 import PlanTrip from "./plan-trip";
 import SignUpPage from "../features/auth/pages/signUp";
 import SignInPage from "../features/auth/pages/signIn";
+import Recommendations from "../features/recommendations/pages/recommendations";
 import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: routesPaths.planTrip,
     element: <PlanTrip />,
+  },
+  {
+    path: routesPaths.recommendation,
+    element: <Recommendations />,
   },
   {
     path: routesPaths.itinerary,
