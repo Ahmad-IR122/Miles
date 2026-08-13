@@ -117,11 +117,6 @@ def regenerate_activity(
     )
 
 
-"""
-AHMAD IRSHAID SPACE FOR NEW CODE
-"""
-
-
 def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
     itinerary = DBItinerary(**itinerary_data.model_dump())
 
