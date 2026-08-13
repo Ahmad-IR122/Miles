@@ -6,7 +6,7 @@ from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.db import Base
-from app.models.conversation import Conversation
+from app.models.conversation_models import Conversation
 
 if TYPE_CHECKING:
     from app.models.itinerary import Itinerary

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.db import Base
 
 if TYPE_CHECKING:
-    from app.models.trip import Trip
+    from app.models.trip_models import Trip
 
 
 class TripPreference(Base):
@@ -54,8 +54,7 @@ class TripPreference(Base):
         nullable=True,
     )
 
-    trips: Mapped[list["Trip"]] = relationship(
+    trip: Mapped["Trip"] = relationship(
         "Trip",
-        back_populates="user",
-        cascade="all, delete-orphan",
+        back_populates="preferences",
     )
