@@ -11,6 +11,7 @@ from the repository root.
 """
 
 from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path

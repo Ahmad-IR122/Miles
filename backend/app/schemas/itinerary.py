@@ -1,7 +1,7 @@
 from datetime import date, time
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Activity(BaseModel):
@@ -28,3 +28,24 @@ class Itinerary(BaseModel):
     trip_request_id: str
     destination: str
     days: list[DayPlan] = Field(default_factory=list)
+
+
+class ItineraryCreate(BaseModel):
+    trip_id: int
+    version: int = 1
+    generated_by: str | None = None
+
+
+class ItineraryUpdate(BaseModel):
+    trip_id: int | None = None
+    version: int | None = None
+    generated_by: str | None = None
+
+
+class ItineraryResponse(BaseModel):
+    id: int
+    trip_id: int
+    version: int
+    generated_by: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)

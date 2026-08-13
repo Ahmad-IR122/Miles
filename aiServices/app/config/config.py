@@ -1,5 +1,5 @@
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -14,5 +14,6 @@ class Settings(BaseSettings):
     AZURE_SEARCH_ENDPOINT: str
     AZURE_SEARCH_API_KEY: str
     AZURE_SEARCH_INDEX_NAME: str
+
 
 settings = Settings()

@@ -5,6 +5,7 @@ Revises: d040c736ae8e
 Create Date: 2026-08-12 10:59:23.247012
 
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -28,6 +29,7 @@ def upgrade() -> None:
         "content",
         new_column_name="answer",
     )
+
 
 def downgrade() -> None:
     op.alter_column(
