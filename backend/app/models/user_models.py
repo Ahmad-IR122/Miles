@@ -5,10 +5,11 @@ from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.db import Base
-from app.models.conversation_models import Conversation
+from app.models.conversation import Conversation
 
 if TYPE_CHECKING:
-    from app.models.trip import Trip
+    from app.models.conversation_models import Conversation
+    from app.models.trip_models import Trip
 
 
 class User(Base):

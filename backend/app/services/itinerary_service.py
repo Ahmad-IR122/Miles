@@ -1,6 +1,15 @@
 from uuid import UUID
 
-from app.schemas.itinerary import DayPlan, Itinerary
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from app.models.itinerary_models import Itinerary as DBItinerary
+from app.schemas.itinerary import (
+    DayPlan,
+    Itinerary,
+    ItineraryCreate,
+    ItineraryUpdate,
+)
 from app.services.ai_client import from_itinerary, post, to_day
 from app.services.store import get_itinerary, get_trip_request, save_itinerary
 
@@ -46,7 +55,12 @@ def _merge_days(itinerary: Itinerary, raw_days: list[dict]) -> list[DayPlan]:
     return merged
 
 
-def _regenerate(itinerary: Itinerary, path: str, extra: dict, user_query: str) -> Itinerary:
+def _regenerate(
+    itinerary: Itinerary,
+    path: str,
+    extra: dict,
+    user_query: str,
+) -> Itinerary:
     raw = post(
         path,
         {
@@ -65,8 +79,8 @@ def regenerate_trip(itinerary_id: UUID) -> Itinerary:
         itinerary,
         "/itinerary/regenerate",
         {},
-        "Rebuild this itinerary with different activities from the ones currently listed, "
-        "keeping the same dates and the same number of days.",
+        "Rebuild this itinerary with different activities from the ones "
+        "currently listed, keeping the same dates and the same number of days.",
     )
 
 
@@ -101,3 +115,56 @@ def regenerate_activity(
         f"Replace '{activity.name}' with a different activity, keeping a similar time "
         "and duration.",
     )
+
+
+def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
+    itinerary = DBItinerary(**itinerary_data.model_dump())
+
+    db.add(itinerary)
+    db.commit()
+    db.refresh(itinerary)
+
+    return itinerary
+
+
+def get_all_itineraries(db: Session):
+    return db.query(DBItinerary).all()
+
+
+def get_itinerary_by_id(db: Session, itinerary_id: int):
+    itinerary = db.query(DBItinerary).filter(DBItinerary.id == itinerary_id).first()
+
+    if not itinerary:
+        raise HTTPException(
+            status_code=404,
+            detail="Itinerary not found",
+        )
+
+    return itinerary
+
+
+def update_itinerary(
+    db: Session,
+    itinerary_id: int,
+    itinerary_data: ItineraryUpdate,
+):
+    itinerary = get_itinerary_by_id(db, itinerary_id)
+
+    update_data = itinerary_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(itinerary, key, value)
+
+    db.commit()
+    db.refresh(itinerary)
+
+    return itinerary
+
+
+def delete_itinerary(db: Session, itinerary_id: int):
+    itinerary = get_itinerary_by_id(db, itinerary_id)
+
+    db.delete(itinerary)
+    db.commit()
+
+    return {"message": "Itinerary deleted successfully"}

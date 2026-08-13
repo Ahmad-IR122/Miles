@@ -7,11 +7,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.db import Base
 
 if TYPE_CHECKING:
-    from app.models.activity import Activity
-    from app.models.itinerary import Itinerary
+    from app.models.activity_models import Activity
+    from app.models.itinerary_models import Itinerary
 
 
-class itinerary_day(Base):
+class ItineraryDay(Base):
     __tablename__ = "itinerary_days"
 
     id: Mapped[int] = mapped_column(

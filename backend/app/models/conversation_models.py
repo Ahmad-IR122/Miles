@@ -41,13 +41,9 @@ class Conversation(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    user: Mapped["User"] = relationship(
-        back_populates="conversations"
-    )
+    user: Mapped["User"] = relationship(back_populates="conversations")
 
-    trip: Mapped["Trip | None"] = relationship(
-        back_populates="conversations"
-    )
+    trip: Mapped["Trip | None"] = relationship(back_populates="conversations")
 
     messages: Mapped[list["Message"]] = relationship(
         back_populates="conversation",
@@ -84,6 +80,4 @@ class Message(Base):
         default=lambda: datetime.now(timezone.utc),
     )
 
-    conversation: Mapped["Conversation"] = relationship(
-        back_populates="messages"
-    )
+    conversation: Mapped["Conversation"] = relationship(back_populates="messages")

@@ -5,4 +5,5 @@ export const routesPaths = {
   chatbot: "/chatbot",
   signUp: "/sign-up",
   signIn: "/sign-in",
+  recommendation: "/discover",
 };

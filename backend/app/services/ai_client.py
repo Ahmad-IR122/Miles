@@ -47,7 +47,7 @@ def to_day(raw: dict, day_number: int) -> DayPlan:
 
 
 def from_activity(activity: Activity) -> dict:
-    """Serialise a stored activity into the shape the AI service's Itinerary model expects."""
+    """Serialise a stored activity into the AI service itinerary shape."""
     return {
         "time": activity.start_time.strftime("%I:%M %p"),
         "duration_minutes": activity.duration_minutes,

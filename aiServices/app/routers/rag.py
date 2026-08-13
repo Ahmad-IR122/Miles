@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from app.services.rag import RAGService
-from app.models.rag import ChatRequest, ChatResponse
 
+from app.models.rag import ChatRequest, ChatResponse
+from app.services.rag import RAGService
 
 router = APIRouter(prefix="/chat", tags=["rag"])
 rag_service = RAGService()

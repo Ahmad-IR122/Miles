@@ -22,3 +22,5 @@ jobs:
       app_location: "/frontend"
       api_location: ""
       output_location: "dist"
+    env:
+      VITE_CLERK_PUBLISHABLE_KEY: $(VITE_CLERK_PUBLISHABLE_KEY)
