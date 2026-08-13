@@ -41,7 +41,7 @@ steps:
   - task: AzureWebApp@1
     displayName: Deploy to App Service
     inputs:
-      azureSubscription: "ASAL AI Division (2e86f627-8cc4-485d-ba56-95d274edbddd)"
+      azureSubscription: "a4b37f51-7612-406e-9da9-629daae56cb0"
       appType: webAppLinux
       appName: "$(webAppName)"
       resourceGroupName: "$(resourceGroupName)"
