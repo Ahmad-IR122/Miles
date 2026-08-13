@@ -3,7 +3,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import activity, conversation, health, itinerary, test_db, trip
+from app.routers import (
+    activity,
+    clerk_webhook,
+    conversation,
+    health,
+    itinerary,
+    test_db,
+    trip,
+)
 
 load_dotenv()
 
@@ -26,6 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(clerk_webhook.router)
 app.include_router(conversation.router)
 app.include_router(health.router)
 app.include_router(itinerary.router)

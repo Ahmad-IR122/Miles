@@ -13,10 +13,10 @@ __all__ = [
     "Conversation",
     "Interest",
     "Itinerary",
+    "ItineraryDay",
     "Message",
     "Trip",
     "TripInterest",
     "TripPreference",
     "User",
-    "ItineraryDay",
 ]
