@@ -5,7 +5,7 @@ export const getItineraries = () =>
   api.get<{ data: Itinerary[] }>("/itinerary");
 
 export const getTripRequest = (requestId: string) =>
-  api.get<TripRequest>(`/trips/${requestId}`);
+  api.get<TripRequest>(`/trip-requests/${requestId}`);
 
 export const regenerateTrip = (itineraryId: string) =>
   api.post<Itinerary>(`/itinerary/${itineraryId}/regenerate`);
@@ -27,7 +27,7 @@ export const updateInterests = (
   interests: string[],
   otherInterest: string,
 ) =>
-  api.patch<TripRequest>(`/trips/${requestId}`, {
+  api.patch<TripRequest>(`/trip-requests/${requestId}`, {
     interests,
     other_interest: otherInterest.trim() || null,
   });

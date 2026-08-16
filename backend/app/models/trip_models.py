@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from app.models.trip_preference_models import TripPreference
     from app.models.user_models import User
 
-
 class Trip(Base):
     __tablename__ = "trips"
 

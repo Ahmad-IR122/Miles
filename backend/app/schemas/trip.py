@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -65,3 +66,65 @@ class TripRequestUpdate(BaseModel):
         ):
             raise ValueError("select at least one interest, or fill in other_interest")
         return self
+
+
+class TripCreate(BaseModel):
+    user_id: int = Field(..., gt=0)
+    destination: str = Field(..., min_length=1, max_length=150)
+    start_date: date
+    end_date: date
+    budget: Decimal | None = Field(default=None, gt=0)
+    currency: str = Field(default="USD", min_length=1, max_length=10)
+    travelers_count: int = Field(default=1, ge=1)
+    trip_status: str = Field(default="planning", min_length=1, max_length=30)
+
+    @field_validator("destination", "currency", "trip_status")
+    @classmethod
+    def not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("must not be blank")
+        return value
+
+    @model_validator(mode="after")
+    def check_dates(self):
+        if self.end_date < self.start_date:
+            raise ValueError("end_date must be on or after start_date")
+        trip_length = (self.end_date - self.start_date).days + 1
+        if trip_length > MAX_TRIP_DAYS:
+            raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
+        return self
+
+
+class TripUpdate(BaseModel):
+    """Every field optional — only the ones actually sent get applied."""
+
+    destination: str | None = Field(default=None, min_length=1, max_length=150)
+    start_date: date | None = None
+    end_date: date | None = None
+    budget: Decimal | None = Field(default=None, gt=0)
+    currency: str | None = Field(default=None, min_length=1, max_length=10)
+    travelers_count: int | None = Field(default=None, ge=1)
+    trip_status: str | None = Field(default=None, min_length=1, max_length=30)
+
+    @field_validator("destination", "currency", "trip_status")
+    @classmethod
+    def not_blank(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("must not be blank")
+        return value
+
+
+class TripResponse(BaseModel):
+    id: int
+    user_id: int
+    destination: str
+    start_date: date
+    end_date: date
+    budget: Decimal | None = None
+    currency: str
+    travelers_count: int
+    trip_status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
