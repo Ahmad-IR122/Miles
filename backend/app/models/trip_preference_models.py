@@ -58,3 +58,4 @@ class TripPreference(Base):
         back_populates="preferences",
     )
 
+    
