@@ -1,5 +1,13 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import { SignedOut } from "@clerk/clerk-react";
+import { mergeClasses } from "@griffel/react";
+import Button from "@mui/material/Button";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
@@ -12,29 +20,114 @@ type TopNavProps = {
 
 const TopNav = ({ homeLink = false }: TopNavProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const styles = useTopNavStyles();
+  const isHomePage = location.pathname === routesPaths.home;
+
+  const navItems = [
+    {
+      label: "Home",
+      path: routesPaths.home,
+      icon: <HomeRoundedIcon aria-hidden="true" />,
+    },
+    {
+      label: "Trips",
+      path: routesPaths.itinerary,
+      icon: <CalendarMonthOutlinedIcon aria-hidden="true" />,
+    },
+    {
+      label: "Destinations",
+      path: routesPaths.recommendation,
+      icon: <PlaceOutlinedIcon aria-hidden="true" />,
+    },
+  ];
 
   return (
     <div className={styles.wrapper}>
       <nav className={styles.nav}>
-        <div className={styles.brand}>
+        <button
+          className={styles.brand}
+          onClick={() => navigate(routesPaths.home)}
+          type="button"
+          aria-label="TravelAI home"
+        >
           <div className={styles.logoFrame}>
             <img src={logo} alt="TravelAI logo" className={styles.logo} />
           </div>
           <span className={styles.brandName}>TravelAI</span>
-        </div>
-        {homeLink ? (
-          <AppButton
-            appearance="secondary"
-            size="small"
-            className={styles.homeButtonLayout}
-            onClick={() => navigate(routesPaths.home)}
+        </button>
+
+        <div className={styles.navLinks} aria-label="Primary navigation">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Button
+                key={item.path}
+                className={mergeClasses(
+                  styles.navItem,
+                  isActive && styles.navItemActive,
+                )}
+                onClick={() => navigate(item.path)}
+                type="button"
+                startIcon={item.icon}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {item.label}
+              </Button>
+            );
+          })}
+          {!isHomePage ? (
+            <SignedOut>
+              <Button
+                className={mergeClasses(
+                  styles.navItem,
+                  location.pathname === routesPaths.planTrip &&
+                    styles.navItemActive,
+                )}
+                onClick={() => navigate(routesPaths.planTrip)}
+                type="button"
+                startIcon={<AutoAwesomeIcon aria-hidden="true" />}
+                aria-current={
+                  location.pathname === routesPaths.planTrip
+                    ? "page"
+                    : undefined
+                }
+              >
+                Plan Trip
+              </Button>
+            </SignedOut>
+          ) : null}
+          <Button
+            className={mergeClasses(
+              styles.navItem,
+              location.pathname === routesPaths.chatbot && styles.navItemActive,
+            )}
+            onClick={() => navigate(routesPaths.chatbot)}
             type="button"
-            aria-label="Back to home"
+            startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
+            aria-current={
+              location.pathname === routesPaths.chatbot ? "page" : undefined
+            }
           >
-            <ArrowBackIcon aria-hidden="true" />
-          </AppButton>
-        ) : null}
+            AI Chat
+          </Button>
+        </div>
+
+        <div className={styles.actions}>
+          {homeLink ? (
+            <AppButton
+              appearance="secondary"
+              size="small"
+              className={styles.homeButtonLayout}
+              onClick={() => navigate(routesPaths.home)}
+              type="button"
+              aria-label="Back to home"
+            >
+              <ArrowBackIcon aria-hidden="true" />
+            </AppButton>
+          ) : null}
+        </div>
       </nav>
     </div>
   );

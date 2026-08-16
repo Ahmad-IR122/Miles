@@ -3,7 +3,6 @@ import { Typography } from "@mui/material";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 import AppButton from "../../common/AppButton/appButton";
-import TopNav from "../../common/TopNav/topNav";
 import home from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import { useHomeStyles } from "./home.styles";
@@ -17,7 +16,6 @@ const Home = () => {
 
   return (
     <div className={styles.page}>
-      <TopNav />
       <section className={styles.hero}>
         <div className={styles.intro}>
           <Typography component="h1" className={styles.title}>

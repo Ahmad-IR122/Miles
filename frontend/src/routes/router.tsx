@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import AppLayout from "../common/AppLayout/appLayout";
 import Home from "./home";
 import Itinerary from "../features/Itinerary/pages/itinerary";
 import ChatPage from "../features/chatbot/pages/chatPage";
@@ -10,32 +11,37 @@ import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
   {
-    path: routesPaths.home,
-    element: <Home />,
-  },
-  {
-    path: routesPaths.planTrip,
-    element: <PlanTrip />,
-  },
-  {
-    path: routesPaths.recommendation,
-    element: <Recommendations />,
-  },
-  {
-    path: routesPaths.itinerary,
-    element: <Itinerary />,
-  },
-  {
-    path: routesPaths.chatbot,
-    element: <ChatPage />,
-  },
-  {
-    path: routesPaths.signUp,
-    element: <SignUpPage />,
-  },
-  {
-    path: routesPaths.signIn,
-    element: <SignInPage />,
+    element: <AppLayout />,
+    children: [
+      {
+        path: routesPaths.home,
+        element: <Home />,
+      },
+      {
+        path: routesPaths.planTrip,
+        element: <PlanTrip />,
+      },
+      {
+        path: routesPaths.recommendation,
+        element: <Recommendations />,
+      },
+      {
+        path: routesPaths.itinerary,
+        element: <Itinerary />,
+      },
+      {
+        path: routesPaths.chatbot,
+        element: <ChatPage />,
+      },
+      {
+        path: routesPaths.signUp,
+        element: <SignUpPage />,
+      },
+      {
+        path: routesPaths.signIn,
+        element: <SignInPage />,
+      },
+    ],
   },
 ]);
 

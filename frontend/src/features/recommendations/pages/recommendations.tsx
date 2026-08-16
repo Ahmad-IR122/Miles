@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 
-import TopNav from "../../../common/TopNav/topNav";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";
@@ -69,7 +68,6 @@ const Recommendations = () => {
 
   return (
     <div className={styles.page}>
-      <TopNav homeLink />
       <main className={styles.content}>
         <RecommendationsHeader count={filteredPlaces.length} />
 
