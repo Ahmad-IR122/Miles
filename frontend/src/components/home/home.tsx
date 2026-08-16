@@ -3,7 +3,7 @@ import { Typography } from "@mui/material";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 import AppButton from "../../common/AppButton/appButton";
-import TopNav from "../../common/TopNav/topNav";
+import TopNav from "../../common/topNav/topNav";
 import home from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import { useHomeStyles } from "./home.styles";

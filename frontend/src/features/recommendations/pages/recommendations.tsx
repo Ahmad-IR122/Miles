@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import TopNav from "../../../common/TopNav/topNav";
+import TopNav from "../../../common/topNav/topNav";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";

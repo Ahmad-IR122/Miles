@@ -20,7 +20,7 @@ import type { Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 
 import AppButton from "../../common/AppButton/appButton";
-import TopNav from "../../common/TopNav/topNav";
+import TopNav from "../../common/topNav/topNav";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
 

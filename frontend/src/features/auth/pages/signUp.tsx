@@ -1,8 +1,6 @@
 import { SignUp } from "@clerk/clerk-react";
 import { Box } from "@mui/material";
-import TopNav from "../../../common/TopNav/topNav";
-import { clerkAppearance } from "../styles/clerkAppearance.styles";
-import { routesPaths } from "../../../routes/routesPaths";
+import TopNav from "../../../common/topNav/topNav";
 
 const SignUpPage = () => {
   return (
@@ -15,7 +13,7 @@ const SignUpPage = () => {
       }}
     >
       <TopNav homeLink />
-      <SignUp appearance={clerkAppearance} signInUrl={routesPaths.signIn} />
+      <SignUp />
     </Box>
   );
 };

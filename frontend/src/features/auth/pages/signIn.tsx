@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Box } from "@mui/material";
-import TopNav from "../../../common/TopNav/topNav";
+import TopNav from "../../../common/topNav/topNav";
 import { clerkAppearance } from "../styles/clerkAppearance.styles";
 import { routesPaths } from "../../../routes/routesPaths";
 

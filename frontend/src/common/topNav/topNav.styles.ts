@@ -36,6 +36,12 @@ export const useTopNavStyles = makeStyles({
     marginLeft: "auto",
   },
 
+  userButtonWrapper: {
+    display: "flex",
+    alignItems: "center",
+    marginLeft: layout.gap.sm,
+  },
+
   brand: {
     display: "flex",
     alignItems: "center",

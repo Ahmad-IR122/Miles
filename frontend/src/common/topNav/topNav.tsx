@@ -1,10 +1,12 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
+import { SignedIn, UserButton } from "@clerk/clerk-react";
 
 import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
 import { useTopNavStyles } from "./topNav.styles";
+import { userButtonAppearance } from "./styles/userButtonAppearance.styles";
 
 type TopNavProps = {
   homeLink?: boolean;
@@ -35,6 +37,14 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
             <ArrowBackIcon aria-hidden="true" />
           </AppButton>
         ) : null}
+        <SignedIn>
+          <div className={styles.userButtonWrapper}>
+            <UserButton
+              afterSignOutUrl={routesPaths.home}
+              appearance={userButtonAppearance}
+            />
+          </div>
+        </SignedIn>
       </nav>
     </div>
   );
