@@ -1,6 +1,16 @@
 import uuid
 
-from app.schemas.trip import TripRequest, TripRequestResponse
+from sqlalchemy.orm import Session
+
+from app.models.trip_models import Trip
+from app.models.user_models import User
+from app.schemas.trip import (
+    MAX_TRIP_DAYS,
+    TripCreate,
+    TripRequest,
+    TripRequestResponse,
+    TripUpdate,
+)
 from app.services.store import save_trip_request
 
 
@@ -20,3 +30,63 @@ def create_trip_request(payload: TripRequest) -> TripRequestResponse:
             budget=payload.budget,
         )
     )
+
+
+def _check_dates(start_date, end_date) -> None:
+    """PATCH can send either date alone, so the pair is only checkable here."""
+    if end_date < start_date:
+        raise ValueError("end_date must be on or after start_date")
+    if (end_date - start_date).days + 1 > MAX_TRIP_DAYS:
+        raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
+
+
+def create_trip(db: Session, payload: TripCreate) -> Trip | None:
+    """Returns None if the user doesn't exist — the FK would blow up otherwise."""
+    if db.get(User, payload.user_id) is None:
+        return None
+
+    trip = Trip(**payload.model_dump())
+    db.add(trip)
+    db.commit()
+    db.refresh(trip)
+    return trip
+
+
+def list_trips(db: Session, user_id: int | None = None) -> list[Trip]:
+    query = db.query(Trip)
+    if user_id is not None:
+        query = query.filter(Trip.user_id == user_id)
+    return query.order_by(Trip.created_at.desc()).all()
+
+
+def get_trip(db: Session, trip_id: int) -> Trip | None:
+    return db.get(Trip, trip_id)
+
+
+def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
+    trip = db.get(Trip, trip_id)
+    if trip is None:
+        return None
+
+    changes = payload.model_dump(exclude_unset=True)
+    _check_dates(
+        changes.get("start_date", trip.start_date),
+        changes.get("end_date", trip.end_date),
+    )
+
+    for field, value in changes.items():
+        setattr(trip, field, value)
+
+    db.commit()
+    db.refresh(trip)
+    return trip
+
+
+def delete_trip(db: Session, trip_id: int) -> bool:
+    trip = db.get(Trip, trip_id)
+    if trip is None:
+        return False
+
+    db.delete(trip)
+    db.commit()
+    return True

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Typography } from "@mui/material";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 import AppButton from "../../common/AppButton/appButton";
 import TopNav from "../../common/TopNav/topNav";
@@ -11,6 +12,8 @@ const Home = () => {
   const navigate = useNavigate();
   const styles = useHomeStyles();
   const goToPlanner = () => navigate(routesPaths.planTrip);
+  const goToSignUp = () => navigate(routesPaths.signUp);
+  const goToSignIn = () => navigate(routesPaths.signIn);
 
   return (
     <div className={styles.page}>
@@ -27,13 +30,25 @@ const Home = () => {
             personalized itinerary with flights, activities, must-see places,
             and hidden gems, all in one place.
           </Typography>
-          <AppButton
-            appearance="primary"
-            onClick={goToPlanner}
-            className={styles.ctaButton}
-          >
-            Plan Your Trip
-          </AppButton>
+          <SignedIn>
+            <AppButton
+              appearance="primary"
+              onClick={goToPlanner}
+              className={styles.ctaButton}
+            >
+              Plan Your Trip
+            </AppButton>
+          </SignedIn>
+          <SignedOut>
+            <div className={styles.ctaGroup}>
+              <AppButton appearance="primary" onClick={goToSignUp}>
+                Sign Up
+              </AppButton>
+              <AppButton appearance="secondary" onClick={goToSignIn}>
+                Sign In
+              </AppButton>
+            </div>
+          </SignedOut>
         </div>
         <div className={styles.visual}>
           <div className={styles.peachBlob} />
