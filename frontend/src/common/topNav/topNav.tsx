@@ -4,7 +4,7 @@ import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import { SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -58,28 +58,28 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
           <span className={styles.brandName}>TravelAI</span>
         </button>
 
-        <div className={styles.navLinks} aria-label="Primary navigation">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-
-            return (
-              <Button
-                key={item.path}
-                className={mergeClasses(
-                  styles.navItem,
-                  isActive && styles.navItemActive,
-                )}
-                onClick={() => navigate(item.path)}
-                type="button"
-                startIcon={item.icon}
-                aria-current={isActive ? "page" : undefined}
-              >
-                {item.label}
-              </Button>
-            );
-          })}
+        <SignedOut>
           {!isHomePage ? (
-            <SignedOut>
+            <div className={styles.navLinks} aria-label="Primary navigation">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <Button
+                    key={item.path}
+                    className={mergeClasses(
+                      styles.navItem,
+                      isActive && styles.navItemActive,
+                    )}
+                    onClick={() => navigate(item.path)}
+                    type="button"
+                    startIcon={item.icon}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Button>
+                );
+              })}
               <Button
                 className={mergeClasses(
                   styles.navItem,
@@ -97,23 +97,81 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
               >
                 Plan Trip
               </Button>
-            </SignedOut>
+              <Button
+                className={mergeClasses(
+                  styles.navItem,
+                  location.pathname === routesPaths.chatbot &&
+                    styles.navItemActive,
+                )}
+                onClick={() => navigate(routesPaths.chatbot)}
+                type="button"
+                startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
+                aria-current={
+                  location.pathname === routesPaths.chatbot ? "page" : undefined
+                }
+              >
+                AI Chat
+              </Button>
+            </div>
           ) : null}
-          <Button
-            className={mergeClasses(
-              styles.navItem,
-              location.pathname === routesPaths.chatbot && styles.navItemActive,
-            )}
-            onClick={() => navigate(routesPaths.chatbot)}
-            type="button"
-            startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
-            aria-current={
-              location.pathname === routesPaths.chatbot ? "page" : undefined
-            }
-          >
-            AI Chat
-          </Button>
-        </div>
+        </SignedOut>
+        <SignedIn>
+          <div className={styles.navLinks} aria-label="Primary navigation">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+
+              return (
+                <Button
+                  key={item.path}
+                  className={mergeClasses(
+                    styles.navItem,
+                    isActive && styles.navItemActive,
+                  )}
+                  onClick={() => navigate(item.path)}
+                  type="button"
+                  startIcon={item.icon}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
+            {!isHomePage ? (
+              <Button
+                className={mergeClasses(
+                  styles.navItem,
+                  location.pathname === routesPaths.planTrip &&
+                    styles.navItemActive,
+                )}
+                onClick={() => navigate(routesPaths.planTrip)}
+                type="button"
+                startIcon={<AutoAwesomeIcon aria-hidden="true" />}
+                aria-current={
+                  location.pathname === routesPaths.planTrip
+                    ? "page"
+                    : undefined
+                }
+              >
+                Plan Trip
+              </Button>
+            ) : null}
+            <Button
+              className={mergeClasses(
+                styles.navItem,
+                location.pathname === routesPaths.chatbot &&
+                  styles.navItemActive,
+              )}
+              onClick={() => navigate(routesPaths.chatbot)}
+              type="button"
+              startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
+              aria-current={
+                location.pathname === routesPaths.chatbot ? "page" : undefined
+              }
+            >
+              AI Chat
+            </Button>
+          </div>
+        </SignedIn>
 
         <div className={styles.actions}>
           {homeLink ? (

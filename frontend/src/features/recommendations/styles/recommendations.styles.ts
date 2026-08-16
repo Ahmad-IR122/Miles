@@ -20,12 +20,12 @@ export const useRecommendationsStyles = makeStyles({
     maxWidth: "1240px",
     marginLeft: "auto",
     marginRight: "auto",
-    padding: `${layout.navHeight + 40}px ${layout.padding.xl} ${layout.padding["2xl"]}`,
+    padding: `150px ${layout.padding.xl} ${layout.padding["2xl"]}`,
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.lg,
     "@media (max-width: 720px)": {
-      padding: `${layout.navHeight + 30}px ${layout.padding.md} ${layout.padding.xl}`,
+      padding: `128px ${layout.padding.md} ${layout.padding.xl}`,
     },
   },
   header: {

@@ -35,6 +35,7 @@ export const useTopNavStyles = makeStyles({
     boxShadow: "0 18px 42px rgba(47, 33, 27, 0.09)",
     ...shorthands.border("1px", "solid", "#F3DED4"),
     pointerEvents: "auto",
+    gridAutoFlow: "column",
 
     "@media (max-width: 980px)": {
       columnGap: layout.gap.sm,

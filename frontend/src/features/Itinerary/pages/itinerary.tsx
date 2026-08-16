@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { mergeClasses } from "@griffel/react";
 import {
   Box,
   Button,
@@ -78,7 +79,12 @@ const Itinerary = () => {
   return (
     <Box className={classes.page}>
       <Container className={classes.shell}>
-        <Box className={classes.layout}>
+        <Box
+          className={mergeClasses(
+            classes.layout,
+            !trip && classes.noSummaryLayout,
+          )}
+        >
           <Box className={classes.mainContent}>
             <ItineraryHeader
               budget={trip?.budget}

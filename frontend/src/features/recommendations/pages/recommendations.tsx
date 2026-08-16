@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 
-import TopNav from "../../../common/topNav/topNav";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";
@@ -68,31 +67,28 @@ const Recommendations = () => {
   );
 
   return (
-    <>
-      <TopNav />
-      <div className={styles.page}>
-        <main className={styles.content}>
-          <RecommendationsHeader count={filteredPlaces.length} />
+    <div className={styles.page}>
+      <main className={styles.content}>
+        <RecommendationsHeader count={filteredPlaces.length} />
 
-          <RecommendationsFilters
-            categories={categories}
-            budgets={budgets}
-            activeCategory={activeCategory}
-            activeBudget={activeBudget}
-            onCategoryChange={setActiveCategory}
-            onBudgetChange={setActiveBudget}
-          />
+        <RecommendationsFilters
+          categories={categories}
+          budgets={budgets}
+          activeCategory={activeCategory}
+          activeBudget={activeBudget}
+          onCategoryChange={setActiveCategory}
+          onBudgetChange={setActiveBudget}
+        />
 
-          <div className={styles.grid}>
-            {filteredPlaces.map((place) => (
-              <RecommendationCard key={place.title} place={place} />
-            ))}
-          </div>
+        <div className={styles.grid}>
+          {filteredPlaces.map((place) => (
+            <RecommendationCard key={place.title} place={place} />
+          ))}
+        </div>
 
-          {filteredPlaces.length === 0 && <RecommendationsEmptyState />}
-        </main>
-      </div>
-    </>
+        {filteredPlaces.length === 0 && <RecommendationsEmptyState />}
+      </main>
+    </div>
   );
 };
 

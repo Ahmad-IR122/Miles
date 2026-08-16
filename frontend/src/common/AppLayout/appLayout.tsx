@@ -31,12 +31,12 @@ const AppLayout = () => {
   const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
 
   return (
-    <>
+    <div className={styles.root}>
       {showNav ? <TopNav homeLink={homeLink} /> : null}
       <div className={needsNavOffset ? styles.navOffset : undefined}>
         <Outlet />
       </div>
-    </>
+    </div>
   );
 };
 
