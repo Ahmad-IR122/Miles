@@ -12,6 +12,7 @@ from app.routers import (
     itinerary,
     test_db,
     trip,
+    users,
 )
 
 load_dotenv()
@@ -37,5 +38,8 @@ app.include_router(itinerary.router)
 app.include_router(trip.router)
 app.include_router(test_db.router)
 app.include_router(activity.router)
-app.include_router(interest.router)
+app.include_router(users.router)
 app.include_router(clerk_webhook.router)
+app.include_router(interest.router)
+
+
