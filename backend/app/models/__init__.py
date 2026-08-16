@@ -1,3 +1,5 @@
+# Importing every model registers it with SQLAlchemy's class registry, so
+# relationship() strings like "User" resolve when mappers configure.
 from app.models.activity_models import Activity
 from app.models.conversation_models import Conversation, Message
 from app.models.interest_models import Interest
