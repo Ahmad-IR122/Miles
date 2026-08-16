@@ -1,0 +1,54 @@
+name: Backend - Deploy to App Service
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - backend/**
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: BE-pipeline-env
+  - name: pythonVersion
+    value: "3.11"
+  - name: webAppName
+    value: "AI26s-Project-A-WebApp"
+  - name: resourceGroupName
+    value: "AI26s-Team-A"
+  - name: healthUrl
+    value: "https://ai26s-project-a-webapp-bmekcscyfzhkeza8.westeurope-01.azurewebsites.net/health"
+
+steps:
+  - checkout: self
+
+  - task: UsePythonVersion@0
+    displayName: Use Python
+    inputs:
+      versionSpec: "$(pythonVersion)"
+
+  # git archive writes POSIX paths and skips .venv/.env automatically.
+  # Do not build this zip with Compress-Archive - it writes backslash
+  # separators and the app fails on Linux with ModuleNotFoundError.
+  - script: git archive --format=zip -o "$(Build.ArtifactStagingDirectory)/backend.zip" HEAD:backend
+    displayName: Package backend
+
+  - task: AzureWebApp@1
+    displayName: Deploy to App Service
+    inputs:
+      azureSubscription: "ASAL AI Division (2e86f627-8cc4-485d-ba56-95d274edbddd)"
+      appType: webAppLinux
+      appName: "$(webAppName)"
+      resourceGroupName: "$(resourceGroupName)"
+      package: "$(Build.ArtifactStagingDirectory)/backend.zip"
+      runtimeStack: "PYTHON|3.11"
+      startUpCommand: "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      deploymentMethod: zipDeploy
+
+  - script: bash .pipelines/scripts/wait-for-health.sh "$(healthUrl)"
+    displayName: Verify /health

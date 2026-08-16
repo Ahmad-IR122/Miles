@@ -4,7 +4,7 @@ import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import { SignedOut } from "@clerk/clerk-react";
+import { SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
 import { useTopNavStyles } from "./topNav.styles";
+import { userButtonAppearance } from "./styles/userButtonAppearance.styles";
 
 type TopNavProps = {
   homeLink?: boolean;
@@ -127,6 +128,14 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
               <ArrowBackIcon aria-hidden="true" />
             </AppButton>
           ) : null}
+          <SignedIn>
+            <div className={styles.userButtonWrapper}>
+              <UserButton
+                afterSignOutUrl={routesPaths.home}
+                appearance={userButtonAppearance}
+              />
+            </div>
+          </SignedIn>
         </div>
       </nav>
     </div>
