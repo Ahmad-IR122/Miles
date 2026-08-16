@@ -50,15 +50,5 @@ steps:
       startUpCommand: "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
       deploymentMethod: zipDeploy
 
-  - script: |
-      i=0
-      while [ $i -lt 20 ]; do
-        code=$(curl -s -o /dev/null -w "%{http_code}" "$(healthUrl)")
-        if [ "$code" = "200" ]; then echo "health ok"; exit 0; fi
-        echo "attempt $i -> $code"
-        i=$((i+1))
-        sleep 15
-      done
-      echo "health check failed"
-      exit 1
+  - script: bash .pipelines/scripts/wait-for-health.sh "$(healthUrl)"
     displayName: Verify /health
