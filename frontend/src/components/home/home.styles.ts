@@ -65,6 +65,13 @@ export const useHomeStyles = makeStyles({
 
   ctaButton: { alignSelf: "flex-start" },
 
+  ctaGroup: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: layout.gap.md,
+    alignSelf: "flex-start",
+  },
+
   visual: {
     flexGrow: 1,
     flexShrink: 1,
