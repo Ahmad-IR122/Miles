@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
-import TopNav from "../TopNav/topNav";
+import TopNav from "../topNav/topNav";
 import { useAppLayoutStyles } from "./appLayout.styles";
 
 const routesWithBackNav = new Set<string>([
