@@ -8,6 +8,7 @@ from app.routers import (
     clerk_webhook,
     conversation,
     health,
+    interest,
     itinerary,
     test_db,
     trip,
@@ -40,4 +41,5 @@ app.include_router(itinerary.router)
 app.include_router(trip.router)
 app.include_router(test_db.router)
 app.include_router(activity.router)
+app.include_router(interest.router)
 app.include_router(clerk_webhook.router)
