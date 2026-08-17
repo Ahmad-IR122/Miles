@@ -7,6 +7,7 @@ import PlanTrip from "./plan-trip";
 import SignUpPage from "../features/auth/pages/signUp";
 import SignInPage from "../features/auth/pages/signIn";
 import Recommendations from "../features/recommendations/pages/recommendations";
+import ProtectedRoute from "../features/auth/components/protectedRoute";
 import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
@@ -19,7 +20,11 @@ const router = createBrowserRouter([
       },
       {
         path: routesPaths.planTrip,
-        element: <PlanTrip />,
+        element: (
+          <ProtectedRoute>
+            <PlanTrip />
+          </ProtectedRoute>
+        ),
       },
       {
         path: routesPaths.recommendation,
@@ -27,11 +32,19 @@ const router = createBrowserRouter([
       },
       {
         path: routesPaths.itinerary,
-        element: <Itinerary />,
+        element: (
+          <ProtectedRoute>
+            <Itinerary />
+          </ProtectedRoute>
+        ),
       },
       {
         path: routesPaths.chatbot,
-        element: <ChatPage />,
+        element: (
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: routesPaths.signUp,
