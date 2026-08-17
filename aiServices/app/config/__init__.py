@@ -1,4 +1,4 @@
-"""Shared backend configuration and security utilities."""
+"""AI service configuration."""
 
 from .config import Settings, settings
 

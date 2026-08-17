@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.activity_models import Activity
-from app.schemas.activity import ActivityCreate, ActivityUpdate
+from app.models import Activity
+from app.schemas import ActivityCreate, ActivityUpdate
 
 
 def create_activity(

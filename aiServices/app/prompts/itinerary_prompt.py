@@ -1,6 +1,6 @@
 from typing import Union
 
-from app.models.travel import Itinerary, TravelPreferences
+from app.models import Itinerary, TravelPreferences
 
 # Type hint for activity or restaurant data
 TravelDataItem = Union["ActivityItem", "RestaurantItem"]

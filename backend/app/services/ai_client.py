@@ -2,9 +2,8 @@ from datetime import date, datetime
 
 import httpx
 
-from app.core.config import settings
-from app.schemas.itinerary import Activity, DayPlan
-from app.schemas.trip import TripRequestResponse
+from app.core import settings
+from app.schemas import Activity, DayPlan, TripRequestResponse
 
 TIME_FORMATS = ("%H:%M", "%H:%M:%S", "%I:%M %p")
 

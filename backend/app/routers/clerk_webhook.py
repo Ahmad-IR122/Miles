@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from svix.webhooks import Webhook, WebhookVerificationError
 
-from app.core.config import settings
-from app.db.db import get_db
+from app.core import settings
+from app.db import get_db
 from app.services import user_service
 
 logger = logging.getLogger(__name__)

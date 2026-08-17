@@ -1,5 +1,5 @@
-from app.clients.azure_openai import get_client
-from app.config.config import settings
+from app.clients import get_client
+from app.config import settings
 
 client = get_client()
 

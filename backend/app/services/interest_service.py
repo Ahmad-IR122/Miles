@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from app.models.interest_models import Interest
-from app.schemas.interest import InterestCreate, InterestUpdate
+from app.models import Interest
+from app.schemas import InterestCreate, InterestUpdate
 
 
 def create_interest(

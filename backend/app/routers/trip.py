@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.db.db import get_db
-from app.schemas.trip import (
+from app.db import get_db
+from app.schemas import (
     TripCreate,
     TripRequest,
     TripRequestResponse,

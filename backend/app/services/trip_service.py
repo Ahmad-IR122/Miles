@@ -2,9 +2,8 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.trip_models import Trip
-from app.models.user_models import User
-from app.schemas.trip import (
+from app.models import Trip, User
+from app.schemas import (
     MAX_TRIP_DAYS,
     TripCreate,
     TripRequest,
