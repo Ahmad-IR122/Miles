@@ -57,5 +57,12 @@ class TripPreference(Base):
         "Trip",
         back_populates="preferences",
     )
+    
+    trip_id: Mapped[int] = mapped_column(
+        ForeignKey("trips.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
 
     

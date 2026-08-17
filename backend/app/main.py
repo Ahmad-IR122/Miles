@@ -12,6 +12,7 @@ from app.routers import (
     itinerary,
     test_db,
     trip,
+    trip_preference,
     users,
 )
 
@@ -41,5 +42,4 @@ app.include_router(activity.router)
 app.include_router(users.router)
 app.include_router(clerk_webhook.router)
 app.include_router(interest.router)
-
-
+app.include_router(trip_preference.router)
