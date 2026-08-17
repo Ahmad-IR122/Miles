@@ -18,7 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Country, type ICountry } from "country-state-city";
 import type { Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
-
+import { createTrip } from "../../api/trip";
 import AppButton from "../../common/AppButton/appButton";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
@@ -133,29 +133,17 @@ const TripPlanningForm = () => {
       setErrorMessage("Please select at least one interest.");
       return;
     }
-
-    const tripRequest = {
-      originCountry: originCountry?.name,
-      originCity: originCity?.name,
-      destinationCountry: country?.name,
-      destinationCity: city?.name,
-      startDate: startDate?.format("YYYY-MM-DD"),
-      endDate: endDate?.format("YYYY-MM-DD"),
-      adults,
-      children,
-      interests: selectedInterests,
-      otherInterest: selectedInterests.includes("Other") ? otherInterest : "",
-      budget,
-    };
-
     setIsSubmitting(true);
     setGenerating(true);
     setProgress(0);
-
     try {
-      const requestPromise = new Promise((resolve) =>
-        setTimeout(resolve, 1000),
-      );
+      const createTripPromise = createTrip({
+        destination: `${city?.name}, ${country?.name}`,
+        start_date: startDate?.format("YYYY-MM-DD") ?? "",
+        end_date: endDate?.format("YYYY-MM-DD") ?? "",
+        budget: Number(budget),
+        travelers_count: adults + children,
+      });
       const progressPromise = new Promise<void>((resolve) => {
         const interval = window.setInterval(() => {
           setProgress((current) => {
@@ -168,10 +156,11 @@ const TripPlanningForm = () => {
           });
         }, 80);
       });
-
-      await Promise.all([requestPromise, progressPromise]);
-      console.log("Trip request submitted:", tripRequest);
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const [{ data: trip }] = await Promise.all([
+        createTripPromise,
+        progressPromise,
+      ]);
+      console.log("Trip created:", trip);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {
