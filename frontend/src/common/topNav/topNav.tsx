@@ -1,9 +1,6 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
@@ -12,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
+import { navItems } from "./navItems";
 import { useTopNavStyles } from "./topNav.styles";
 import { userButtonAppearance } from "./styles/userButtonAppearance.styles";
 
@@ -24,24 +22,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
   const location = useLocation();
   const styles = useTopNavStyles();
   const isHomePage = location.pathname === routesPaths.home;
-
-  const navItems = [
-    {
-      label: "Home",
-      path: routesPaths.home,
-      icon: <HomeRoundedIcon aria-hidden="true" />,
-    },
-    {
-      label: "Trips",
-      path: routesPaths.itinerary,
-      icon: <CalendarMonthOutlinedIcon aria-hidden="true" />,
-    },
-    {
-      label: "Destinations",
-      path: routesPaths.recommendation,
-      icon: <PlaceOutlinedIcon aria-hidden="true" />,
-    },
-  ];
 
   return (
     <div className={styles.wrapper}>
