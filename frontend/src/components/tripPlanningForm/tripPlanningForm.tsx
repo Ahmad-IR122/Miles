@@ -20,7 +20,6 @@ import type { Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 
 import AppButton from "../../common/AppButton/appButton";
-import TopNav from "../../common/topNav/topNav";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
 
@@ -184,7 +183,6 @@ const TripPlanningForm = () => {
   if (generating) {
     return (
       <div className={mergeClasses(styles.page, styles.generatingPage)}>
-        <TopNav homeLink />
         <div className={styles.generatingIcon} aria-hidden="true">
           <AutoAwesomeIcon />
         </div>
@@ -223,7 +221,6 @@ const TripPlanningForm = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.page}>
-        <TopNav homeLink />
         <main className={styles.content}>
           <header className={styles.header}>
             <Typography component="h1" className={styles.title}>

@@ -41,6 +41,10 @@ export const useItineraryStyles = makeStyles({
       gridTemplateColumns: "1fr",
     },
   },
+  noSummaryLayout: {
+    gridTemplateAreas: "\"main\"",
+    gridTemplateColumns: "1fr",
+  },
   mainContent: {
     gridArea: "main",
     minWidth: 0,
@@ -48,6 +52,12 @@ export const useItineraryStyles = makeStyles({
     "@media (max-width: 720px)": {
       ...shorthands.padding("24px", "16px", "20px"),
     },
+  },
+  centeredMainContent: {
+    minHeight: "calc(100vh - 126px)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   summarySidebar: {
     gridArea: "summary",
@@ -241,7 +251,7 @@ export const useItineraryStyles = makeStyles({
   },
   emptyState: {
     width: "min(560px, 100%)",
-    marginTop: "150px",
+    marginTop: "112px",
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center",
@@ -266,40 +276,50 @@ export const useItineraryStyles = makeStyles({
   },
   headerActions: {
     display: "flex",
-    gap: "12px",
+    gap: "10px",
     flexWrap: "wrap",
   },
   button: {
-    height: "44px",
-    minWidth: "108px",
+    height: "34px",
+    minWidth: "76px",
     ...shorthands.borderRadius("999px"),
     textTransform: "none",
-    fontSize: "13px",
+    fontSize: "11px",
     fontWeight: 850,
     boxShadow: "none",
     transitionProperty: "transform, box-shadow, background",
     transitionDuration: "180ms",
+    ...shorthands.padding("0", "14px"),
     ":hover": {
       transform: "translateY(-1px)",
     },
+    "& .MuiButton-startIcon": {
+      marginRight: "6px",
+      marginLeft: 0,
+    },
+    "& .MuiButton-startIcon > svg": {
+      fontSize: "14px",
+    },
   },
   ghostButton: {
-    color: "#4d342f",
-    backgroundColor: "rgba(255,255,255,0.76)",
-    ...shorthands.border("1px", "solid", "rgba(255, 138, 101, 0.22)"),
+    color: "#7f7068",
+    backgroundColor: "#fffaf7",
+    ...shorthands.border("1px", "solid", "#f3ded4"),
+    boxShadow: "0 8px 18px rgba(128, 73, 48, 0.06)",
     ":hover": {
+      color: "#2f211b",
       backgroundColor: "#ffffff",
-      boxShadow: "0 14px 28px rgba(140, 82, 54, 0.1)",
+      boxShadow: "0 10px 22px rgba(128, 73, 48, 0.08)",
     },
   },
   primaryButton: {
-    minWidth: "122px",
+    minWidth: "88px",
     color: "#ffffff",
-    background: coralGradient,
-    boxShadow: "0 16px 32px rgba(240, 98, 146, 0.26)",
+    background: "linear-gradient(135deg, #ff7a66 0%, #f43f7a 100%)",
+    boxShadow: "0 16px 30px rgba(244, 63, 122, 0.28)",
     ":hover": {
-      background: peachGradient,
-      boxShadow: "0 18px 36px rgba(240, 98, 146, 0.32)",
+      background: "linear-gradient(135deg, #ff856f 0%, #f43f7a 100%)",
+      boxShadow: "0 18px 34px rgba(244, 63, 122, 0.34)",
     },
   },
   dayTabs: {

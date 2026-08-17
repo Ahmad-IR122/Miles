@@ -1,6 +1,5 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Box } from "@mui/material";
-import TopNav from "../../../common/topNav/topNav";
 import { clerkAppearance } from "../styles/clerkAppearance.styles";
 import { routesPaths } from "../../../routes/routesPaths";
 
@@ -14,7 +13,6 @@ const SignInPage = () => {
         minHeight: "100vh",
       }}
     >
-      <TopNav homeLink />
       <SignIn appearance={clerkAppearance} signUpUrl={routesPaths.signUp} />
     </Box>
   );
