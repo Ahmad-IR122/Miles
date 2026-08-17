@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import AppLayout from "../common/AppLayout/appLayout";
+import AppLayout from "../common/appLayout/appLayout";
 import Home from "./home";
 import Itinerary from "../features/Itinerary/pages/itinerary";
 import ChatPage from "../features/chatbot/pages/chatPage";
