@@ -12,14 +12,14 @@ export const fieldSx = {
     fontSize: typography.fontSize.size4,
     "& fieldset": {
       borderColor: semanticColors.borderDefault,
-      borderWidth: "1.5px",
+      borderWidth: layout.borderWidth.thin,
     },
     "&:hover fieldset": {
       borderColor: semanticColors.textDisabled,
     },
     "&.Mui-focused fieldset": {
       borderColor: semanticColors.interactive,
-      borderWidth: "1.5px",
+      borderWidth: layout.borderWidth.thin,
     },
   },
   "& .MuiInputLabel-root": {
@@ -79,7 +79,7 @@ export const useTripPlanningFormStyles = makeStyles({
     maxWidth: "90vw",
     backgroundColor: semanticColors.bgTrack,
     borderRadius: layout.radius.full,
-    height: "8px",
+    height: layout.spacing[2],
     overflow: "hidden",
   },
 
@@ -88,7 +88,7 @@ export const useTripPlanningFormStyles = makeStyles({
     backgroundImage: gradients.progress,
     borderRadius: layout.radius.full,
     transitionProperty: "width",
-    transitionDuration: "0.1s",
+    transitionDuration: layout.duration.fast,
     transitionTimingFunction: "ease",
   },
 
@@ -143,8 +143,8 @@ export const useTripPlanningFormStyles = makeStyles({
   },
 
   stepCircle: {
-    width: "36px",
-    height: "36px",
+    width: layout.controlSize.sm,
+    height: layout.controlSize.sm,
     borderRadius: layout.radius.md,
     flexShrink: 0,
     backgroundColor: semanticColors.bgSecondary,
@@ -155,7 +155,7 @@ export const useTripPlanningFormStyles = makeStyles({
     fontSize: typography.fontSize.size4,
     fontWeight: typography.fontWeight.bold,
     transitionProperty: "all",
-    transitionDuration: "0.2s",
+    transitionDuration: layout.duration.normal,
   },
 
   stepCircleReached: {
@@ -179,7 +179,7 @@ export const useTripPlanningFormStyles = makeStyles({
     margin: `0 ${layout.gap.md}`,
     backgroundColor: semanticColors.borderDefault,
     transitionProperty: "background",
-    transitionDuration: "0.3s",
+    transitionDuration: layout.duration.slow,
   },
 
   connectorComplete: { backgroundImage: gradients.progress },
@@ -187,7 +187,11 @@ export const useTripPlanningFormStyles = makeStyles({
   card: {
     backgroundColor: semanticColors.bgPrimary,
     borderRadius: layout.radius.xl,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     padding: layout.padding.xl,
     marginBottom: layout.gap.md,
     boxShadow: semanticColors.shadowStrong,
@@ -210,14 +214,18 @@ export const useTripPlanningFormStyles = makeStyles({
   },
 
   counterButton: {
-    width: "40px",
-    height: "40px",
+    width: layout.controlSize.lg,
+    height: layout.controlSize.lg,
     borderRadius: layout.radius.md,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textSecondary,
     transitionProperty: "border-color, color, background-color",
-    transitionDuration: "0.15s",
+    transitionDuration: layout.duration.fast,
     ":hover": {
       ...shorthands.borderColor(semanticColors.interactive),
       backgroundColor: semanticColors.bgInteractiveSubtle,
@@ -226,7 +234,7 @@ export const useTripPlanningFormStyles = makeStyles({
     ":focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
   },
@@ -235,7 +243,7 @@ export const useTripPlanningFormStyles = makeStyles({
     fontSize: typography.fontSize.size10,
     fontWeight: typography.fontWeight.bold,
     color: semanticColors.textPrimary,
-    minWidth: "32px",
+    minWidth: layout.spacing[8],
     textAlign: "center",
   },
 
@@ -273,12 +281,16 @@ export const useTripPlanningFormStyles = makeStyles({
   chip: {
     height: "auto",
     borderRadius: layout.radius.full,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textSecondary,
     ...typographyPresets.chipLabel,
     transitionProperty: "border-color, background-color, color",
-    transitionDuration: "0.2s",
+    transitionDuration: layout.duration.normal,
     "& .MuiChip-label": { padding: `${layout.gap.sm} ${layout.gap.md}` },
     ":hover": {
       ...shorthands.borderColor(semanticColors.textDisabled),
@@ -287,7 +299,7 @@ export const useTripPlanningFormStyles = makeStyles({
     ":focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
   },
@@ -310,7 +322,11 @@ export const useTripPlanningFormStyles = makeStyles({
     padding: `${layout.gap.sm} ${layout.gap.md}`,
     borderRadius: layout.radius.md,
     backgroundColor: semanticColors.bgInteractiveSubtle,
-    ...shorthands.border("1px", "solid", semanticColors.borderAccentLight),
+    ...shorthands.border(
+      layout.borderWidth.hairline,
+      "solid",
+      semanticColors.borderAccentLight,
+    ),
     color: semanticColors.interactive,
     display: "flex",
     alignItems: "center",
@@ -326,7 +342,11 @@ export const useTripPlanningFormStyles = makeStyles({
   summary: {
     marginTop: layout.gap.lg,
     backgroundImage: gradients.summary,
-    ...shorthands.border("1px", "solid", semanticColors.borderAccentStrong),
+    ...shorthands.border(
+      layout.borderWidth.hairline,
+      "solid",
+      semanticColors.borderAccentStrong,
+    ),
     borderRadius: layout.radius.lg,
     padding: `${layout.gap.lg} ${layout.gap.md}`,
   },

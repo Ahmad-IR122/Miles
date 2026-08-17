@@ -48,16 +48,24 @@ export const useRecommendationsStyles = makeStyles({
   countBadge: {
     color: semanticColors.textSecondary,
     backgroundColor: semanticColors.bgPrimary,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     ...shorthands.borderRadius(layout.radius.md),
-    ...shorthands.padding("10px", "14px"),
+    ...shorthands.padding(layout.spacing[2.5], "14px"),
     fontSize: typography.fontSize.size3,
     fontWeight: typography.fontWeight.medium,
     lineHeight: typography.lineHeight.normal,
   },
   filtersPanel: {
     backgroundColor: semanticColors.bgPrimary,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     ...shorthands.borderRadius(layout.radius.xl),
     padding: layout.padding.lg,
     display: "flex",
@@ -72,16 +80,20 @@ export const useRecommendationsStyles = makeStyles({
     flexWrap: "wrap",
   },
   categoryTab: {
-    ...shorthands.padding("8px", "14px"),
+    ...shorthands.padding(layout.spacing[2], "14px"),
     ...shorthands.borderRadius(layout.radius.full),
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textTertiary,
     fontSize: typography.fontSize.size3,
     fontWeight: typography.fontWeight.semibold,
     cursor: "pointer",
     transitionProperty: "background-color, border-color, color, transform",
-    transitionDuration: "0.2s",
+    transitionDuration: layout.duration.normal,
     ":hover": {
       ...shorthands.borderColor(semanticColors.borderAccent),
       color: semanticColors.interactive,
@@ -95,14 +107,18 @@ export const useRecommendationsStyles = makeStyles({
   },
   divider: {
     width: "1px",
-    height: "28px",
+    height: layout.spacing[7],
     backgroundColor: semanticColors.borderDefault,
   },
   budgetSelect: {
     width: "170px",
-    height: "40px",
+    height: layout.controlSize.lg,
     ...shorthands.borderRadius(layout.radius.md),
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     ...shorthands.padding("0", "12px"),
     color: semanticColors.textPrimary,
     backgroundColor: semanticColors.bgPrimary,
@@ -111,7 +127,7 @@ export const useRecommendationsStyles = makeStyles({
     ":focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
   },
@@ -128,13 +144,17 @@ export const useRecommendationsStyles = makeStyles({
   },
   ratingButtons: {
     display: "flex",
-    gap: "6px",
+    gap: layout.spacing[1.5],
     flexWrap: "wrap",
   },
   ratingButton: {
     ...shorthands.padding("5px", "10px"),
     ...shorthands.borderRadius(layout.radius.sm),
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textTertiary,
     fontSize: typography.fontSize.size2,
@@ -143,7 +163,7 @@ export const useRecommendationsStyles = makeStyles({
   },
   ratingButtonActive: {
     ...shorthands.borderColor(colors.warning),
-    backgroundColor: "rgba(245, 158, 11, 0.08)",
+    backgroundColor: colors.warningTint,
     color: colors.warning,
   },
   grid: {
@@ -153,12 +173,16 @@ export const useRecommendationsStyles = makeStyles({
   },
   card: {
     backgroundColor: semanticColors.bgPrimary,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
     ...shorthands.borderRadius(layout.radius.xl),
     overflow: "hidden",
     boxShadow: semanticColors.shadowLight,
     transitionProperty: "border-color, transform, box-shadow",
-    transitionDuration: "0.2s",
+    transitionDuration: layout.duration.normal,
     ":hover": {
       ...shorthands.borderColor(semanticColors.borderAccent),
       transform: "translateY(-3px)",
@@ -178,25 +202,29 @@ export const useRecommendationsStyles = makeStyles({
   },
   categoryPill: {
     position: "absolute",
-    top: "12px",
-    left: "12px",
+    top: layout.spacing[3],
+    left: layout.spacing[3],
     fontSize: typography.fontSize.size1,
     lineHeight: typography.lineHeight.normal,
     fontWeight: typography.fontWeight.bold,
-    ...shorthands.padding("4px", "10px"),
+    ...shorthands.padding(layout.spacing[1], "10px"),
     ...shorthands.borderRadius(layout.radius.full),
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textSecondary,
   },
   saveButton: {
     position: "absolute",
-    top: "10px",
-    right: "12px",
-    width: "34px",
-    height: "34px",
+    top: layout.spacing[2.5],
+    right: layout.spacing[3],
+    width: layout.controlSize.xs,
+    height: layout.controlSize.xs,
     ...shorthands.borderRadius(layout.radius.sm),
-    ...shorthands.border("1px", "solid", semanticColors.borderLight),
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    ...shorthands.border(
+      layout.borderWidth.hairline,
+      "solid",
+      semanticColors.borderLight,
+    ),
+    backgroundColor: colors.whiteTranslucent,
     color: semanticColors.textSecondary,
     cursor: "pointer",
     display: "flex",
@@ -204,7 +232,7 @@ export const useRecommendationsStyles = makeStyles({
     justifyContent: "center",
     fontSize: typography.fontSize.size6,
     transitionProperty: "transform",
-    transitionDuration: "0.2s",
+    transitionDuration: layout.duration.normal,
     ":hover": {
       transform: "scale(1.05)",
     },
@@ -220,7 +248,7 @@ export const useRecommendationsStyles = makeStyles({
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: layout.gap.xs,
-    marginBottom: "6px",
+    marginBottom: layout.spacing[1.5],
   },
   cardTitle: {
     margin: 0,
@@ -231,7 +259,7 @@ export const useRecommendationsStyles = makeStyles({
   ratingMeta: {
     display: "flex",
     alignItems: "center",
-    gap: "4px",
+    gap: layout.spacing[1],
     flexShrink: 0,
   },
   star: {
@@ -249,9 +277,9 @@ export const useRecommendationsStyles = makeStyles({
   },
   metaRow: {
     display: "flex",
-    gap: "6px",
+    gap: layout.spacing[1.5],
     alignItems: "center",
-    marginBottom: "10px",
+    marginBottom: layout.spacing[2.5],
   },
   location: {
     fontSize: typography.fontSize.size2,
@@ -271,9 +299,9 @@ export const useRecommendationsStyles = makeStyles({
   },
   tags: {
     display: "flex",
-    gap: "6px",
+    gap: layout.spacing[1.5],
     flexWrap: "wrap",
-    marginBottom: "14px",
+    marginBottom: layout.spacing[3.5],
   },
   tag: {
     fontSize: typography.fontSize.size1,
@@ -289,7 +317,7 @@ export const useRecommendationsStyles = makeStyles({
   },
   actionButton: {
     flex: 1,
-    height: "38px",
+    height: layout.controlSize.md,
     ...shorthands.borderRadius(layout.radius.sm),
     fontSize: typography.fontSize.size2,
     fontWeight: typography.fontWeight.semibold,
@@ -304,21 +332,25 @@ export const useRecommendationsStyles = makeStyles({
   secondaryButton: {
     backgroundColor: semanticColors.bgPrimary,
     color: semanticColors.textSecondary,
-    ...shorthands.border("1.5px", "solid", semanticColors.borderDefault),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
   },
   emptyState: {
     textAlign: "center",
-    ...shorthands.padding("64px", "40px"),
+    ...shorthands.padding(layout.spacing[16], "40px"),
   },
   emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "16px",
+    fontSize: typography.displaySize.xl,
+    marginBottom: layout.spacing[4],
   },
   emptyTitle: {
     fontSize: typography.fontSize.size8,
     fontWeight: typography.fontWeight.bold,
     color: semanticColors.textPrimary,
-    marginBottom: "8px",
+    marginBottom: layout.spacing[2],
   },
   emptySubtitle: {
     fontSize: typography.fontSize.size4,
