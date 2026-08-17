@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
+import Footer from "../footer/footer";
 import TopNav from "../topNav/topNav";
 import { useAppLayoutStyles } from "./appLayout.styles";
 
@@ -33,9 +34,10 @@ const AppLayout = () => {
   return (
     <div className={styles.root}>
       {showNav ? <TopNav homeLink={homeLink} /> : null}
-      <div className={needsNavOffset ? styles.navOffset : undefined}>
+      <main className={needsNavOffset ? styles.navOffset : styles.content}>
         <Outlet />
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
