@@ -1,34 +1,10 @@
-import FacebookRoundedIcon from "@mui/icons-material/FacebookRounded";
-import InstagramIcon from "@mui/icons-material/Instagram";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import YouTubeIcon from "@mui/icons-material/YouTube";
 import { Link } from "react-router-dom";
 
 import logo from "../../assets/logo.svg";
 import { routesPaths } from "../../routes/routesPaths";
+import { planLinks, socialItems, tripLinks } from "./footer.constants";
 import { useFooterStyles } from "./footer.styles";
-
-const planLinks = [
-  { label: "Plan Your Trip", path: routesPaths.planTrip },
-  { label: "Destinations", path: routesPaths.recommendation },
-  { label: "AI Itinerary", path: routesPaths.itinerary },
-  { label: "Travel Guide", path: routesPaths.chatbot },
-];
-
-const tripLinks = [
-  { label: "My Trips", path: routesPaths.itinerary },
-  { label: "Discover", path: routesPaths.recommendation },
-  { label: "AI Chat", path: routesPaths.chatbot },
-  { label: "Home", path: routesPaths.home },
-];
-
-const socialItems = [
-  { label: "Instagram", icon: <InstagramIcon aria-hidden="true" /> },
-  { label: "Facebook", icon: <FacebookRoundedIcon aria-hidden="true" /> },
-  { label: "Twitter", icon: <TwitterIcon aria-hidden="true" /> },
-  { label: "YouTube", icon: <YouTubeIcon aria-hidden="true" /> },
-];
 
 const Footer = () => {
   const styles = useFooterStyles();
