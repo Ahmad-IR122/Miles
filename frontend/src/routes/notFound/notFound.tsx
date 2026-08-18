@@ -1,9 +1,9 @@
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { useNavigate } from "react-router-dom";
 
-import AppButton from "../common/AppButton/appButton";
-import { routesPaths } from "./routesPaths";
-import { useNotFoundStyles } from "./not-found.styles";
+import AppButton from "../../common/AppButton/appButton";
+import { routesPaths } from "./../routesPaths";
+import { useNotFoundStyles } from "./notFound.styles";
 
 const NotFound = () => {
   const styles = useNotFoundStyles();

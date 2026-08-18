@@ -1,7 +1,7 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { colors, gradients, semanticColors } from "../common/theme/colors";
-import { layout, typography } from "../common/theme/typography";
+import { colors, gradients, semanticColors } from "../../common/theme/colors";
+import { layout, typography } from "../../common/theme/typography";
 
 export const useNotFoundStyles = makeStyles({
   root: {

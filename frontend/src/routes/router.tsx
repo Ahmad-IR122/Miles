@@ -9,7 +9,7 @@ import SignInPage from "../features/auth/pages/signIn";
 import Recommendations from "../features/recommendations/pages/recommendations";
 import ProtectedRoute from "../features/auth/components/protectedRoute";
 import { routesPaths } from "./routesPaths";
-import NotFound from "./not-found";
+import NotFound from "./notFound/notFound";
 
 const router = createBrowserRouter([
   {
