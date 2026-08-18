@@ -9,6 +9,7 @@ import SignInPage from "../features/auth/pages/signIn";
 import Recommendations from "../features/recommendations/pages/recommendations";
 import ProtectedRoute from "../features/auth/components/protectedRoute";
 import { routesPaths } from "./routesPaths";
+import NotFound from "../common/notFound/notFound";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: routesPaths.signIn,
         element: <SignInPage />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },

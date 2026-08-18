@@ -6,7 +6,16 @@ import tseslint from "typescript-eslint";
 
 export default [
   {
-    ignores: ["dist/**", "node_modules/**", "build/**", "coverage/**"],
+    ignores: [
+      "dist/**",
+      "frontend/dist/**",
+      "node_modules/**",
+      "frontend/node_modules/**",
+      "build/**",
+      "coverage/**",
+      "aiServices/.venv/**",
+      "backend/.venv/**",
+    ],
   },
   js.configs.recommended,
   {
