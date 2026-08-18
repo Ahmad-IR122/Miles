@@ -1,15 +1,15 @@
 from pydantic import ValidationError
 
-from app.clients.azure_openai import get_client
-from app.config.config import settings
-from app.models.travel import (
+from app.clients import get_client
+from app.config import settings
+from app.models import (
     Itinerary,
     ItineraryActivity,
     ItineraryDay,
     TravelDataItem,
     TravelPreferences,
 )
-from app.prompts.itinerary_prompt import (
+from app.prompts import (
     build_itinerary_prompt,
     build_regenerate_activity_prompt,
     build_regenerate_day_prompt,

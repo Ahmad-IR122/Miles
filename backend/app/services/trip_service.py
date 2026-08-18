@@ -2,9 +2,8 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.trip_models import Trip
-from app.models.user_models import User
-from app.schemas.trip import (
+from app.models import Trip
+from app.schemas import (
     MAX_TRIP_DAYS,
     TripCreate,
     TripRequest,
@@ -40,12 +39,8 @@ def _check_dates(start_date, end_date) -> None:
         raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
 
 
-def create_trip(db: Session, payload: TripCreate) -> Trip | None:
-    """Returns None if the user doesn't exist — the FK would blow up otherwise."""
-    if db.get(User, payload.user_id) is None:
-        return None
-
-    trip = Trip(**payload.model_dump())
+def create_trip(db: Session, user_id: int, payload: TripCreate) -> Trip:
+    trip = Trip(user_id=user_id, **payload.model_dump())
     db.add(trip)
     db.commit()
     db.refresh(trip)
@@ -73,7 +68,6 @@ def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
         changes.get("start_date", trip.start_date),
         changes.get("end_date", trip.end_date),
     )
-
     for field, value in changes.items():
         setattr(trip, field, value)
 

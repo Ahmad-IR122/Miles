@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db.db import get_db
-from app.schemas.itinerary import (
+from app.db import get_db
+from app.schemas import (
     Itinerary,
     ItineraryCreate,
     ItineraryResponse,

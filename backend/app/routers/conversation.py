@@ -3,8 +3,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.db.db import get_db
-from app.schemas.conversation import (
+from app.db import get_db
+from app.schemas import (
     ConversationResponse,
     MessageCreate,
     MessageResponse,

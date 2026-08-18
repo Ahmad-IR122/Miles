@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.db.db import get_db
-from app.schemas.trip import (
+from app.core.security import get_current_user
+from app.db import get_db
+from app.models import User
+from app.schemas import (
     TripCreate,
     TripRequest,
     TripRequestResponse,
@@ -17,14 +19,12 @@ router = APIRouter(prefix="/trips", tags=["trips"])
 
 
 @router.post("", response_model=TripResponse, status_code=status.HTTP_201_CREATED)
-def create_trip(payload: TripCreate, db: Session = Depends(get_db)):
-    trip = trip_service.create_trip(db, payload)
-    if trip is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"user {payload.user_id} not found",
-        )
-    return trip
+def create_trip(
+    payload: TripCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return trip_service.create_trip(db, current_user.id, payload)
 
 
 @router.get("", response_model=list[TripResponse])
@@ -52,7 +52,6 @@ def update_trip(trip_id: int, payload: TripUpdate, db: Session = Depends(get_db)
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(error),
         ) from error
-
     if trip is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

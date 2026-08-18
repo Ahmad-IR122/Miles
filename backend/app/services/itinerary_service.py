@@ -3,8 +3,8 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.itinerary_models import Itinerary as DBItinerary
-from app.schemas.itinerary import (
+from app.models import Itinerary as DBItinerary
+from app.schemas import (
     DayPlan,
     Itinerary,
     ItineraryCreate,

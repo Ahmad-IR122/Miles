@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 
-from app.models.travel import (
+from app.models import (
     ItineraryRequest,
     RegenerateActivityRequest,
     RegenerateDayRequest,
     RegenerateItineraryRequest,
 )
-from app.services.itinerary import (
+from app.services import (
     generate_itinerary,
     regenerate_activity,
     regenerate_day,

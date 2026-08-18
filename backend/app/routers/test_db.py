@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.db.db import engine
+from app.db import engine
 
 router = APIRouter(prefix="/test-db", tags=["test-db"])
 

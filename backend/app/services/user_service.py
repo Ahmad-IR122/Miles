@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.user_models import User
+from app.models import User
 
 
 def get_user_by_auth_provider_id(db: Session, auth_provider_id: str) -> User | None:

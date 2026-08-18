@@ -2,8 +2,8 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.conversation_models import Conversation, Message
-from app.schemas.conversation import MessageCreate
+from app.models import Conversation, Message
+from app.schemas import MessageCreate
 
 
 def create_conversation(db: Session) -> Conversation:

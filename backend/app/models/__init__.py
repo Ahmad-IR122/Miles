@@ -1,14 +1,14 @@
 # Importing every model registers it with SQLAlchemy's class registry, so
 # relationship() strings like "User" resolve when mappers configure.
-from app.models.activity_models import Activity
-from app.models.conversation_models import Conversation, Message
-from app.models.interest_models import Interest
-from app.models.itinerary_day_models import ItineraryDay
-from app.models.itinerary_models import Itinerary
-from app.models.trip_interest_models import TripInterest
-from app.models.trip_models import Trip
-from app.models.trip_preference_models import TripPreference
-from app.models.user_models import User
+from .activity_models import Activity
+from .conversation_models import Conversation, Message
+from .interest_models import Interest
+from .itinerary_day_models import ItineraryDay
+from .itinerary_models import Itinerary
+from .trip_interest_models import TripInterest
+from .trip_models import Trip
+from .trip_preference_models import TripPreference
+from .user_models import User
 
 __all__ = [
     "Activity",

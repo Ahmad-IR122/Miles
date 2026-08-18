@@ -1,7 +1,6 @@
 from uuid import UUID
 
-from app.schemas.itinerary import Itinerary
-from app.schemas.trip import TripRequestResponse
+from app.schemas import Itinerary, TripRequestResponse
 
 trip_requests: dict[str, TripRequestResponse] = {}
 itineraries: dict[UUID, Itinerary] = {}

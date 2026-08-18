@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import jwt
@@ -9,9 +7,9 @@ from jwt import PyJWKClient
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
-from app.db.db import get_db
-from app.models.user_models import User
+from app.core import settings
+from app.db import get_db
+from app.models import User
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -22,9 +20,9 @@ _jwks_client = PyJWKClient(settings.CLERK_JWKS_URL, cache_keys=True)
 class ClerkClaims(BaseModel):
     """Verified claims decoded from a Clerk session token."""
 
-    user_id: str  
-    session_id: str | None = None  
-    raw: dict  
+    user_id: str
+    session_id: str | None = None
+    raw: dict
 
 
 def _unauthorized(detail: str) -> HTTPException:

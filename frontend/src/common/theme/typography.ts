@@ -3,9 +3,11 @@ export const typography = {
     sans: "'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
     brand: "'Baloo 2', 'Helvetica Neue', Arial, sans-serif",
+    ui: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
 
   fontSize: {
+    size0: "10px", // Uppercase micro-labels (badges, category chips)
     size1: "11px", // Unused - smallest
     size2: "12px", // Captions
     size3: "13px", // Form hints
@@ -21,6 +23,15 @@ export const typography = {
   },
 
   fontSizeHero: "clamp(38px, 4.6vw, 58px)",
+
+  // Sizes above the size1-size12 body scale. Kept separate so that scale stays
+  // strictly ascending — appending to it would break its ordering.
+  displaySize: {
+    sm: "24px",
+    md: "30px",
+    lg: "40px",
+    xl: "48px",
+  },
 
   fontWeight: {
     normal: 400,
@@ -44,14 +55,22 @@ export const typography = {
 
 export const layout = {
   navHeight: 60,
+  // 4px grid. Half-steps exist because the itinerary and chatbot designs sit
+  // 2px off the grid in places; they follow the Tailwind convention (2.5 = 10px).
   spacing: {
     0: "0",
     1: "4px",
+    1.5: "6px",
     2: "8px",
+    2.5: "10px",
     3: "12px",
+    3.5: "14px",
     4: "16px",
+    4.5: "18px",
     5: "20px",
+    5.5: "22px",
     6: "24px",
+    6.5: "26px",
     7: "28px",
     8: "32px",
     9: "36px",
@@ -59,6 +78,21 @@ export const layout = {
     12: "48px",
     14: "56px",
     16: "64px",
+  },
+  borderWidth: {
+    hairline: "1px",
+    thin: "1.5px",
+    thick: "2px",
+  },
+  // Square control/avatar/marker footprints
+  controlSize: {
+    xs: "34px",
+    sm: "36px",
+    md: "38px",
+    lg: "40px",
+    xl: "42px",
+    "2xl": "48px",
+    "3xl": "58px",
   },
   gap: {
     xs: "8px",
@@ -81,7 +115,15 @@ export const layout = {
     md: "12px",
     lg: "16px",
     xl: "24px",
+    "2xl": "28px",
+    "3xl": "32px",
     full: "100px",
+    pill: "999px",
+  },
+  duration: {
+    fast: "150ms", // was 0.1s / 0.15s / 0.16s
+    normal: "200ms", // was 180ms / 0.2s
+    slow: "300ms", // was 0.3s
   },
   iconSize: {
     sm: "16px",

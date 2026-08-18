@@ -1,6 +1,12 @@
 import { makeStyles, shorthands } from "@griffel/react";
-import { gradients, semanticColors } from "../theme/colors";
-import { layout, typographyPresets } from "../theme/typography";
+import {
+  gradients,
+  semanticColors,
+  warm,
+  warmGradients,
+  warmShadows,
+} from "../theme/colors";
+import { layout, typography, typographyPresets } from "../theme/typography";
 
 export const useTopNavStyles = makeStyles({
   wrapper: {
@@ -30,10 +36,10 @@ export const useTopNavStyles = makeStyles({
     gridTemplateColumns: "auto minmax(0, 1fr) auto",
     alignItems: "center",
     columnGap: layout.gap.lg,
-    backgroundColor: "#FFFCF9",
+    backgroundColor: warm.bgSurface,
     borderRadius: "22px",
-    boxShadow: "0 18px 42px rgba(47, 33, 27, 0.09)",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
+    boxShadow: warmShadows.nav,
+    ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     pointerEvents: "auto",
     gridAutoFlow: "column",
 
@@ -53,13 +59,13 @@ export const useTopNavStyles = makeStyles({
   homeButtonLayout: {
     alignSelf: "center",
     "&.MuiButton-root": {
-      minWidth: "42px",
-      width: "42px",
-      height: "42px",
+      minWidth: layout.controlSize.xl,
+      width: layout.controlSize.xl,
+      height: layout.controlSize.xl,
       padding: 0,
     },
     "& svg": {
-      fontSize: "20px",
+      fontSize: typography.fontSize.size9,
     },
   },
 
@@ -80,24 +86,24 @@ export const useTopNavStyles = makeStyles({
     ...shorthands.border("0"),
 
     ":focus-visible": {
-      outlineColor: "#FF6B6B",
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "5px",
       borderRadius: layout.radius.md,
     },
   },
 
   logoFrame: {
-    width: "42px",
-    height: "42px",
+    width: layout.controlSize.xl,
+    height: layout.controlSize.xl,
     borderRadius: layout.radius.lg,
     overflow: "hidden",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    backgroundColor: "#FFF1EB",
+    backgroundColor: warm.bgTint,
   },
 
   logo: {
@@ -109,8 +115,8 @@ export const useTopNavStyles = makeStyles({
 
   brandName: {
     ...typographyPresets.brand,
-    color: "#2F211B",
-    fontSize: "20px",
+    color: warm.textPrimary,
+    fontSize: typography.fontSize.size9,
     lineHeight: 1,
   },
 
@@ -145,72 +151,74 @@ export const useTopNavStyles = makeStyles({
       minHeight: "44px",
       padding: `${layout.padding.xs} ${layout.padding.sm}`,
       borderRadius: layout.radius.full,
-      color: "#2F211B",
-      fontSize: "14px",
-      fontWeight: 600,
+      color: warm.textPrimary,
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.semibold,
       lineHeight: 1.2,
       textTransform: "none",
       whiteSpace: "nowrap",
       transitionProperty: "color, background-color, transform",
-      transitionDuration: "0.16s",
+      transitionDuration: layout.duration.fast,
       transitionTimingFunction: "ease",
     },
     "&.MuiButton-root:hover": {
-      color: "#F43F7A",
-      backgroundColor: "#FFF1EB",
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
       transform: "translateY(-1px)",
     },
     "&.MuiButton-root:focus-visible": {
-      outlineColor: "#FF6B6B",
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
     "&.MuiButton-root .MuiButton-startIcon": {
       marginLeft: 0,
       marginRight: layout.spacing[2],
-      color: "#7F7068",
+      color: warm.textSecondary,
       transitionProperty: "color",
-      transitionDuration: "0.16s",
+      transitionDuration: layout.duration.fast,
       transitionTimingFunction: "ease",
     },
     "&.MuiButton-root .MuiButton-startIcon > svg": {
-      fontSize: "18px",
+      fontSize: typography.fontSize.size8,
     },
     "&.MuiButton-root:hover .MuiButton-startIcon": {
-      color: "#F43F7A",
+      color: warm.rose,
     },
     "&.MuiButton-root::after": {
-      content: "\"\"",
+      content: "''",
       position: "absolute",
-      left: "14px",
-      right: "14px",
+      left: layout.spacing[3.5],
+      right: layout.spacing[3.5],
       bottom: "-15px",
       height: "2px",
       borderRadius: layout.radius.full,
+      // NOTE: old-theme gradient (coral/rose) on an otherwise warm-palette nav.
+      // Left as-is deliberately — switching to warmGradients.primary is a visual change.
       backgroundImage: gradients.primary,
       opacity: 0,
       transform: "scaleX(0.7)",
       transitionProperty: "opacity, transform",
-      transitionDuration: "0.16s",
+      transitionDuration: layout.duration.fast,
       transitionTimingFunction: "ease",
     },
 
     "@media (max-width: 980px)": {
       "&.MuiButton-root": {
         padding: `${layout.padding.xs} ${layout.padding.xs}`,
-        fontSize: "13px",
+        fontSize: typography.fontSize.size3,
       },
     },
   },
 
   navItemActive: {
     "&.MuiButton-root": {
-      color: "#F43F7A",
+      color: warm.rose,
       backgroundColor: "transparent",
     },
     "&.MuiButton-root .MuiButton-startIcon": {
-      color: "#FF6B6B",
+      color: warm.coralBright,
     },
     "&.MuiButton-root::after": {
       opacity: 1,
@@ -228,30 +236,31 @@ export const useTopNavStyles = makeStyles({
 
   loginButton: {
     "&.MuiButton-root": {
-      color: "#2F211B",
-      backgroundColor: "#FFFCF9",
-      ...shorthands.border("1px", "solid", "#F3DED4"),
+      color: warm.textPrimary,
+      backgroundColor: warm.bgSurface,
+      ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
       boxShadow: "none",
     },
     "&.MuiButton-root:hover": {
-      color: "#F43F7A",
-      backgroundColor: "#FFF1EB",
-      ...shorthands.borderColor("#F3DED4"),
-      boxShadow: "0 8px 18px rgba(47, 33, 27, 0.07)",
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
+      ...shorthands.borderColor(warm.border),
+      boxShadow: warmShadows.navRaised,
     },
   },
 
   getStartedButton: {
     "&.MuiButton-root": {
-      backgroundImage: "linear-gradient(135deg, #FF7A66 0%, #F43F7A 100%)",
+      backgroundImage: warmGradients.primary,
       color: semanticColors.bgPrimary,
-      boxShadow: "0 12px 24px rgba(244, 63, 122, 0.22)",
+      boxShadow: warmShadows.rose,
       paddingLeft: layout.padding.lg,
       paddingRight: layout.padding.lg,
     },
     "&.MuiButton-root:hover": {
-      backgroundImage: "linear-gradient(135deg, #FF7A66 0%, #F43F7A 100%)",
-      boxShadow: "0 14px 28px rgba(244, 63, 122, 0.28)",
+      // Same gradient as default — only the shadow lifts on hover.
+      backgroundImage: warmGradients.primary,
+      boxShadow: warmShadows.roseHover,
     },
   },
 });

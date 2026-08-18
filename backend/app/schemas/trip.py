@@ -69,7 +69,6 @@ class TripRequestUpdate(BaseModel):
 
 
 class TripCreate(BaseModel):
-    user_id: int = Field(..., gt=0)
     destination: str = Field(..., min_length=1, max_length=150)
     start_date: date
     end_date: date

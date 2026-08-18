@@ -8,7 +8,7 @@ from azure.search.documents.indexes.models import (
     SimpleField,
 )
 
-from app.config.config import settings
+from app.config import settings
 
 credential = AzureKeyCredential(settings.AZURE_SEARCH_API_KEY)
 

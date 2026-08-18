@@ -11,13 +11,13 @@ export const useAppButtonStyles = makeStyles({
       textTransform: "none",
       transitionProperty:
         "transform, box-shadow, background-color, border-color, color",
-      transitionDuration: "0.15s",
+      transitionDuration: layout.duration.fast,
       transitionTimingFunction: "ease",
     },
     "&.MuiButton-root:focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
-      outlineWidth: "2px",
+      outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
   },
@@ -33,7 +33,7 @@ export const useAppButtonStyles = makeStyles({
   small: {
     "&.MuiButton-root": {
       minWidth: "auto",
-      minHeight: "38px",
+      minHeight: layout.controlSize.md,
       padding: `${layout.padding.xs} ${layout.padding.sm}`,
       borderRadius: layout.radius.full,
       fontSize: typography.fontSize.size4,
@@ -82,7 +82,11 @@ export const useAppButtonStyles = makeStyles({
     "&.MuiButton-root": {
       color: semanticColors.interactive,
       backgroundColor: semanticColors.bgPrimary,
-      ...shorthands.border("1.5px", "solid", semanticColors.interactive),
+      ...shorthands.border(
+        layout.borderWidth.thin,
+        "solid",
+        semanticColors.interactive,
+      ),
       boxShadow: "none",
     },
     "&.MuiButton-root:hover": {

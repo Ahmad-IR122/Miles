@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.db import Base
+from app.db import Base
 from app.models.conversation_models import Conversation
 
 if TYPE_CHECKING:
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from app.models.itinerary_models import Itinerary
     from app.models.trip_preference_models import TripPreference
     from app.models.user_models import User
+
 
 class Trip(Base):
     __tablename__ = "trips"

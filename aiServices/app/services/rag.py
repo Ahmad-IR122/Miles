@@ -1,6 +1,6 @@
-from app.clients.azure_openai import get_client
-from app.config.config import settings
-from app.prompts.rag_prompts import history_prompt, system_prompt
+from app.clients import get_client
+from app.config import settings
+from app.prompts import history_prompt, system_prompt
 
 
 class RAGService:

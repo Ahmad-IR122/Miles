@@ -1,10 +1,8 @@
 name: Azure Static Web Apps CI/CD
-
 trigger:
   branches:
     include:
       - main
-
 jobs:
 - job: build_and_deploy_job
   displayName: Build and Deploy Job
@@ -24,3 +22,4 @@ jobs:
       output_location: "dist"
     env:
       VITE_CLERK_PUBLISHABLE_KEY: $(VITE_CLERK_PUBLISHABLE_KEY)
+      VITE_API_URL: $(VITE_API_URL)
