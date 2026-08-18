@@ -79,13 +79,15 @@ const Home = () => {
           </SignedOut>
 
           <SignedIn>
-            <AppButton
-              appearance="primary"
-              onClick={goToPlanner}
-              className={styles.mainButton}
-            >
-              Plan Your Trip
-            </AppButton>
+            <div className={styles.signedInAction}>
+              <AppButton
+                appearance="primary"
+                onClick={goToPlanner}
+                className={styles.mainButton}
+              >
+                Plan Your Trip
+              </AppButton>
+            </div>
           </SignedIn>
         </div>
 
