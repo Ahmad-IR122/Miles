@@ -304,7 +304,7 @@ export const useHomeStyles = makeStyles({
 
     rowGap: layout.gap.sm,
 
-    marginTop: layout.spacing[7],
+    marginTop: layout.spacing[9],
   },
 
   mainButton: {
