@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { routesPaths } from "../../routes/routesPaths";
 import TopNav from "../topNav/topNav";
 import { useAppLayoutStyles } from "./appLayout.styles";
+import Footer from "../footer/footer";
 
 const routesWithBackNav = new Set<string>([
   routesPaths.planTrip,
@@ -35,6 +36,7 @@ const AppLayout = () => {
       {showNav ? <TopNav homeLink={homeLink} /> : null}
       <div className={needsNavOffset ? styles.navOffset : undefined}>
         <Outlet />
+        <Footer />
       </div>
     </div>
   );

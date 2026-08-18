@@ -7,6 +7,7 @@ import PlanTrip from "./plan-trip";
 import SignUpPage from "../features/auth/pages/signUp";
 import SignInPage from "../features/auth/pages/signIn";
 import Recommendations from "../features/recommendations/pages/recommendations";
+import NotFound from "./not-found";
 import { routesPaths } from "./routesPaths";
 
 const router = createBrowserRouter([
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: routesPaths.signIn,
         element: <SignInPage />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },
