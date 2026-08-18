@@ -3,8 +3,9 @@ import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { LoadingSprite } from "../loadingSprite/loadingSprite";
 import CheckIcon from "@mui/icons-material/Check";
+import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
@@ -17,27 +18,26 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Country, type ICountry } from "country-state-city";
 import type { Dayjs } from "dayjs";
+import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
 import { createTrip } from "../../api/trip";
+import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../../common/AppButton/appButton";
 import allCities from "../../data/cities.json";
 import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
-
 const allCountries = Country.getAllCountries();
-
 type CityOption = {
   cityId: number;
   name: string;
 };
-
 const steps = [
   { num: 1, label: "Trip Details" },
   { num: 2, label: "Travelers & Budget" },
   { num: 3, label: "Interests" },
 ];
-
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [budget, setBudget] = useState("");
   const [originCountry, setOriginCountry] = useState<ICountry | null>(null);
@@ -56,19 +56,16 @@ const TripPlanningForm = () => {
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-
   const handleBudgetChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (value === "" || /^[0-9]+$/.test(value)) setBudget(value);
   };
-
   const citiesForCountry = (selectedCountry: ICountry | null) =>
     selectedCountry
       ? allCities
         .filter((item) => item.country === selectedCountry.isoCode)
         .map((item) => ({ cityId: item.cityId, name: item.name }))
       : [];
-
   const handleOriginCountryChange = (
     _event: SyntheticEvent,
     value: ICountry | null,
@@ -77,7 +74,6 @@ const TripPlanningForm = () => {
     setOriginCity(null);
     setOriginCities(citiesForCountry(value));
   };
-
   const handleCountryChange = (
     _event: SyntheticEvent,
     value: ICountry | null,
@@ -86,7 +82,6 @@ const TripPlanningForm = () => {
     setCity(null);
     setCities(citiesForCountry(value));
   };
-
   const toggleInterest = (interest: string) => {
     setSelectedInterests((current) =>
       current.includes(interest)
@@ -94,7 +89,6 @@ const TripPlanningForm = () => {
         : [...current, interest],
     );
   };
-
   const validateCurrentStep = () => {
     setErrorMessage("");
     if (step === 1) {
@@ -117,16 +111,13 @@ const TripPlanningForm = () => {
     }
     return true;
   };
-
   const goNext = () => {
     if (validateCurrentStep()) setStep((current) => current + 1);
   };
-
   const goBack = () => {
     setErrorMessage("");
     setStep((current) => Math.max(1, current - 1));
   };
-
   const handleSubmit = async () => {
     setErrorMessage("");
     if (selectedInterests.length === 0) {
@@ -154,13 +145,14 @@ const TripPlanningForm = () => {
             }
             return Math.min(100, current + 5);
           });
-        }, 80);
+        }, 180);
       });
       const [{ data: trip }] = await Promise.all([
         createTripPromise,
         progressPromise,
       ]);
       console.log("Trip created:", trip);
+      navigate(routesPaths.itinerary);
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
     } finally {
@@ -168,12 +160,11 @@ const TripPlanningForm = () => {
       setIsSubmitting(false);
     }
   };
-
   if (generating) {
     return (
       <div className={mergeClasses(styles.page, styles.generatingPage)}>
         <div className={styles.generatingIcon} aria-hidden="true">
-          <AutoAwesomeIcon />
+          <LoadingSprite />
         </div>
         <div className={styles.centered}>
           <Typography component="h1" className={styles.generatingTitle}>
@@ -184,10 +175,16 @@ const TripPlanningForm = () => {
             around your interests.
           </Typography>
         </div>
-        <div className={styles.progressTrack}>
-          <div
-            className={styles.progressBar}
-            style={{ width: `${progress}%` }}
+        <div className={styles.progressWrapper}>
+          <div className={styles.progressTrack}>
+            <div
+              className={styles.progressBar}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <FlightTakeoffIcon
+            className={styles.progressPlane}
+            style={{ left: `${progress}%` }}
           />
         </div>
         <Typography
@@ -206,7 +203,6 @@ const TripPlanningForm = () => {
       </div>
     );
   }
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.page}>
@@ -221,7 +217,6 @@ const TripPlanningForm = () => {
               itinerary in seconds.
             </Typography>
           </header>
-
           <div className={styles.steps}>
             {steps.map((item, index) => (
               <div
@@ -268,7 +263,6 @@ const TripPlanningForm = () => {
               </div>
             ))}
           </div>
-
           <section className={styles.card}>
             {step === 1 && (
               <div className={styles.column24}>
@@ -315,7 +309,6 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 </div>
-
                 <div>
                   <Typography component="label" className={styles.label}>
                     Destination
@@ -357,7 +350,6 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 </div>
-
                 <div className={styles.grid}>
                   <div>
                     <Typography component="label" className={styles.label}>
@@ -387,7 +379,6 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {step === 2 && (
               <div className={styles.column28}>
                 <div>
@@ -471,7 +462,6 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {step === 3 && (
               <div>
                 <div className={styles.interestHeader}>
@@ -563,14 +553,12 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {errorMessage && (
               <Typography component="p" className={styles.error}>
                 {errorMessage}
               </Typography>
             )}
           </section>
-
           <div className={styles.navigation}>
             <AppButton
               appearance="secondary"
@@ -603,5 +591,4 @@ const TripPlanningForm = () => {
     </LocalizationProvider>
   );
 };
-
 export default TripPlanningForm;

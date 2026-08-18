@@ -1,11 +1,17 @@
 import { makeStyles, shorthands } from "@griffel/react";
-import { colors, semanticColors, gradients } from "../../common/theme/colors";
+import {
+  colors,
+  semanticColors,
+  gradients,
+  warm,
+  itineraryShadows,
+  itineraryGradients,
+} from "../../common/theme/colors";
 import {
   layout,
   typography,
   typographyPresets,
 } from "../../common/theme/typography";
-
 export const fieldSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: layout.radius.md,
@@ -30,14 +36,12 @@ export const fieldSx = {
     color: semanticColors.interactive,
   },
 };
-
 export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
     minHeight: "100dvh",
   },
-
   generatingPage: {
     display: "flex",
     flexDirection: "column",
@@ -45,44 +49,44 @@ export const useTripPlanningFormStyles = makeStyles({
     justifyContent: "center",
     padding: layout.padding["2xl"],
     rowGap: layout.gap.xl,
+    backgroundImage: itineraryGradients.page,
   },
-
   generatingIcon: {
-    width: layout.iconSize.xl,
-    height: layout.iconSize.xl,
-    borderRadius: layout.radius.lg,
-    backgroundImage: gradients.primary,
-    color: semanticColors.bgPrimary,
+    width: "140px",
+    height: "140px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: semanticColors.shadowInteractive,
-    "& svg": { fontSize: typography.fontSize.size12 },
+    "& img": {
+      width: "100%",
+      height: "100%",
+      objectFit: "contain",
+      imageRendering: "pixelated",
+    },
   },
-
   centered: { textAlign: "center" },
-
   generatingTitle: {
     ...typographyPresets.h2,
     color: semanticColors.textPrimary,
     marginBottom: layout.gap.sm,
   },
-
   generatingText: {
     fontSize: typography.fontSize.size5,
     color: semanticColors.textSecondary,
     marginBottom: layout.gap.xl,
   },
-
+  progressWrapper: {
+    position: "relative",
+    width: "680px",
+    maxWidth: "92vw",
+  },
   progressTrack: {
-    width: "420px",
-    maxWidth: "90vw",
+    width: "100%",
     backgroundColor: semanticColors.bgTrack,
     borderRadius: layout.radius.full,
-    height: layout.spacing[2],
+    height: layout.spacing[6],
     overflow: "hidden",
   },
-
   progressBar: {
     height: "100%",
     backgroundImage: gradients.progress,
@@ -91,26 +95,33 @@ export const useTripPlanningFormStyles = makeStyles({
     transitionDuration: layout.duration.fast,
     transitionTimingFunction: "ease",
   },
-
+  progressPlane: {
+    position: "absolute",
+    top: "50%",
+    color: warm.coralBright,
+    fontSize: typography.fontSize.size10,
+    transform: "translate(-50%, -50%) rotate(-18deg)",
+    filter: itineraryShadows.planeIcon,
+    transitionProperty: "left",
+    transitionDuration: layout.duration.fast,
+    transitionTimingFunction: "ease",
+    pointerEvents: "none",
+  },
   progressStatus: {
     fontSize: typography.fontSize.size4,
     color: semanticColors.textTertiary,
   },
-
   content: {
     padding: `${layout.navHeight + 60}px ${layout.padding.lg} ${layout.padding["2xl"]}`,
     maxWidth: "760px",
     margin: "0 auto",
   },
-
   header: { marginBottom: layout.gap.xl },
-
   title: {
     ...typographyPresets.h1,
     color: semanticColors.textPrimary,
     margin: `0 0 ${layout.gap.sm}`,
   },
-
   gradientText: {
     fontStyle: "italic",
     display: "inline-block",
@@ -120,20 +131,17 @@ export const useTripPlanningFormStyles = makeStyles({
     WebkitTextFillColor: "transparent",
     color: "transparent",
   },
-
   subtitle: {
     fontSize: typography.fontSize.size5,
     color: semanticColors.textSecondary,
     margin: 0,
     lineHeight: typography.lineHeight.relaxed,
   },
-
   steps: {
     display: "flex",
     alignItems: "center",
     marginBottom: layout.gap.xl,
   },
-
   stepItem: { display: "flex", alignItems: "center" },
   stepItemGrowing: { flexGrow: 1 },
   stepIdentity: {
@@ -141,7 +149,6 @@ export const useTripPlanningFormStyles = makeStyles({
     alignItems: "center",
     columnGap: layout.gap.sm,
   },
-
   stepCircle: {
     width: layout.controlSize.sm,
     height: layout.controlSize.sm,
@@ -157,22 +164,17 @@ export const useTripPlanningFormStyles = makeStyles({
     transitionProperty: "all",
     transitionDuration: layout.duration.normal,
   },
-
   stepCircleReached: {
     backgroundImage: gradients.primary,
     color: semanticColors.bgPrimary,
   },
-
   stepCircleCurrent: { boxShadow: semanticColors.shadowInteractive },
-
   stepLabel: {
     ...typographyPresets.label,
     color: semanticColors.textTertiary,
   },
-
   stepLabelReached: { color: semanticColors.textPrimary },
   stepLabelCurrent: { fontWeight: typography.fontWeight.bold },
-
   connector: {
     flexGrow: 1,
     height: "2px",
@@ -181,9 +183,7 @@ export const useTripPlanningFormStyles = makeStyles({
     transitionProperty: "background",
     transitionDuration: layout.duration.slow,
   },
-
   connectorComplete: { backgroundImage: gradients.progress },
-
   card: {
     backgroundColor: semanticColors.bgPrimary,
     borderRadius: layout.radius.xl,
@@ -196,23 +196,19 @@ export const useTripPlanningFormStyles = makeStyles({
     marginBottom: layout.gap.md,
     boxShadow: semanticColors.shadowStrong,
   },
-
   column24: { display: "flex", flexDirection: "column", rowGap: layout.gap.lg },
   column28: { display: "flex", flexDirection: "column", rowGap: layout.gap.xl },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: layout.gap.md },
-
   label: {
     ...typographyPresets.label,
     color: semanticColors.textPrimary,
     marginBottom: layout.gap.sm,
   },
-
   counterRow: {
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.md,
   },
-
   counterButton: {
     width: layout.controlSize.lg,
     height: layout.controlSize.lg,
@@ -238,7 +234,6 @@ export const useTripPlanningFormStyles = makeStyles({
       outlineOffset: "2px",
     },
   },
-
   count: {
     fontSize: typography.fontSize.size10,
     fontWeight: typography.fontWeight.bold,
@@ -246,38 +241,31 @@ export const useTripPlanningFormStyles = makeStyles({
     minWidth: layout.spacing[8],
     textAlign: "center",
   },
-
   hint: {
     ...typographyPresets.caption,
     color: semanticColors.textTertiary,
   },
-
   currency: {
     color: semanticColors.textSecondary,
     marginRight: layout.gap.sm,
   },
-
   interestHeader: { marginBottom: layout.gap.lg },
-
   interestTitle: {
     fontSize: typography.fontSize.size7,
     fontWeight: typography.fontWeight.bold,
     color: semanticColors.textPrimary,
     margin: `0 0 ${layout.gap.sm}`,
   },
-
   interestText: {
     fontSize: typography.fontSize.size3,
     color: semanticColors.textSecondary,
     margin: 0,
   },
-
   chips: {
     display: "flex",
     flexWrap: "wrap",
     gap: layout.gap.sm,
   },
-
   chip: {
     height: "auto",
     borderRadius: layout.radius.full,
@@ -303,7 +291,6 @@ export const useTripPlanningFormStyles = makeStyles({
       outlineOffset: "2px",
     },
   },
-
   chipActive: {
     ...shorthands.borderColor(semanticColors.interactive),
     backgroundColor: colors.coralTint,
@@ -314,9 +301,7 @@ export const useTripPlanningFormStyles = makeStyles({
       backgroundColor: semanticColors.bgInteractiveSubtle,
     },
   },
-
   otherField: { marginTop: layout.gap.md },
-
   selectionNotice: {
     marginTop: layout.gap.lg,
     padding: `${layout.gap.sm} ${layout.gap.md}`,
@@ -332,13 +317,11 @@ export const useTripPlanningFormStyles = makeStyles({
     alignItems: "center",
     columnGap: layout.gap.sm,
   },
-
   selectionNoticeText: {
     margin: 0,
     ...typographyPresets.label,
     color: semanticColors.interactive,
   },
-
   summary: {
     marginTop: layout.gap.lg,
     backgroundImage: gradients.summary,
@@ -350,46 +333,39 @@ export const useTripPlanningFormStyles = makeStyles({
     borderRadius: layout.radius.lg,
     padding: `${layout.gap.lg} ${layout.gap.md}`,
   },
-
   summaryTitle: {
     fontSize: typography.fontSize.size6,
     fontWeight: typography.fontWeight.bold,
     color: semanticColors.textPrimary,
     marginBottom: layout.gap.lg,
   },
-
   summaryGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     columnGap: layout.spacing[8],
     rowGap: layout.gap.sm,
   },
-
   summaryKey: {
     fontSize: typography.fontSize.size2,
     color: semanticColors.textSecondary,
     fontWeight: typography.fontWeight.medium,
     marginBottom: layout.gap.sm,
   },
-
   summaryValue: {
     fontSize: typography.fontSize.size4,
     color: semanticColors.textPrimary,
     fontWeight: typography.fontWeight.bold,
   },
-
   error: {
     color: semanticColors.textError,
     fontSize: typography.fontSize.size3,
     marginTop: layout.gap.lg,
     marginBottom: 0,
   },
-
   navigation: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   hidden: { visibility: "hidden" },
 });
