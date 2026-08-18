@@ -268,11 +268,8 @@ export const useNotFoundStyles = makeStyles({
   actions: {
     display: "flex",
     flexWrap: "wrap",
+    justifyContent: "center",
     gap: layout.gap.md,
     marginTop: "26px",
-
-    "@media (max-width: 760px)": {
-      justifyContent: "center",
-    },
   },
 });

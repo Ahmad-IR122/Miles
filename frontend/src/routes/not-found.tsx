@@ -1,4 +1,3 @@
-import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { useNavigate } from "react-router-dom";
 
@@ -52,13 +51,6 @@ const NotFound = () => {
               startIcon={<HomeRoundedIcon />}
             >
               Go Home
-            </AppButton>
-            <AppButton
-              appearance="secondary"
-              onClick={() => navigate(routesPaths.recommendation)}
-              startIcon={<ExploreOutlinedIcon />}
-            >
-              Explore Discover
             </AppButton>
           </div>
         </section>
