@@ -58,7 +58,7 @@ const NotFound = () => {
               onClick={() => navigate(routesPaths.recommendation)}
               startIcon={<ExploreOutlinedIcon />}
             >
-              Explore Destinations
+              Explore Discover
             </AppButton>
           </div>
         </section>
