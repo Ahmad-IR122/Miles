@@ -20,6 +20,15 @@ export const useTopNavStyles = makeStyles({
     padding: `0 ${layout.padding.xl}`,
     pointerEvents: "none",
     backgroundColor: "transparent",
+    transition: `transform ${layout.duration.normal} cubic-bezier(0.4, 0, 0.2, 1)`,
+
+    "&.scrolling-down": {
+      transform: "translateY(-120px)",
+    },
+
+    "&:hover": {
+      transform: "translateY(0)",
+    },
 
     "@media (max-width: 760px)": {
       top: layout.spacing[3],
@@ -27,52 +36,122 @@ export const useTopNavStyles = makeStyles({
     },
   },
 
-  nav: {
+  authWrapper: {
+    position: "absolute",
+    top: layout.spacing[6],
+    padding: `0 ${layout.padding.xl}`,
+
+    "&:hover": {
+      transform: "none",
+    },
+
+    "@media (max-width: 760px)": {
+      top: layout.spacing[4],
+      padding: `0 ${layout.padding.md}`,
+    },
+  },
+
+  headerInner: {
+    position: "relative",
     width: "100%",
     maxWidth: "1180px",
-    minHeight: "74px",
+    display: "flex",
+    alignItems: "center",
+    columnGap: layout.gap.xl,
+    pointerEvents: "none",
+
+    "@media (max-width: 980px)": {
+      columnGap: layout.gap.md,
+    },
+  },
+
+  // Pill-shaped nav container
+  nav: {
+    width: "auto",
+    minWidth: 0,
+    flex: 1,
+    minHeight: "60px",
     padding: `${layout.padding.sm} ${layout.padding.lg}`,
-    display: "grid",
-    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+    display: "flex",
     alignItems: "center",
     columnGap: layout.gap.lg,
     backgroundColor: warm.bgSurface,
-    borderRadius: "22px",
+    borderRadius: layout.radius.pill, // Full pill shape (999px)
     boxShadow: warmShadows.nav,
     ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     pointerEvents: "auto",
-    gridAutoFlow: "column",
 
     "@media (max-width: 980px)": {
       columnGap: layout.gap.sm,
       padding: `${layout.padding.xs} ${layout.padding.md}`,
+      minHeight: "56px",
     },
 
     "@media (max-width: 760px)": {
       minHeight: "auto",
-      gridTemplateColumns: "1fr auto",
-      rowGap: layout.gap.xs,
+      flexWrap: "wrap",
       borderRadius: layout.radius.lg,
     },
   },
 
-  homeButtonLayout: {
-    alignSelf: "center",
-    "&.MuiButton-root": {
-      minWidth: layout.controlSize.xl,
-      width: layout.controlSize.xl,
-      height: layout.controlSize.xl,
+  authNav: {
+    width: "100%",
+    minHeight: "48px",
+    padding: 0,
+    columnGap: layout.gap.md,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    boxShadow: "none",
+    ...shorthands.border("0"),
+
+    "@media (max-width: 980px)": {
+      minHeight: "48px",
       padding: 0,
     },
-    "& svg": {
-      fontSize: typography.fontSize.size9,
+
+    "@media (max-width: 760px)": {
+      minHeight: "48px",
+      flexWrap: "nowrap",
+      borderRadius: 0,
     },
   },
 
-  userButtonWrapper: {
+  signedInNav: {
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "fit-content",
+    flex: "0 1 auto",
+    minHeight: "48px",
+    marginLeft: "auto",
+    padding: `${layout.spacing[1]} ${layout.padding.sm}`,
+    columnGap: layout.gap.md,
+
+    "@media (max-width: 980px)": {
+      position: "static",
+      transform: "none",
+      minHeight: "48px",
+      padding: `${layout.spacing[1]} ${layout.padding.sm}`,
+      columnGap: layout.gap.sm,
+    },
+
+    "@media (max-width: 760px)": {
+      width: "auto",
+      flex: 1,
+      minHeight: "auto",
+      padding: `${layout.spacing[1]} ${layout.padding.xs}`,
+      columnGap: layout.gap.xs,
+    },
+  },
+
+  // Logo section - left side
+  brandSection: {
     display: "flex",
     alignItems: "center",
-    marginLeft: layout.gap.sm,
+    columnGap: layout.gap.sm,
+    minWidth: "max-content",
+    flexShrink: 0,
+    pointerEvents: "auto",
   },
 
   brand: {
@@ -94,10 +173,10 @@ export const useTopNavStyles = makeStyles({
     },
   },
 
-  logoFrame: {
-    width: layout.controlSize.xl,
-    height: layout.controlSize.xl,
-    borderRadius: layout.radius.lg,
+  standaloneLogoFrame: {
+    width: "48px",
+    height: "48px",
+    borderRadius: layout.radius.md,
     overflow: "hidden",
     display: "flex",
     alignItems: "center",
@@ -113,27 +192,30 @@ export const useTopNavStyles = makeStyles({
     display: "block",
   },
 
-  brandName: {
+  standaloneBrandName: {
     ...typographyPresets.brand,
     color: warm.textPrimary,
     fontSize: typography.fontSize.size9,
     lineHeight: 1,
+    display: "block",
   },
 
+  // Nav items in center - flex auto
   navLinks: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     minWidth: 0,
-    columnGap: layout.gap.sm,
+    flex: 1,
+    columnGap: layout.spacing[1.5],
 
     "@media (max-width: 980px)": {
       columnGap: layout.spacing[1],
     },
 
     "@media (max-width: 760px)": {
-      gridColumnStart: 1,
-      gridColumnEnd: 3,
+      order: 3,
+      width: "100%",
       justifyContent: "flex-start",
       overflowX: "auto",
       paddingBottom: layout.spacing[1],
@@ -148,8 +230,8 @@ export const useTopNavStyles = makeStyles({
     "&.MuiButton-root": {
       position: "relative",
       minWidth: "auto",
-      minHeight: "44px",
-      padding: `${layout.padding.xs} ${layout.padding.sm}`,
+      minHeight: "40px",
+      padding: `${layout.spacing[1.5]} ${layout.padding.xs}`,
       borderRadius: layout.radius.full,
       color: warm.textPrimary,
       fontSize: typography.fontSize.size4,
@@ -191,11 +273,9 @@ export const useTopNavStyles = makeStyles({
       position: "absolute",
       left: layout.spacing[3.5],
       right: layout.spacing[3.5],
-      bottom: "-15px",
+      bottom: "-7px",
       height: "2px",
       borderRadius: layout.radius.full,
-      // NOTE: old-theme gradient (coral/rose) on an otherwise warm-palette nav.
-      // Left as-is deliberately — switching to warmGradients.primary is a visual change.
       backgroundImage: gradients.primary,
       opacity: 0,
       transform: "scaleX(0.7)",
@@ -226,12 +306,47 @@ export const useTopNavStyles = makeStyles({
     },
   },
 
+  // Right side - profile & actions with separator
   actions: {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
-    columnGap: layout.gap.xs,
+    columnGap: layout.gap.md,
     minWidth: "max-content",
+    flexShrink: 0,
+  },
+
+  signedOutSpacer: {
+    flex: 1,
+  },
+
+  divider: {
+    width: "1px",
+    height: "32px",
+    backgroundColor: warm.border,
+    opacity: 0.5,
+  },
+
+  profileSection: {
+    display: "flex",
+    alignItems: "center",
+    columnGap: layout.gap.sm,
+    minWidth: "max-content",
+  },
+
+  userButtonWrapper: {
+    display: "flex",
+    alignItems: "center",
+  },
+
+  userEmail: {
+    fontSize: typography.fontSize.size3,
+    color: warm.textSecondary,
+    fontWeight: typography.fontWeight.normal,
+
+    "@media (max-width: 980px)": {
+      display: "none",
+    },
   },
 
   loginButton: {
@@ -258,9 +373,21 @@ export const useTopNavStyles = makeStyles({
       paddingRight: layout.padding.lg,
     },
     "&.MuiButton-root:hover": {
-      // Same gradient as default — only the shadow lifts on hover.
       backgroundImage: warmGradients.primary,
       boxShadow: warmShadows.roseHover,
+    },
+  },
+
+  homeButtonLayout: {
+    alignSelf: "center",
+    "&.MuiButton-root": {
+      minWidth: layout.controlSize.xl,
+      width: layout.controlSize.xl,
+      height: layout.controlSize.xl,
+      padding: 0,
+    },
+    "& svg": {
+      fontSize: typography.fontSize.size9,
     },
   },
 });
