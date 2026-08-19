@@ -1,6 +1,5 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Box } from "@mui/material";
-import { clerkAppearance } from "../styles/clerkAppearance.styles";
 import { routesPaths } from "../../../routes/routesPaths";
 
 const SignInPage = () => {
@@ -13,7 +12,8 @@ const SignInPage = () => {
         minHeight: "100vh",
       }}
     >
-      <SignIn appearance={clerkAppearance} signUpUrl={routesPaths.signUp} />
+      {/* Appearance is inherited from AppClerkProvider so it follows the theme. */}
+      <SignIn signUpUrl={routesPaths.signUp} />
     </Box>
   );
 };

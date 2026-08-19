@@ -224,7 +224,7 @@ export const useRecommendationsStyles = makeStyles({
       "solid",
       semanticColors.borderLight,
     ),
-    backgroundColor: colors.whiteTranslucent,
+    backgroundColor: semanticColors.surfaceTranslucent,
     color: semanticColors.textSecondary,
     cursor: "pointer",
     display: "flex",

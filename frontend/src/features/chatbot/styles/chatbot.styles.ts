@@ -1,6 +1,6 @@
 import { makeStyles, shorthands } from "@griffel/react";
 import {
-  colors,
+  semanticColors,
   warm,
   warmGradients,
   warmShadows,
@@ -69,7 +69,7 @@ export const useChatbotStyles = makeStyles({
     width: layout.controlSize["2xl"],
     height: layout.controlSize["2xl"],
     flexShrink: 0,
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
     boxShadow: warmShadows.roseHover,
   },
@@ -98,7 +98,7 @@ export const useChatbotStyles = makeStyles({
     width: layout.controlSize.xl,
     height: layout.controlSize.xl,
     color: warm.textSecondary,
-    backgroundColor: colors.white,
+    backgroundColor: warm.bgSurface,
     ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     boxShadow: warmShadows.xs,
     transitionProperty: "background-color, color, transform",
@@ -136,7 +136,7 @@ export const useChatbotStyles = makeStyles({
     marginLeft: "auto",
     marginRight: "auto",
     marginBottom: layout.spacing[4],
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
   },
   emptyTitle: {
@@ -165,7 +165,7 @@ export const useChatbotStyles = makeStyles({
   avatar: {
     width: layout.controlSize.sm,
     height: layout.controlSize.sm,
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
     boxShadow: warmShadows.roseSoft,
   },
@@ -181,7 +181,7 @@ export const useChatbotStyles = makeStyles({
     },
   },
   assistantBubble: {
-    backgroundColor: colors.white,
+    backgroundColor: warm.bgSurface,
     ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     boxShadow: warmShadows.sm,
   },
@@ -251,7 +251,7 @@ export const useChatbotStyles = makeStyles({
   },
   previewButton: {
     marginTop: layout.spacing[3.5],
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
     ...shorthands.borderRadius(layout.radius.pill),
     textTransform: "none",
@@ -277,7 +277,7 @@ export const useChatbotStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: layout.spacing[2.5],
-    backgroundColor: colors.white,
+    backgroundColor: warm.bgSurface,
     ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     ...shorthands.borderRadius(layout.radius["2xl"]),
     ...shorthands.padding(
@@ -297,7 +297,7 @@ export const useChatbotStyles = makeStyles({
   sendButton: {
     width: layout.controlSize["2xl"],
     height: layout.controlSize["2xl"],
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
     boxShadow: warmShadows.rose,
     transitionProperty: "transform, box-shadow",

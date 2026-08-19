@@ -1,6 +1,8 @@
-import { colors, warm, warmShadows } from "../../theme/colors";
+import { semanticColors, warm, warmShadows } from "../../theme/colors";
 import { layout, typography } from "../../theme/typography";
 
+// Only `elements`, which Clerk injects as raw CSS — so tokens work here, and
+// this merges over the themed `variables` from AppClerkProvider.
 export const userButtonAppearance = {
   elements: {
     userButtonPopoverCard: {
@@ -56,7 +58,7 @@ export const userButtonAppearance = {
       borderTop: `${layout.borderWidth.hairline} solid ${warm.border}`,
     },
     userButtonPopoverActionButtonIcon__signOut: {
-      color: colors.gray[700],
+      color: semanticColors.textSecondary,
     },
     userButtonAvatarImage: {
       filter: "grayscale(100%)",
