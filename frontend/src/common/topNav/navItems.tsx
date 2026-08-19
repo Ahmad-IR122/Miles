@@ -11,12 +11,17 @@ export const navItems = [
     icon: <HomeRoundedIcon aria-hidden="true" />,
   },
   {
-    label: "Trips",
+    label: "Itinerary",
     path: routesPaths.itinerary,
     icon: <CalendarMonthOutlinedIcon aria-hidden="true" />,
   },
   {
-    label: "Destinations",
+    label: "My Trips",
+    path: routesPaths.myTrips,
+    icon: <PlaceOutlinedIcon aria-hidden="true" />,
+  },
+  {
+    label: "Discover",
     path: routesPaths.recommendation,
     icon: <PlaceOutlinedIcon aria-hidden="true" />,
   },

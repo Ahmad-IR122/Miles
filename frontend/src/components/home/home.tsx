@@ -1,66 +1,119 @@
-import { useNavigate } from "react-router-dom";
-import { Typography } from "@mui/material";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import AppButton from "../../common/AppButton/appButton";
-import home from "../../assets/image.svg";
+import logo from "../../assets/logo.svg";
+import homeImage from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import { useHomeStyles } from "./home.styles";
 
 const Home = () => {
   const navigate = useNavigate();
   const styles = useHomeStyles();
+
   const goToPlanner = () => navigate(routesPaths.planTrip);
   const goToSignUp = () => navigate(routesPaths.signUp);
   const goToSignIn = () => navigate(routesPaths.signIn);
 
   return (
     <div className={styles.page}>
+      <SignedOut>
+        <header className={styles.authHeader}>
+          <div className={styles.brand}>
+            <div className={styles.logoFrame}>
+              <img
+                src={logo}
+                alt=""
+                aria-hidden="true"
+                className={styles.logo}
+              />
+            </div>
+
+            <span className={styles.brandName}>TravelAI</span>
+          </div>
+
+          <div className={styles.signInArea}>
+            <Typography component="span" className={styles.signInText}>
+              Already have an account?
+            </Typography>
+
+            <AppButton appearance="secondary" size="small" onClick={goToSignIn}>
+              Sign In
+            </AppButton>
+          </div>
+        </header>
+      </SignedOut>
+
       <section className={styles.hero}>
         <div className={styles.intro}>
+          <Typography component="p" className={styles.eyebrow}>
+            YOUR TRIP, YOUR WAY
+          </Typography>
+
           <Typography component="h1" className={styles.title}>
-            Plan your perfect
+            Your next journey,
             <br />
-            <span className={styles.gradientText}>trip with AI</span>
+            <span className={styles.gradientText}>beautifully planned.</span>
           </Typography>
+
           <Typography component="p" className={styles.description}>
-            Tell us where you&apos;re going and what you love, and get a
-            personalized itinerary with flights, activities, must-see places,
-            and hidden gems, all in one place.
+            TravelAI creates personalized trips around where you want to go and
+            the way you love to travel.
           </Typography>
+
+          <SignedOut>
+            <div className={styles.primaryAction}>
+              <AppButton
+                appearance="primary"
+                onClick={goToSignUp}
+                className={styles.mainButton}
+              >
+                Sign Up
+              </AppButton>
+
+              <Typography component="p" className={styles.actionHint}>
+                Your journey starts here.
+              </Typography>
+            </div>
+          </SignedOut>
+
           <SignedIn>
             <AppButton
               appearance="primary"
               onClick={goToPlanner}
-              className={styles.ctaButton}
+              className={styles.mainButton}
             >
               Plan Your Trip
             </AppButton>
           </SignedIn>
-          <SignedOut>
-            <div className={styles.ctaGroup}>
-              <AppButton appearance="primary" onClick={goToSignUp}>
-                Sign Up
-              </AppButton>
-              <AppButton appearance="secondary" onClick={goToSignIn}>
-                Sign In
-              </AppButton>
-            </div>
-          </SignedOut>
         </div>
-        <div className={styles.visual}>
-          <div className={styles.peachBlob} />
-          <div className={styles.roseBlob} />
+
+        <div className={styles.visual} aria-hidden="true">
+          <div className={styles.largeGlow} />
+          <div className={styles.smallGlow} />
+
+          <div className={styles.backCard} />
+
           <div className={styles.photoCard}>
-            <img
-              src={home}
-              alt="Wooden boat gliding across a calm mountain lake"
-              className={styles.photo}
-            />
+            <img src={homeImage} alt="" className={styles.photo} />
+          </div>
+
+          <div className={styles.postcard}>
+            <span className={styles.postcardLabel}>YOUR NEXT JOURNEY</span>
+
+            <span className={styles.postcardTitle}>
+              Plan. Explore.
+              <br />
+              Remember.
+            </span>
+
+            <div className={styles.postcardLine} />
           </div>
         </div>
       </section>
     </div>
   );
 };
+
 export default Home;
