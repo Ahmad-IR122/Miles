@@ -40,92 +40,112 @@ export const colors = {
   brown: "#6B4226",
 } as const;
 
+/**
+ * THEMED TOKENS — the values below are `var()` references, not colours.
+ *
+ * Their light and dark values live in `theme.css`, keyed off `data-theme` on
+ * <html>. They are `var()` because the app styles with Griffel `makeStyles`,
+ * which is evaluated once at module load — a JS value read here can never
+ * change again, so a themed token has to resolve in CSS instead.
+ *
+ * Consume these exactly as before; they are still just strings to Griffel.
+ * The one rule: never read them back in JS (no string comparison, no passing
+ * to canvas/chart APIs) — `"var(--color-text-primary)"` is all you would get.
+ * The raw `colors` palette above stays literal for that reason, and for values
+ * that are genuinely theme-independent (white on a coral gradient, say).
+ */
+
 export const gradients = {
-  primary: `linear-gradient(135deg, ${colors.coral}, ${colors.rose})`,
-  progress: `linear-gradient(90deg, ${colors.coral}, ${colors.rose})`,
-  summary:
-    "linear-gradient(135deg, rgba(255,122,89,0.05), rgba(233,79,146,0.05))",
+  primary: "var(--gradient-primary)",
+  progress: "var(--gradient-progress)",
+  summary: "var(--gradient-summary)",
 } as const;
 
 export const semanticColors = {
   // Text
-  textPrimary: colors.gray[900],
-  textSecondary: colors.gray[600],
-  textTertiary: colors.gray[500],
-  textDisabled: colors.gray[400],
-  textBrand: colors.brown,
-  textError: colors.error,
+  textPrimary: "var(--color-text-primary)",
+  textSecondary: "var(--color-text-secondary)",
+  textTertiary: "var(--color-text-tertiary)",
+  textDisabled: "var(--color-text-disabled)",
+  textBrand: "var(--color-text-brand)",
+  textError: "var(--color-text-error)",
+  // Sits on a coral/rose gradient, so it is white in both themes. Prefer this
+  // over `colors.white` there — it distinguishes "white on an accent" from
+  // "white because the surface is light", which is the distinction that breaks
+  // when a light-only design gains a dark mode.
+  textOnAccent: "var(--color-text-on-accent)",
 
   // Backgrounds
-  bgPrimary: colors.white,
-  bgSecondary: colors.gray[50],
-  bgTertiary: colors.gray[100],
-  bgAccent: colors.coralTint,
-  bgPage: colors.cream,
-  bgDisabled: colors.gray[100],
-  bgInteractiveSubtle: colors.coralSoftTint,
-  bgTrack: colors.gray[200],
+  bgPrimary: "var(--color-bg-primary)",
+  bgSecondary: "var(--color-bg-secondary)",
+  bgTertiary: "var(--color-bg-tertiary)",
+  bgAccent: "var(--color-bg-accent)",
+  bgPage: "var(--color-bg-page)",
+  bgDisabled: "var(--color-bg-disabled)",
+  bgInteractiveSubtle: "var(--color-bg-interactive-subtle)",
+  bgTrack: "var(--color-bg-track)",
+  surfaceTranslucent: "var(--color-surface-translucent)",
 
   // Borders
-  borderDefault: colors.gray[300],
-  borderLight: colors.gray[200],
-  borderAccent: colors.coral,
-  borderAccentLight: colors.coralBorder,
-  borderAccentStrong: colors.coralStrongBorder,
+  borderDefault: "var(--color-border-default)",
+  borderLight: "var(--color-border-light)",
+  borderAccent: "var(--color-border-accent)",
+  borderAccentLight: "var(--color-border-accent-light)",
+  borderAccentStrong: "var(--color-border-accent-strong)",
 
   // Interactive
-  interactive: colors.coral,
-  interactiveHover: colors.rose,
+  interactive: "var(--color-interactive)",
+  interactiveHover: "var(--color-interactive-hover)",
 
   // Shadows - complete elevation tokens (not just colors)
-  shadowLight: "0 4px 12px rgba(17, 24, 39, 0.05)",
-  shadowMedium: "0 8px 24px rgba(17, 24, 39, 0.10)",
-  shadowStrong: "0 20px 40px -24px rgba(17, 24, 39, 0.15)",
-  shadowInteractive: `0 10px 26px ${colors.roseGlow}`,
-  shadowInteractiveHover: `0 14px 30px ${colors.roseHoverGlow}`,
+  shadowLight: "var(--shadow-light)",
+  shadowMedium: "var(--shadow-medium)",
+  shadowStrong: "var(--shadow-strong)",
+  shadowInteractive: "var(--shadow-interactive)",
+  shadowInteractiveHover: "var(--shadow-interactive-hover)",
 } as const;
 
 export const warm = {
-  coral: "#FF7A66",
-  coralHover: "#FF856F",
-  coralBright: "#FF6B6B",
-  rose: "#F43F7A",
+  coral: "var(--warm-coral)",
+  coralHover: "var(--warm-coral-hover)",
+  coralBright: "var(--warm-coral-bright)",
+  rose: "var(--warm-rose)",
 
-  bgPage: "#FFF9F5",
-  bgSurface: "#FFFCF9",
-  bgSurfaceBlur: "rgba(255, 252, 249, 0.96)", // sticky headers/footers over blur
-  bgTint: "#FFF1EB",
-  bgDisabled: "#E8CBC1",
-  border: "#F3DED4",
-  borderCoralBright: "rgba(255, 107, 107, 0.3)",
+  bgPage: "var(--warm-bg-page)",
+  bgSurface: "var(--warm-bg-surface)",
+  bgSurfaceBlur: "var(--warm-bg-surface-blur)", // sticky headers/footers over blur
+  bgTint: "var(--warm-bg-tint)",
+  bgDisabled: "var(--warm-bg-disabled)",
+  border: "var(--warm-border)",
+  borderCoralBright: "var(--warm-border-coral-bright)",
 
-  textPrimary: "#2F211B",
-  textSecondary: "#7F7068",
-  textTertiary: "#9B8A82",
-  textBrand: "#8B5A4B",
-  textOnAccentDisabled: "rgba(255, 255, 255, 0.78)",
+  textPrimary: "var(--warm-text-primary)",
+  textSecondary: "var(--warm-text-secondary)",
+  textTertiary: "var(--warm-text-tertiary)",
+  textBrand: "var(--warm-text-brand)",
+  textOnAccentDisabled: "var(--warm-text-on-accent-disabled)",
 } as const;
 
 export const warmGradients = {
-  primary: `linear-gradient(135deg, ${warm.coral} 0%, ${warm.rose} 100%)`,
-  primaryHover: `linear-gradient(135deg, ${warm.coralHover} 0%, ${warm.rose} 100%)`,
+  primary: "var(--warm-gradient-primary)",
+  primaryHover: "var(--warm-gradient-primary-hover)",
 } as const;
 
 export const warmShadows = {
   // Neutral elevation — warm brown tint
-  xs: "0 8px 18px rgba(128, 73, 48, 0.07)",
-  sm: "0 14px 34px rgba(128, 73, 48, 0.08)",
-  md: "0 18px 38px rgba(128, 73, 48, 0.1)",
-  lg: "0 24px 70px rgba(128, 73, 48, 0.13)",
+  xs: "var(--warm-shadow-xs)",
+  sm: "var(--warm-shadow-sm)",
+  md: "var(--warm-shadow-md)",
+  lg: "var(--warm-shadow-lg)",
 
   // Nav elevation — deliberately a cooler tint (textPrimary) than the scale above
-  nav: "0 18px 42px rgba(47, 33, 27, 0.09)",
-  navRaised: "0 8px 18px rgba(47, 33, 27, 0.07)",
+  nav: "var(--warm-shadow-nav)",
+  navRaised: "var(--warm-shadow-nav-raised)",
 
   // Rose glow for accent/gradient surfaces
-  roseSoft: "0 10px 20px rgba(244, 63, 122, 0.2)",
-  rose: "0 12px 24px rgba(244, 63, 122, 0.26)",
-  roseHover: "0 14px 28px rgba(244, 63, 122, 0.28)",
+  roseSoft: "var(--warm-shadow-rose-soft)",
+  rose: "var(--warm-shadow-rose)",
+  roseHover: "var(--warm-shadow-rose-hover)",
 } as const;
 
 /**
@@ -139,102 +159,108 @@ export const warmShadows = {
  * Most of these are used once. That makes them renames, not tokens. The real
  * fix is a design decision on whether itinerary adopts `warm` — at which point
  * this whole block should collapse. Do not add to it.
+ *
+ * Dark mode was added by giving each of these its own dark counterpart in
+ * theme.css rather than folding them into `warm`, so that the itinerary screen
+ * stays pixel-identical in light mode. That was a deliberate trade: it doubled
+ * this block's cost to maintain and made collapsing it later a larger job.
+ * Every token here now has two values to keep consistent instead of one.
  */
 export const itinerary = {
   // Accents
-  pink: "#f06292",
-  peach: "#ff8a65",
-  clay: "#c76b55",
+  pink: "var(--itin-pink)",
+  peach: "var(--itin-peach)",
+  clay: "var(--itin-clay)",
 
   // Status
-  check: "#22b66f",
-  markerGreen: "#55b878",
-  categoryGreenText: "#55a66d",
+  check: "var(--itin-check)",
+  markerGreen: "var(--itin-marker-green)",
+  categoryGreenText: "var(--itin-category-green-text)",
 
-  // Brown text ramp, darkest to lightest
-  textDarkest: "#281a18",
-  textDark: "#2d1b18",
-  textStrong: "#4d342f",
-  textBody: "#74574e",
-  textMuted: "#7e6259",
-  textSubtle: "#83665c",
-  textFaint: "#8b7067",
-  textSecondary: "#8d6e63",
-  textTertiary: "#9b7c72",
-  textDisabled: "#a98a80",
+  // Brown text ramp, darkest to lightest in light mode. The ramp inverts in
+  // dark — "darkest" becomes the brightest — so the names describe emphasis,
+  // not literal lightness. See theme.css.
+  textDarkest: "var(--itin-text-darkest)",
+  textDark: "var(--itin-text-dark)",
+  textStrong: "var(--itin-text-strong)",
+  textBody: "var(--itin-text-body)",
+  textMuted: "var(--itin-text-muted)",
+  textSubtle: "var(--itin-text-subtle)",
+  textFaint: "var(--itin-text-faint)",
+  textSecondary: "var(--itin-text-secondary)",
+  textTertiary: "var(--itin-text-tertiary)",
+  textDisabled: "var(--itin-text-disabled)",
 
   // Page gradient stops
-  bgGradientTop: "#fff8f3",
-  bgGradientMid: "#fffaf6",
-  bgGradientBottom: "#f8efe7",
+  bgGradientTop: "var(--itin-bg-gradient-top)",
+  bgGradientMid: "var(--itin-bg-gradient-mid)",
+  bgGradientBottom: "var(--itin-bg-gradient-bottom)",
 
   // Surfaces
-  bgGhost: "#fffaf7",
-  bgBadge: "#fff0ea",
-  bgHoverPeach: "#fff5ef",
-  bgHoverCream: "#fff4ee",
-  iconOnPrimary: "#fff5ec",
-  track: "#f2dfd2",
-  surfaceCard: "rgba(255, 252, 248, 0.9)",
-  surfaceCardSoft: "rgba(255, 252, 248, 0.88)",
-  surfaceCardSofter: "rgba(255, 252, 248, 0.86)",
-  surfaceCardSoftest: "rgba(255, 252, 248, 0.84)",
-  surfaceTranslucent: "rgba(255,255,255,0.78)",
+  bgGhost: "var(--itin-bg-ghost)",
+  bgBadge: "var(--itin-bg-badge)",
+  bgHoverPeach: "var(--itin-bg-hover-peach)",
+  bgHoverCream: "var(--itin-bg-hover-cream)",
+  iconOnPrimary: "var(--itin-icon-on-primary)",
+  track: "var(--itin-track)",
+  surfaceRaised: "var(--itin-surface-raised)",
+  surfaceCard: "var(--itin-surface-card)",
+  surfaceCardSoft: "var(--itin-surface-card-soft)",
+  surfaceCardSofter: "var(--itin-surface-card-softer)",
+  surfaceCardSoftest: "var(--itin-surface-card-softest)",
+  surfaceTranslucent: "var(--itin-surface-translucent)",
 
   // Category chip backgrounds
-  categoryPinkBg: "#fceaf2",
-  categoryGreenBg: "#eef8ec",
-  categoryAmberBg: "#fff3df",
-  categoryRedBg: "#ffecef",
+  categoryPinkBg: "var(--itin-category-pink-bg)",
+  categoryGreenBg: "var(--itin-category-green-bg)",
+  categoryAmberBg: "var(--itin-category-amber-bg)",
+  categoryRedBg: "var(--itin-category-red-bg)",
 
   // Timeline marker borders
-  markerBorderGreen: "#ffd6c9",
-  markerBorderPeach: "#ffc7bc",
-  markerBorderPink: "#ffd1df",
-  markerBorderCoral: "#ffc6bd",
-  markerBorderOrange: "#ffd5ad",
-  markerBorderClay: "#ffc4c4",
+  markerBorderGreen: "var(--itin-marker-border-green)",
+  markerBorderPeach: "var(--itin-marker-border-peach)",
+  markerBorderPink: "var(--itin-marker-border-pink)",
+  markerBorderCoral: "var(--itin-marker-border-coral)",
+  markerBorderOrange: "var(--itin-marker-border-orange)",
+  markerBorderClay: "var(--itin-marker-border-clay)",
 
   // Borders
-  borderCoral: "rgba(255, 107, 107, 0.16)",
-  borderCoralStrong: "rgba(255, 107, 107, 0.36)",
-  borderPeach14: "rgba(255, 138, 101, 0.14)",
-  borderPeach16: "rgba(255, 138, 101, 0.16)",
-  borderPeach18: "rgba(255, 138, 101, 0.18)",
-  borderPeach20: "rgba(255, 138, 101, 0.2)",
-  borderPeach22: "rgba(255, 138, 101, 0.22)",
+  borderCoral: "var(--itin-border-coral)",
+  borderCoralStrong: "var(--itin-border-coral-strong)",
+  borderPeach14: "var(--itin-border-peach-14)",
+  borderPeach16: "var(--itin-border-peach-16)",
+  borderPeach18: "var(--itin-border-peach-18)",
+  borderPeach20: "var(--itin-border-peach-20)",
+  borderPeach22: "var(--itin-border-peach-22)",
 } as const;
 
 export const itineraryGradients = {
-  page: `radial-gradient(circle at 8% 0%, rgba(255, 138, 101, 0.18), transparent 34%), radial-gradient(circle at 86% 10%, rgba(240, 98, 146, 0.15), transparent 31%), linear-gradient(180deg, ${itinerary.bgGradientTop} 0%, ${itinerary.bgGradientMid} 48%, ${itinerary.bgGradientBottom} 100%)`,
-  sidebar:
-    "linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(255,248,243,0.92) 100%)",
-  coral: `linear-gradient(135deg, ${warm.coralBright} 0%, ${itinerary.pink} 100%)`,
-  peach: `linear-gradient(135deg, ${itinerary.peach} 0%, ${warm.coralBright} 52%, ${itinerary.pink} 100%)`,
-  connector:
-    "linear-gradient(180deg, rgba(255,107,107,0.95) 0%, rgba(240,98,146,0.88) 58%, rgba(255,138,101,0.32) 100%)",
+  page: "var(--itin-gradient-page)",
+  sidebar: "var(--itin-gradient-sidebar)",
+  coral: "var(--itin-gradient-coral)",
+  peach: "var(--itin-gradient-peach)",
+  connector: "var(--itin-gradient-connector)",
 } as const;
 
 export const itineraryShadows = {
-  sidebar: "-18px 0 45px rgba(127, 69, 45, 0.06)",
-  summaryCard: "0 18px 38px rgba(140, 82, 54, 0.09)",
-  dayTab: "0 10px 26px rgba(140, 82, 54, 0.06)",
-  dayTabHover: "0 14px 30px rgba(140, 82, 54, 0.1)",
-  dayTabActive: "0 16px 34px rgba(240, 98, 146, 0.3)",
-  sectionBar: "0 18px 42px rgba(140, 82, 54, 0.08)",
-  iconButton: "0 8px 18px rgba(140, 82, 54, 0.06)",
-  export: "0 12px 26px rgba(140, 82, 54, 0.07)",
-  exportHover: "0 16px 30px rgba(140, 82, 54, 0.1)",
-  ghostHover: "0 10px 22px rgba(128, 73, 48, 0.08)",
-  modifyTrip: "0 18px 34px rgba(240, 98, 146, 0.28)",
-  modifyTripHover: "0 20px 38px rgba(240, 98, 146, 0.34)",
-  primary: "0 16px 30px rgba(244, 63, 122, 0.28)",
-  primaryHover: "0 18px 34px rgba(244, 63, 122, 0.34)",
-  outlineHover: "0 12px 26px rgba(240, 98, 146, 0.12)",
-  emptyState: "0 24px 55px rgba(140, 82, 54, 0.1)",
-  activityCard: "0 20px 48px rgba(140, 82, 54, 0.1)",
-  activityCardHover: "0 24px 56px rgba(140, 82, 54, 0.14)",
-  marker:
-    "0 0 0 5px rgba(255, 240, 234, 0.9), 0 10px 22px rgba(140, 82, 54, 0.14)",
-  planeIcon: "drop-shadow(0 8px 14px rgba(255, 107, 107, 0.22))",
+  sidebar: "var(--itin-shadow-sidebar)",
+  summaryCard: "var(--itin-shadow-summary-card)",
+  dayTab: "var(--itin-shadow-day-tab)",
+  dayTabHover: "var(--itin-shadow-day-tab-hover)",
+  dayTabActive: "var(--itin-shadow-day-tab-active)",
+  sectionBar: "var(--itin-shadow-section-bar)",
+  iconButton: "var(--itin-shadow-icon-button)",
+  export: "var(--itin-shadow-export)",
+  exportHover: "var(--itin-shadow-export-hover)",
+  ghostHover: "var(--itin-shadow-ghost-hover)",
+  modifyTrip: "var(--itin-shadow-modify-trip)",
+  modifyTripHover: "var(--itin-shadow-modify-trip-hover)",
+  primary: "var(--itin-shadow-primary)",
+  primaryHover: "var(--itin-shadow-primary-hover)",
+  outlineHover: "var(--itin-shadow-outline-hover)",
+  emptyState: "var(--itin-shadow-empty-state)",
+  activityCard: "var(--itin-shadow-activity-card)",
+  activityCardHover: "var(--itin-shadow-activity-card-hover)",
+  marker: "var(--itin-shadow-marker)",
+  planeIcon: "var(--itin-shadow-plane-icon)",
 } as const;

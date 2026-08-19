@@ -311,6 +311,10 @@ export const useHomeStyles = makeStyles({
     minWidth: "150px",
   },
 
+  signedInAction: {
+    marginTop: layout.spacing[9],
+  },
+
   actionHint: {
     "&.MuiTypography-root": {
       ...typographyPresets.caption,

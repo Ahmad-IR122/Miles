@@ -1,6 +1,8 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
@@ -10,6 +12,7 @@ import logo from "../../assets/logo.svg";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
+import { useThemeMode } from "../theme/themeMode";
 import { navItems } from "./navItems";
 import { userButtonAppearance } from "./styles/userButtonAppearance.styles";
 import { useTopNavStyles } from "./topNav.styles";
@@ -22,10 +25,13 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const styles = useTopNavStyles();
-
   const { isSignedIn } = useAuth();
   const { scrollDirection } = useScrollDirection();
+  // Must stay above the early return below — hooks cannot be called
+  // conditionally.
+  const { resolvedTheme, toggleTheme } = useThemeMode();
 
+  const isDark = resolvedTheme === "dark";
   const isHomePage = location.pathname === routesPaths.home;
   const isAuthPage =
     location.pathname === routesPaths.signIn ||
@@ -159,7 +165,29 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   <UserButton
                     afterSignOutUrl={routesPaths.home}
                     appearance={userButtonAppearance}
-                  />
+                  >
+                    <UserButton.MenuItems>
+                      {/* Label and icon describe what the click switches *to*,
+                          so they show the opposite of what is on screen. */}
+                      <UserButton.Action
+                        label={isDark ? "Light mode" : "Dark mode"}
+                        labelIcon={
+                          isDark ? (
+                            <LightModeOutlinedIcon
+                              aria-hidden="true"
+                              sx={{ fontSize: 16 }}
+                            />
+                          ) : (
+                            <DarkModeOutlinedIcon
+                              aria-hidden="true"
+                              sx={{ fontSize: 16 }}
+                            />
+                          )
+                        }
+                        onClick={toggleTheme}
+                      />
+                    </UserButton.MenuItems>
+                  </UserButton>
                 </div>
               </div>
             </SignedIn>

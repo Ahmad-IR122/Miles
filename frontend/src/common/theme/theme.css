@@ -1,0 +1,394 @@
+/**
+ * Runtime theme tokens.
+ *
+ * Every value in `colors.ts` resolves to one of these custom properties. They
+ * live in CSS rather than TypeScript because the app styles with Griffel
+ * `makeStyles`, which is evaluated once at module load and compiled to static
+ * atomic classes — swapping JS values at runtime would restyle nothing. CSS
+ * custom properties are the only layer that can change after first paint.
+ * (This is the same approach Fluent UI v9, also Griffel-based, uses.)
+ *
+ * Each token is declared once with `light-dark(<light>, <dark>)`. Which half
+ * applies is decided by the `color-scheme` property below, so there is no
+ * second copy of the palette to keep in sync.
+ *
+ * `color-scheme` also themes scrollbars, form controls and the like for free.
+ */
+
+:root {
+  /* No explicit choice: follow the OS. */
+  color-scheme: light dark;
+}
+
+/* An explicit choice from the theme toggle wins over the OS preference. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root {
+  /* ---------------------------------------------------------------------
+   * semanticColors — the default palette (cool gray ramp, coral/rose accent)
+   * ------------------------------------------------------------------ */
+
+  /* Text */
+  --color-text-primary: light-dark(#111827, #f5ede7);
+  --color-text-secondary: light-dark(#4b5563, #bfb3ac);
+  --color-text-tertiary: light-dark(#6b7280, #a2958d);
+  --color-text-disabled: light-dark(#9ca3af, #746760);
+  /* brown #6B4226 is unreadable on a dark surface; lifted to a warm tan */
+  --color-text-brand: light-dark(#6b4226, #e8b99a);
+  --color-text-error: light-dark(#dc2626, #f87171);
+
+  /* Backgrounds */
+  --color-bg-primary: light-dark(#ffffff, #1f1815);
+  --color-bg-secondary: light-dark(#fafbfb, #191310);
+  --color-bg-tertiary: light-dark(#f3f4f5, #2a211c);
+  --color-bg-page: light-dark(#fbf8f3, #15100d);
+  --color-bg-disabled: light-dark(#f3f4f5, #2a211c);
+  --color-bg-track: light-dark(#e5e7eb, #3a2e27);
+  /* Tints need more alpha on dark to stay visible against a low-luminance base */
+  --color-bg-accent: light-dark(
+    rgba(255, 122, 89, 0.08),
+    rgba(255, 122, 89, 0.14)
+  );
+  --color-bg-interactive-subtle: light-dark(
+    rgba(255, 122, 89, 0.06),
+    rgba(255, 122, 89, 0.1)
+  );
+
+  /* Foreground on a coral/rose gradient. Identical in both themes by design —
+   * the accent keeps its hue, so white stays the readable choice on top of it.
+   * Use this instead of a bare white so the intent survives the next audit. */
+  --color-text-on-accent: #ffffff;
+
+  /* Translucent surface for controls floating over imagery. */
+  --color-surface-translucent: light-dark(
+    rgba(255, 255, 255, 0.9),
+    rgba(31, 24, 21, 0.9)
+  );
+
+  /* Borders */
+  --color-border-default: light-dark(#d1d5db, #453931);
+  --color-border-light: light-dark(#e5e7eb, #332a24);
+  --color-border-accent: light-dark(#ff7a59, #ff8a6b);
+  --color-border-accent-light: light-dark(
+    rgba(255, 122, 89, 0.15),
+    rgba(255, 122, 89, 0.25)
+  );
+  --color-border-accent-strong: light-dark(
+    rgba(255, 122, 89, 0.2),
+    rgba(255, 122, 89, 0.35)
+  );
+
+  /* Interactive */
+  --color-interactive: light-dark(#ff7a59, #ff8a6b);
+  --color-interactive-hover: light-dark(#e94f92, #f4679f);
+
+  /* Elevation. Geometry is shared; only the shadow colour changes. Neutral
+   * shadows go near-black on dark, where a tinted shadow reads as haze. */
+  --shadow-light: 0 4px 12px
+    light-dark(rgba(17, 24, 39, 0.05), rgba(0, 0, 0, 0.35));
+  --shadow-medium: 0 8px 24px
+    light-dark(rgba(17, 24, 39, 0.1), rgba(0, 0, 0, 0.45));
+  --shadow-strong: 0 20px 40px -24px
+    light-dark(rgba(17, 24, 39, 0.15), rgba(0, 0, 0, 0.6));
+  --shadow-interactive: 0 10px 26px
+    light-dark(rgba(233, 79, 146, 0.3), rgba(233, 79, 146, 0.35));
+  --shadow-interactive-hover: 0 14px 30px
+    light-dark(rgba(233, 79, 146, 0.4), rgba(233, 79, 146, 0.45));
+
+  /* Brand gradients — accents keep their hue in both themes. */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--color-interactive),
+    var(--color-interactive-hover)
+  );
+  --gradient-progress: linear-gradient(
+    90deg,
+    var(--color-interactive),
+    var(--color-interactive-hover)
+  );
+  --gradient-summary: linear-gradient(
+    135deg,
+    light-dark(rgba(255, 122, 89, 0.05), rgba(255, 122, 89, 0.1)),
+    light-dark(rgba(233, 79, 146, 0.05), rgba(233, 79, 146, 0.1))
+  );
+
+  /* ---------------------------------------------------------------------
+   * warm — the second palette (warm brown ramp, used by nav/home/chatbot)
+   * ------------------------------------------------------------------ */
+
+  --warm-coral: light-dark(#ff7a66, #ff8f78);
+  --warm-coral-hover: light-dark(#ff856f, #ff9c86);
+  --warm-coral-bright: light-dark(#ff6b6b, #ff7f7f);
+  --warm-rose: light-dark(#f43f7a, #f65189);
+
+  --warm-bg-page: light-dark(#fff9f5, #15100d);
+  --warm-bg-surface: light-dark(#fffcf9, #1f1815);
+  /* sticky headers/footers over blur */
+  --warm-bg-surface-blur: light-dark(
+    rgba(255, 252, 249, 0.96),
+    rgba(31, 24, 21, 0.96)
+  );
+  --warm-bg-tint: light-dark(#fff1eb, #2a211c);
+  --warm-bg-disabled: light-dark(#e8cbc1, #3a2e27);
+  --warm-border: light-dark(#f3ded4, #3a2e27);
+  --warm-border-coral-bright: light-dark(
+    rgba(255, 107, 107, 0.3),
+    rgba(255, 127, 127, 0.35)
+  );
+
+  --warm-text-primary: light-dark(#2f211b, #f5ede7);
+  --warm-text-secondary: light-dark(#7f7068, #b5a49b);
+  --warm-text-tertiary: light-dark(#9b8a82, #96857c);
+  --warm-text-brand: light-dark(#8b5a4b, #e2a98e);
+  --warm-text-on-accent-disabled: light-dark(
+    rgba(255, 255, 255, 0.78),
+    rgba(255, 255, 255, 0.6)
+  );
+
+  --warm-gradient-primary: linear-gradient(
+    135deg,
+    var(--warm-coral) 0%,
+    var(--warm-rose) 100%
+  );
+  --warm-gradient-primary-hover: linear-gradient(
+    135deg,
+    var(--warm-coral-hover) 0%,
+    var(--warm-rose) 100%
+  );
+
+  /* Neutral elevation — warm brown tint in light, near-black in dark */
+  --warm-shadow-xs: 0 8px 18px
+    light-dark(rgba(128, 73, 48, 0.07), rgba(0, 0, 0, 0.3));
+  --warm-shadow-sm: 0 14px 34px
+    light-dark(rgba(128, 73, 48, 0.08), rgba(0, 0, 0, 0.36));
+  --warm-shadow-md: 0 18px 38px
+    light-dark(rgba(128, 73, 48, 0.1), rgba(0, 0, 0, 0.42));
+  --warm-shadow-lg: 0 24px 70px
+    light-dark(rgba(128, 73, 48, 0.13), rgba(0, 0, 0, 0.5));
+
+  /* Nav elevation — deliberately a cooler tint (textPrimary) than the scale above */
+  --warm-shadow-nav: 0 18px 42px
+    light-dark(rgba(47, 33, 27, 0.09), rgba(0, 0, 0, 0.45));
+  --warm-shadow-nav-raised: 0 8px 18px
+    light-dark(rgba(47, 33, 27, 0.07), rgba(0, 0, 0, 0.35));
+
+  /* Rose glow for accent/gradient surfaces — keeps its hue in both themes */
+  --warm-shadow-rose-soft: 0 10px 20px
+    light-dark(rgba(244, 63, 122, 0.2), rgba(244, 63, 122, 0.26));
+  --warm-shadow-rose: 0 12px 24px
+    light-dark(rgba(244, 63, 122, 0.26), rgba(244, 63, 122, 0.32));
+  --warm-shadow-rose-hover: 0 14px 28px
+    light-dark(rgba(244, 63, 122, 0.28), rgba(244, 63, 122, 0.34));
+
+  /* ---------------------------------------------------------------------
+   * itinerary — the third palette, kept whole rather than folded into `warm`.
+   *
+   * Every light value here is the original, unchanged, so the itinerary screen
+   * renders identically to before in light mode. The dark halves are picked
+   * per token. See the note above `itinerary` in colors.ts: this block is a
+   * migration holding pattern, and adding dark values to it entrenches the
+   * duplication rather than resolving it. Folding it into `warm` is still the
+   * eventual fix.
+   * ------------------------------------------------------------------ */
+
+  /* Accents — hue preserved, lifted for luminance on a dark ground */
+  --itin-pink: light-dark(#f06292, #f576a2);
+  --itin-peach: light-dark(#ff8a65, #ff9878);
+  --itin-clay: light-dark(#c76b55, #d98872);
+
+  /* Status */
+  --itin-check: light-dark(#22b66f, #3ace86);
+  --itin-marker-green: light-dark(#55b878, #6bcb8d);
+  --itin-category-green-text: light-dark(#55a66d, #7cc291);
+
+  /* Brown text ramp, darkest to lightest in light — inverted for dark, where
+   * the "darkest" slot must become the brightest to keep the same emphasis. */
+  --itin-text-darkest: light-dark(#281a18, #f7efe9);
+  --itin-text-dark: light-dark(#2d1b18, #f2e8e1);
+  --itin-text-strong: light-dark(#4d342f, #e4d5cc);
+  --itin-text-body: light-dark(#74574e, #c9b4a9);
+  --itin-text-muted: light-dark(#7e6259, #bca69b);
+  --itin-text-subtle: light-dark(#83665c, #b29c91);
+  --itin-text-faint: light-dark(#8b7067, #a89087);
+  --itin-text-secondary: light-dark(#8d6e63, #a38b81);
+  --itin-text-tertiary: light-dark(#9b7c72, #947c72);
+  --itin-text-disabled: light-dark(#a98a80, #7e6a61);
+
+  /* Page gradient stops */
+  --itin-bg-gradient-top: light-dark(#fff8f3, #1a1310);
+  --itin-bg-gradient-mid: light-dark(#fffaf6, #17110e);
+  --itin-bg-gradient-bottom: light-dark(#f8efe7, #120e0b);
+
+  /* Surfaces */
+  --itin-bg-ghost: light-dark(#fffaf7, #221a16);
+  --itin-bg-badge: light-dark(#fff0ea, #2c211c);
+  --itin-bg-hover-peach: light-dark(#fff5ef, #2a2019);
+  --itin-bg-hover-cream: light-dark(#fff4ee, #281e18);
+  /* Sits on a coral gradient, so it stays light in both themes. */
+  --itin-icon-on-primary: #fff5ec;
+  --itin-track: light-dark(#f2dfd2, #3a2e27);
+  /* Raised controls that were a literal white — kept exactly #ffffff in light
+   * so the screen is unchanged there, rather than folded into --warm-bg-surface
+   * (#fffcf9), which would have shifted it. */
+  --itin-surface-raised: light-dark(#ffffff, #241c18);
+  --itin-surface-card: light-dark(
+    rgba(255, 252, 248, 0.9),
+    rgba(31, 24, 21, 0.9)
+  );
+  --itin-surface-card-soft: light-dark(
+    rgba(255, 252, 248, 0.88),
+    rgba(31, 24, 21, 0.88)
+  );
+  --itin-surface-card-softer: light-dark(
+    rgba(255, 252, 248, 0.86),
+    rgba(31, 24, 21, 0.86)
+  );
+  --itin-surface-card-softest: light-dark(
+    rgba(255, 252, 248, 0.84),
+    rgba(31, 24, 21, 0.84)
+  );
+  --itin-surface-translucent: light-dark(
+    rgba(255, 255, 255, 0.78),
+    rgba(31, 24, 21, 0.78)
+  );
+
+  /* Category chip backgrounds — pale tints become deep tints of the same hue */
+  --itin-category-pink-bg: light-dark(#fceaf2, #3a222c);
+  --itin-category-green-bg: light-dark(#eef8ec, #1e2e22);
+  --itin-category-amber-bg: light-dark(#fff3df, #352a1a);
+  --itin-category-red-bg: light-dark(#ffecef, #3a2226);
+
+  /* Timeline marker borders */
+  --itin-marker-border-green: light-dark(#ffd6c9, #5a3c33);
+  --itin-marker-border-peach: light-dark(#ffc7bc, #5e3b33);
+  --itin-marker-border-pink: light-dark(#ffd1df, #5a3540);
+  --itin-marker-border-coral: light-dark(#ffc6bd, #5e3a34);
+  --itin-marker-border-orange: light-dark(#ffd5ad, #5a422a);
+  --itin-marker-border-clay: light-dark(#ffc4c4, #5c3838);
+
+  /* Borders — alpha rises on dark, where a low-alpha edge disappears */
+  --itin-border-coral: light-dark(
+    rgba(255, 107, 107, 0.16),
+    rgba(255, 107, 107, 0.26)
+  );
+  --itin-border-coral-strong: light-dark(
+    rgba(255, 107, 107, 0.36),
+    rgba(255, 107, 107, 0.48)
+  );
+  --itin-border-peach-14: light-dark(
+    rgba(255, 138, 101, 0.14),
+    rgba(255, 138, 101, 0.24)
+  );
+  --itin-border-peach-16: light-dark(
+    rgba(255, 138, 101, 0.16),
+    rgba(255, 138, 101, 0.26)
+  );
+  --itin-border-peach-18: light-dark(
+    rgba(255, 138, 101, 0.18),
+    rgba(255, 138, 101, 0.28)
+  );
+  --itin-border-peach-20: light-dark(
+    rgba(255, 138, 101, 0.2),
+    rgba(255, 138, 101, 0.3)
+  );
+  --itin-border-peach-22: light-dark(
+    rgba(255, 138, 101, 0.22),
+    rgba(255, 138, 101, 0.32)
+  );
+
+  /* Gradients. The linear stops reference the tokens above, so they flip on
+   * their own; only the literal overlay tints need a dark half. */
+  --itin-gradient-page:
+    radial-gradient(
+      circle at 8% 0%,
+      light-dark(rgba(255, 138, 101, 0.18), rgba(255, 138, 101, 0.14)),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 86% 10%,
+      light-dark(rgba(240, 98, 146, 0.15), rgba(240, 98, 146, 0.12)),
+      transparent 31%
+    ),
+    linear-gradient(
+      180deg,
+      var(--itin-bg-gradient-top) 0%,
+      var(--itin-bg-gradient-mid) 48%,
+      var(--itin-bg-gradient-bottom) 100%
+    );
+  --itin-gradient-sidebar: linear-gradient(
+    180deg,
+    light-dark(rgba(255, 255, 255, 0.72), rgba(34, 26, 22, 0.72)) 0%,
+    light-dark(rgba(255, 248, 243, 0.92), rgba(26, 19, 16, 0.92)) 100%
+  );
+  --itin-gradient-coral: linear-gradient(
+    135deg,
+    var(--warm-coral-bright) 0%,
+    var(--itin-pink) 100%
+  );
+  --itin-gradient-peach: linear-gradient(
+    135deg,
+    var(--itin-peach) 0%,
+    var(--warm-coral-bright) 52%,
+    var(--itin-pink) 100%
+  );
+  /* Accent connector — keeps its hue in both themes. */
+  --itin-gradient-connector: linear-gradient(
+    180deg,
+    rgba(255, 107, 107, 0.95) 0%,
+    rgba(240, 98, 146, 0.88) 58%,
+    rgba(255, 138, 101, 0.32) 100%
+  );
+
+  /* Shadows. Brown-tinted elevation goes near-black on dark; the rose and
+   * coral glows keep their hue because they read as accent, not depth. */
+  --itin-shadow-sidebar: -18px 0 45px
+    light-dark(rgba(127, 69, 45, 0.06), rgba(0, 0, 0, 0.4));
+  --itin-shadow-summary-card: 0 18px 38px
+    light-dark(rgba(140, 82, 54, 0.09), rgba(0, 0, 0, 0.44));
+  --itin-shadow-day-tab: 0 10px 26px
+    light-dark(rgba(140, 82, 54, 0.06), rgba(0, 0, 0, 0.36));
+  --itin-shadow-day-tab-hover: 0 14px 30px
+    light-dark(rgba(140, 82, 54, 0.1), rgba(0, 0, 0, 0.46));
+  --itin-shadow-day-tab-active: 0 16px 34px
+    light-dark(rgba(240, 98, 146, 0.3), rgba(240, 98, 146, 0.36));
+  --itin-shadow-section-bar: 0 18px 42px
+    light-dark(rgba(140, 82, 54, 0.08), rgba(0, 0, 0, 0.42));
+  --itin-shadow-icon-button: 0 8px 18px
+    light-dark(rgba(140, 82, 54, 0.06), rgba(0, 0, 0, 0.34));
+  --itin-shadow-export: 0 12px 26px
+    light-dark(rgba(140, 82, 54, 0.07), rgba(0, 0, 0, 0.38));
+  --itin-shadow-export-hover: 0 16px 30px
+    light-dark(rgba(140, 82, 54, 0.1), rgba(0, 0, 0, 0.46));
+  --itin-shadow-ghost-hover: 0 10px 22px
+    light-dark(rgba(128, 73, 48, 0.08), rgba(0, 0, 0, 0.4));
+  --itin-shadow-modify-trip: 0 18px 34px
+    light-dark(rgba(240, 98, 146, 0.28), rgba(240, 98, 146, 0.34));
+  --itin-shadow-modify-trip-hover: 0 20px 38px
+    light-dark(rgba(240, 98, 146, 0.34), rgba(240, 98, 146, 0.4));
+  --itin-shadow-primary: 0 16px 30px
+    light-dark(rgba(244, 63, 122, 0.28), rgba(244, 63, 122, 0.34));
+  --itin-shadow-primary-hover: 0 18px 34px
+    light-dark(rgba(244, 63, 122, 0.34), rgba(244, 63, 122, 0.4));
+  --itin-shadow-outline-hover: 0 12px 26px
+    light-dark(rgba(240, 98, 146, 0.12), rgba(240, 98, 146, 0.2));
+  --itin-shadow-empty-state: 0 24px 55px
+    light-dark(rgba(140, 82, 54, 0.1), rgba(0, 0, 0, 0.5));
+  --itin-shadow-activity-card: 0 20px 48px
+    light-dark(rgba(140, 82, 54, 0.1), rgba(0, 0, 0, 0.46));
+  --itin-shadow-activity-card-hover: 0 24px 56px
+    light-dark(rgba(140, 82, 54, 0.14), rgba(0, 0, 0, 0.54));
+  /* The 5px ring reads as a halo cutting the marker out of the timeline, so it
+   * has to match the page behind it rather than stay pale. */
+  --itin-shadow-marker:
+    0 0 0 5px light-dark(rgba(255, 240, 234, 0.9), rgba(26, 19, 16, 0.9)),
+    0 10px 22px light-dark(rgba(140, 82, 54, 0.14), rgba(0, 0, 0, 0.5));
+  --itin-shadow-plane-icon: drop-shadow(
+    0 8px 14px light-dark(rgba(255, 107, 107, 0.22), rgba(255, 107, 107, 0.3))
+  );
+}
