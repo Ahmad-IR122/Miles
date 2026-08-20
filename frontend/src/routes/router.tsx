@@ -10,6 +10,7 @@ import Recommendations from "../features/recommendations/pages/recommendations";
 import ProtectedRoute from "../features/auth/components/protectedRoute";
 import { routesPaths } from "./routesPaths";
 import NotFound from "../common/notFound/notFound";
+import SavedTrips from "../features/savedTrips/pages/savedTrips";
 
 const router = createBrowserRouter([
   {
@@ -32,7 +33,23 @@ const router = createBrowserRouter([
         element: <Recommendations />,
       },
       {
+        path: routesPaths.savedTrips,
+        element: (
+          <ProtectedRoute>
+            <SavedTrips />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: routesPaths.itinerary,
+        element: (
+          <ProtectedRoute>
+            <Itinerary />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: routesPaths.itineraryDetail,
         element: (
           <ProtectedRoute>
             <Itinerary />

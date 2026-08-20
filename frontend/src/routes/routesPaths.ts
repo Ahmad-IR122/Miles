@@ -7,4 +7,6 @@ export const routesPaths = {
   signUp: "/sign-up",
   signIn: "/sign-in",
   recommendation: "/discover",
+  itineraryDetail: "/itinerary/:itineraryId",
+  savedTrips: "/trips",
 };
