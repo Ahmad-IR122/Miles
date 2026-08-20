@@ -1,47 +1,34 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
-import { SignedIn, SignedOut, UserButton, useAuth } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import logo from "../../assets/logo.svg";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
-import { useThemeMode } from "../theme/themeMode";
 import { navItems } from "./navItems";
-import { userButtonAppearance } from "./styles/userButtonAppearance.styles";
 import { useTopNavStyles } from "./topNav.styles";
-
+import AccountMenu from "./accountMenu/accountMenu";
 type TopNavProps = {
   homeLink?: boolean;
 };
-
 const TopNav = ({ homeLink = false }: TopNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const styles = useTopNavStyles();
   const { isSignedIn } = useAuth();
   const { scrollDirection } = useScrollDirection();
-  // Must stay above the early return below — hooks cannot be called
-  // conditionally.
-  const { resolvedTheme, toggleTheme } = useThemeMode();
-
-  const isDark = resolvedTheme === "dark";
   const isHomePage = location.pathname === routesPaths.home;
   const isAuthPage =
     location.pathname === routesPaths.signIn ||
     location.pathname === routesPaths.signUp;
   const showAuthHeader = isAuthPage && isSignedIn !== true;
-
   if (isHomePage && isSignedIn !== true) {
     return null;
   }
-
   const brand = (
     <div className={styles.brandSection}>
       <button
@@ -57,7 +44,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
       </button>
     </div>
   );
-
   return (
     <div
       className={mergeClasses(
@@ -68,7 +54,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
     >
       <div className={styles.headerInner}>
         <SignedIn>{brand}</SignedIn>
-
         <nav
           className={mergeClasses(
             styles.nav,
@@ -77,12 +62,10 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
           )}
         >
           <SignedOut>{brand}</SignedOut>
-
           <SignedIn>
             <div className={styles.navLinks} aria-label="Primary navigation">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
-
                 return (
                   <Button
                     key={item.path}
@@ -99,7 +82,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   </Button>
                 );
               })}
-
               {!isHomePage && (
                 <Button
                   className={mergeClasses(
@@ -119,7 +101,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   Plan Trip
                 </Button>
               )}
-
               <Button
                 className={mergeClasses(
                   styles.navItem,
@@ -137,11 +118,9 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
               </Button>
             </div>
           </SignedIn>
-
           <SignedOut>
             <div className={styles.signedOutSpacer} />
           </SignedOut>
-
           <div className={styles.actions}>
             <SignedOut>
               {homeLink && (
@@ -157,38 +136,10 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                 </AppButton>
               )}
             </SignedOut>
-
             <SignedIn>
               <div className={styles.divider} />
               <div className={styles.profileSection}>
-                <div className={styles.userButtonWrapper}>
-                  <UserButton
-                    afterSignOutUrl={routesPaths.home}
-                    appearance={userButtonAppearance}
-                  >
-                    <UserButton.MenuItems>
-                      {/* Label and icon describe what the click switches *to*,
-                          so they show the opposite of what is on screen. */}
-                      <UserButton.Action
-                        label={isDark ? "Light mode" : "Dark mode"}
-                        labelIcon={
-                          isDark ? (
-                            <LightModeOutlinedIcon
-                              aria-hidden="true"
-                              sx={{ fontSize: 16 }}
-                            />
-                          ) : (
-                            <DarkModeOutlinedIcon
-                              aria-hidden="true"
-                              sx={{ fontSize: 16 }}
-                            />
-                          )
-                        }
-                        onClick={toggleTheme}
-                      />
-                    </UserButton.MenuItems>
-                  </UserButton>
-                </div>
+                <AccountMenu />
               </div>
             </SignedIn>
           </div>
@@ -197,5 +148,4 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
     </div>
   );
 };
-
 export default TopNav;
