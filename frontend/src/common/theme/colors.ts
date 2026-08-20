@@ -240,6 +240,7 @@ export const itineraryGradients = {
   coral: "var(--itin-gradient-coral)",
   peach: "var(--itin-gradient-peach)",
   connector: "var(--itin-gradient-connector)",
+  spriteHalo: "var(--itin-gradient-sprite-halo)",
 } as const;
 
 export const itineraryShadows = {
@@ -263,4 +264,6 @@ export const itineraryShadows = {
   activityCardHover: "var(--itin-shadow-activity-card-hover)",
   marker: "var(--itin-shadow-marker)",
   planeIcon: "var(--itin-shadow-plane-icon)",
+  progressGlow: "var(--itin-shadow-progress-glow)",
+  sprite: "var(--itin-shadow-sprite)",
 } as const;

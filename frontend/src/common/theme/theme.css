@@ -461,4 +461,25 @@
   --itin-shadow-plane-icon: drop-shadow(
     0 8px 14px light-dark(rgba(255, 107, 107, 0.22), rgba(255, 107, 107, 0.3))
   );
+
+  /* Generating screen. The pixel-art sprites are black-outlined, so on dark
+   * their silhouette sinks into the page — the halo lifts them off it, and
+   * stays transparent on light where the outlines already read. Same reason
+   * for the ring glow: it sells progress on dark, blows out on light. */
+  --itin-gradient-sprite-halo: radial-gradient(
+    circle,
+    light-dark(transparent, rgba(255, 138, 101, 0.12)) 0%,
+    transparent 70%
+  );
+  --itin-shadow-progress-glow: light-dark(
+    none,
+    drop-shadow(0 0 10px rgba(255, 107, 107, 0.35))
+  );
+  /* Traces the sprite's own alpha edge, so black-keyline frames (the cat, the
+   * bats) keep a silhouette against the dark page instead of dissolving. */
+  --itin-shadow-sprite: light-dark(
+    none,
+    drop-shadow(0 0 2px rgba(255, 240, 234, 0.65))
+      drop-shadow(0 0 9px rgba(255, 138, 101, 0.35))
+  );
 }

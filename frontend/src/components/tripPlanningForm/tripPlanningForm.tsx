@@ -29,6 +29,8 @@ import { semanticColors } from "../../common/theme/colors";
 import destinations from "../../data/destinations.json";
 import {
   getFieldSx,
+  progressRing,
+  progressRingCircumference,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
 
@@ -366,8 +368,66 @@ const TripPlanningForm = () => {
   if (generating) {
     return (
       <div className={mergeClasses(styles.page, styles.generatingPage)}>
-        <div className={styles.generatingIcon} aria-hidden="true">
-          <LoadingSprite />
+        <div
+          className={styles.progressRing}
+          role="progressbar"
+          aria-label="Itinerary generation progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress)}
+        >
+          <svg
+            className={styles.progressRingSvg}
+            viewBox={`0 0 ${progressRing.size} ${progressRing.size}`}
+            aria-hidden="true"
+          >
+            <defs>
+              {/* Top-to-bottom, so the sweep runs coral → pink in the
+                  direction it travels. */}
+              <linearGradient
+                id="loadingProgressGradient"
+                x1="0.5"
+                y1="0"
+                x2="0.5"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  className={styles.progressRingGradientStart}
+                />
+                <stop
+                  offset="100%"
+                  className={styles.progressRingGradientEnd}
+                />
+              </linearGradient>
+            </defs>
+            <circle
+              className={styles.progressRingTrack}
+              cx={progressRing.size / 2}
+              cy={progressRing.size / 2}
+              r={progressRing.radius}
+            />
+            <circle
+              className={styles.progressRingFill}
+              cx={progressRing.size / 2}
+              cy={progressRing.size / 2}
+              r={progressRing.radius}
+              strokeDasharray={progressRingCircumference}
+              strokeDashoffset={
+                progressRingCircumference * (1 - progress / 100)
+              }
+            />
+          </svg>
+          <div className={styles.generatingIcon} aria-hidden="true">
+            <LoadingSprite />
+          </div>
+          <FlightTakeoffIcon
+            className={styles.progressPlane}
+            style={{
+              // Walk to the point on the ring, then face along the tangent.
+              transform: `translate(-50%, -50%) rotate(${(progress / 100) * 360}deg) translateY(-${progressRing.planeRadius}px) rotate(35deg)`,
+            }}
+          />
         </div>
         <div className={styles.centered}>
           <Typography component="h1" className={styles.generatingTitle}>
@@ -377,18 +437,6 @@ const TripPlanningForm = () => {
             Exploring {destCity?.city || "your destination"} and arranging a
             trip around your interests.
           </Typography>
-        </div>
-        <div className={styles.progressWrapper}>
-          <div className={styles.progressTrack}>
-            <div
-              className={styles.progressBar}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <FlightTakeoffIcon
-            className={styles.progressPlane}
-            style={{ left: `${progress}%` }}
-          />
         </div>
         <Typography
           component="p"
