@@ -13,9 +13,10 @@ import {
   typographyPresets,
 } from "../../common/theme/typography";
 export const fieldSx = {
-  "& .MuiOutlinedInput-root": {
+  "& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root": {
     borderRadius: layout.radius.md,
     fontSize: typography.fontSize.size4,
+    backgroundColor: semanticColors.bgPrimary,
     "& fieldset": {
       borderColor: semanticColors.borderDefault,
       borderWidth: layout.borderWidth.thin,
@@ -27,6 +28,9 @@ export const fieldSx = {
       borderColor: semanticColors.interactive,
       borderWidth: layout.borderWidth.thin,
     },
+    "&.Mui-error fieldset": {
+      borderColor: semanticColors.textError,
+    },
   },
   "& .MuiInputLabel-root": {
     fontSize: typography.fontSize.size4,
@@ -35,7 +39,29 @@ export const fieldSx = {
   "& .MuiInputLabel-root.Mui-focused": {
     color: semanticColors.interactive,
   },
+  "& .MuiInputLabel-root.Mui-error": {
+    color: semanticColors.textError,
+  },
+  "& .MuiFormHelperText-root.Mui-error": {
+    color: semanticColors.textError,
+  },
 };
+
+export const completedFieldSx = {
+  "& .MuiOutlinedInput-root:not(.Mui-error):not(.Mui-focused), & .MuiPickersOutlinedInput-root:not(.Mui-error):not(.Mui-focused)":
+    {
+      "& fieldset": {
+        borderColor: `color-mix(in srgb, ${colors.success} 55%, transparent)`,
+      },
+      "&:hover fieldset": {
+        borderColor: `color-mix(in srgb, ${colors.success} 70%, transparent)`,
+      },
+    },
+};
+
+export const getFieldSx = (isCompleted: boolean) =>
+  isCompleted ? { ...fieldSx, ...completedFieldSx } : fieldSx;
+
 export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
@@ -186,19 +212,24 @@ export const useTripPlanningFormStyles = makeStyles({
   connectorComplete: { backgroundImage: gradients.progress },
   card: {
     backgroundColor: semanticColors.bgPrimary,
+    backgroundImage: gradients.summary,
     borderRadius: layout.radius.xl,
     ...shorthands.border(
       layout.borderWidth.thin,
       "solid",
-      semanticColors.borderDefault,
+      semanticColors.borderAccentLight,
     ),
     padding: layout.padding.xl,
     marginBottom: layout.gap.md,
     boxShadow: semanticColors.shadowStrong,
+    "& .MuiDivider-root": {
+      ...shorthands.borderColor(semanticColors.borderAccentLight),
+    },
   },
   column24: { display: "flex", flexDirection: "column", rowGap: layout.gap.lg },
   column28: { display: "flex", flexDirection: "column", rowGap: layout.gap.xl },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: layout.gap.md },
+  travelerGroupSpacing: { marginTop: layout.spacing[4] },
   label: {
     ...typographyPresets.label,
     color: semanticColors.textPrimary,
@@ -244,6 +275,45 @@ export const useTripPlanningFormStyles = makeStyles({
   hint: {
     ...typographyPresets.caption,
     color: semanticColors.textTertiary,
+  },
+  budgetOptions: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
+    gap: layout.gap.xl,
+    width: "100%",
+  },
+  budgetOption: {
+    flexGrow: 1,
+    flexBasis: "0",
+    minWidth: "0",
+    margin: "0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: semanticColors.textSecondary,
+    cursor: "pointer",
+    "& .MuiRadio-root": {
+      color: semanticColors.textDisabled,
+      padding: layout.gap.sm,
+    },
+    "& .MuiRadio-root.Mui-focusVisible": {
+      outlineColor: semanticColors.interactive,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+      borderRadius: layout.radius.full,
+    },
+    "& .MuiFormControlLabel-label": {
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.medium,
+    },
+  },
+  budgetOptionSelected: {
+    "& .MuiRadio-root.Mui-checked": {
+      color: semanticColors.interactive,
+    },
   },
   currency: {
     color: semanticColors.textSecondary,
@@ -299,6 +369,15 @@ export const useTripPlanningFormStyles = makeStyles({
     ":hover": {
       ...shorthands.borderColor(semanticColors.interactive),
       backgroundColor: semanticColors.bgInteractiveSubtle,
+    },
+  },
+  completedChoice: {
+    ...shorthands.borderColor("rgba(16, 185, 129, 0.6)"),
+    ":hover": {
+      ...shorthands.borderColor("rgba(16, 185, 129, 0.75)"),
+    },
+    ":focus-visible": {
+      outlineColor: "rgba(16, 185, 129, 0.8)",
     },
   },
   otherField: { marginTop: layout.gap.md },
@@ -360,6 +439,22 @@ export const useTripPlanningFormStyles = makeStyles({
     color: semanticColors.textError,
     fontSize: typography.fontSize.size3,
     marginTop: layout.gap.lg,
+    marginBottom: 0,
+  },
+  fieldError: {
+    color: semanticColors.textError,
+    fontSize: typography.fontSize.size2,
+    lineHeight: typography.lineHeight.normal,
+    marginTop: layout.spacing[1],
+    marginBottom: 0,
+  },
+  tripDetailsGeneralError: {
+    width: "100%",
+    color: semanticColors.textError,
+    fontSize: typography.fontSize.size2,
+    lineHeight: typography.lineHeight.normal,
+    textAlign: "center",
+    marginTop: layout.gap.md,
     marginBottom: 0,
   },
   navigation: {

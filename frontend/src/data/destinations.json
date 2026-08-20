@@ -1,0 +1,212 @@
+[
+  {
+    "destination_id": "dest_001",
+    "city": "Paris",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_002",
+    "city": "Nice",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_003",
+    "city": "Lyon",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_004",
+    "city": "Bordeaux",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_005",
+    "city": "Marseille",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_013",
+    "city": "Dublin",
+    "country": "Ireland",
+    "country_code": "IE",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_014",
+    "city": "Lisbon",
+    "country": "Portugal",
+    "country_code": "PT",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_015",
+    "city": "Porto",
+    "country": "Portugal",
+    "country_code": "PT",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_016",
+    "city": "Madeira",
+    "country": "Portugal",
+    "country_code": "PT",
+    "region": "Western Europe"
+  },
+  {
+    "destination_id": "dest_028",
+    "city": "Rome",
+    "country": "Italy",
+    "country_code": "IT",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_029",
+    "city": "Milan",
+    "country": "Italy",
+    "country_code": "IT",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_044",
+    "city": "Athens",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_045",
+    "city": "Santorini",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_046",
+    "city": "Mykonos",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_048",
+    "city": "Rhodes",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_057",
+    "city": "Cannes",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_058",
+    "city": "Biarritz",
+    "country": "France",
+    "country_code": "FR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_059",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "country_code": "DK",
+    "region": "Northern Europe"
+  },
+  {
+    "destination_id": "dest_060",
+    "city": "Aarhus",
+    "country": "Denmark",
+    "country_code": "DK",
+    "region": "Northern Europe"
+  },
+  {
+    "destination_id": "dest_061",
+    "city": "Stockholm",
+    "country": "Sweden",
+    "country_code": "SE",
+    "region": "Northern Europe"
+  },
+  {
+    "destination_id": "dest_080",
+    "city": "Bratislava",
+    "country": "Slovakia",
+    "country_code": "SK",
+    "region": "Eastern Europe"
+  },
+  {
+    "destination_id": "dest_091",
+    "city": "Thessaloniki",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Eastern Europe"
+  },
+  {
+    "destination_id": "dest_102",
+    "city": "Genoa",
+    "country": "Italy",
+    "country_code": "IT",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_103",
+    "city": "Cinque Terre",
+    "country": "Italy",
+    "country_code": "IT",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_109",
+    "city": "Portofino",
+    "country": "Italy",
+    "country_code": "IT",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_111",
+    "city": "Naxos",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_112",
+    "city": "Corfu",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_113",
+    "city": "Skiathos",
+    "country": "Greece",
+    "country_code": "GR",
+    "region": "Southern Europe"
+  },
+  {
+    "destination_id": "dest_117",
+    "city": "Uppsala",
+    "country": "Sweden",
+    "country_code": "SE",
+    "region": "Northern Europe"
+  },
+  {
+    "destination_id": "dest_118",
+    "city": "Odense",
+    "country": "Denmark",
+    "country_code": "DK",
+    "region": "Northern Europe"
+  }
+]

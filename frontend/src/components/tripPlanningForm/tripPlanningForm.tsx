@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -9,132 +9,333 @@ import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
+import Divider from "@mui/material/Divider";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { Country, type ICountry } from "country-state-city";
 import type { Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
 import { createTrip } from "../../api/trip";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../../common/AppButton/appButton";
-import allCities from "../../data/cities.json";
-import { fieldSx, useTripPlanningFormStyles } from "./tripPlanningForm.styles";
-const allCountries = Country.getAllCountries();
-type CityOption = {
-  cityId: number;
-  name: string;
+import { semanticColors } from "../../common/theme/colors";
+import destinations from "../../data/destinations.json";
+import {
+  getFieldSx,
+  useTripPlanningFormStyles,
+} from "./tripPlanningForm.styles";
+
+type Destination = {
+  destination_id: string;
+  city: string;
+  country: string;
+  country_code: string;
+  region: string;
 };
+
+type CountryOption = {
+  country: string;
+  country_code: string;
+  region: string;
+};
+
+type BudgetLevel = "LOW" | "MID" | "HIGH";
+
+const budgetLabels: Record<BudgetLevel, string> = {
+  LOW: "Low",
+  MID: "Mid",
+  HIGH: "High",
+};
+
+const budgetOptions: { value: BudgetLevel; label: string }[] = [
+  { value: "LOW", label: budgetLabels.LOW },
+  { value: "MID", label: budgetLabels.MID },
+  { value: "HIGH", label: budgetLabels.HIGH },
+];
+
+const budgetAmounts: Record<BudgetLevel, number> = {
+  LOW: 1000,
+  MID: 2000,
+  HIGH: 3000,
+};
+
+type FieldErrors = {
+  originCountry: string;
+  originCity: string;
+  destCountry: string;
+  destCity: string;
+  startDate: string;
+  endDate: string;
+  budget: string;
+  interests: string;
+};
+
+const emptyFieldErrors: FieldErrors = {
+  originCountry: "",
+  originCity: "",
+  destCountry: "",
+  destCity: "",
+  startDate: "",
+  endDate: "",
+  budget: "",
+  interests: "",
+};
+
+const tripDetailsRequiredMessage =
+  "Please fill the required fields before moving on.";
+const maxTripDays = 31;
+
 const steps = [
   { num: 1, label: "Trip Details" },
   { num: 2, label: "Travelers & Budget" },
   { num: 3, label: "Interests" },
 ];
+
+// Extract unique countries from destinations
+const getUniqueCountries = (): CountryOption[] => {
+  const countryMap = new Map<string, CountryOption>();
+  destinations.forEach((dest: Destination) => {
+    if (!countryMap.has(dest.country_code)) {
+      countryMap.set(dest.country_code, {
+        country: dest.country,
+        country_code: dest.country_code,
+        region: dest.region,
+      });
+    }
+  });
+  return Array.from(countryMap.values()).sort((a, b) =>
+    a.country.localeCompare(b.country),
+  );
+};
+
+// Get cities for a specific country
+const getCitiesForCountry = (countryCode: string): Destination[] => {
+  return destinations
+    .filter((dest: Destination) => dest.country_code === countryCode)
+    .sort((a, b) => a.city.localeCompare(b.city));
+};
+
+const allCountries = getUniqueCountries();
+
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [budget, setBudget] = useState("");
-  const [originCountry, setOriginCountry] = useState<ICountry | null>(null);
-  const [originCity, setOriginCity] = useState<CityOption | null>(null);
-  const [originCities, setOriginCities] = useState<CityOption[]>([]);
-  const [country, setCountry] = useState<ICountry | null>(null);
-  const [city, setCity] = useState<CityOption | null>(null);
-  const [cities, setCities] = useState<CityOption[]>([]);
+  const [budget, setBudget] = useState<BudgetLevel | "">("");
+
+  // Origin
+  const [originCountry, setOriginCountry] = useState<CountryOption | null>(
+    null,
+  );
+  const [originCity, setOriginCity] = useState<Destination | null>(null);
+  const [originCities, setOriginCities] = useState<Destination[]>([]);
+
+  // Destination
+  const [destCountry, setDestCountry] = useState<CountryOption | null>(null);
+  const [destCity, setDestCity] = useState<Destination | null>(null);
+  const [destCities, setDestCities] = useState<Destination[]>([]);
+
+  // Dates & travelers
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
+
+  // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [otherInterest, setOtherInterest] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>(emptyFieldErrors);
+
+  const isTripDetailsComplete =
+    !!originCountry &&
+    !!originCity &&
+    !!destCountry &&
+    !!destCity &&
+    !!startDate &&
+    !!endDate;
+  const isTravelersBudgetComplete = adults >= 1 && children >= 0 && !!budget;
+  const isInterestsComplete = selectedInterests.length > 0;
+  const completedSteps = [
+    isTripDetailsComplete,
+    isTravelersBudgetComplete,
+    isInterestsComplete,
+  ];
+
+  // Loading & errors
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
-  const handleBudgetChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value === "" || /^[0-9]+$/.test(value)) setBudget(value);
-  };
-  const citiesForCountry = (selectedCountry: ICountry | null) =>
-    selectedCountry
-      ? allCities
-        .filter((item) => item.country === selectedCountry.isoCode)
-        .map((item) => ({ cityId: item.cityId, name: item.name }))
-      : [];
-  const handleOriginCountryChange = (
-    _event: SyntheticEvent,
-    value: ICountry | null,
-  ) => {
-    setOriginCountry(value);
-    setOriginCity(null);
-    setOriginCities(citiesForCountry(value));
-  };
-  const handleCountryChange = (
-    _event: SyntheticEvent,
-    value: ICountry | null,
-  ) => {
-    setCountry(value);
-    setCity(null);
-    setCities(citiesForCountry(value));
-  };
-  const toggleInterest = (interest: string) => {
-    setSelectedInterests((current) =>
-      current.includes(interest)
-        ? current.filter((item) => item !== interest)
-        : [...current, interest],
+  const [submitError, setSubmitError] = useState("");
+
+  const clearFieldError = (field: keyof FieldErrors) => {
+    setFieldErrors((current) =>
+      current[field] ? { ...current, [field]: "" } : current,
     );
   };
-  const validateCurrentStep = () => {
-    setErrorMessage("");
+
+  const clearTripDetailsValidationDisplay = () => {
+    setFieldErrors((current) => ({
+      ...current,
+      originCountry: "",
+      originCity: "",
+      destCountry: "",
+      destCity: "",
+      startDate: "",
+      endDate: "",
+    }));
+    setSubmitError((current) =>
+      current === tripDetailsRequiredMessage ? "" : current,
+    );
+  };
+
+  const getTripDetailsHelperText = (field: keyof FieldErrors) =>
+    submitError === tripDetailsRequiredMessage ? "" : fieldErrors[field];
+
+  const handleOriginCountryChange = (
+    _event: SyntheticEvent,
+    value: CountryOption | null,
+  ) => {
+    clearTripDetailsValidationDisplay();
+    setOriginCountry(value);
+    setOriginCity(null);
+    if (value) clearFieldError("originCountry");
+    if (value) {
+      setOriginCities(getCitiesForCountry(value.country_code));
+    } else {
+      setOriginCities([]);
+    }
+  };
+
+  const handleDestCountryChange = (
+    _event: SyntheticEvent,
+    value: CountryOption | null,
+  ) => {
+    clearTripDetailsValidationDisplay();
+    setDestCountry(value);
+    setDestCity(null);
+    if (value) clearFieldError("destCountry");
+    if (value) {
+      setDestCities(getCitiesForCountry(value.country_code));
+    } else {
+      setDestCities([]);
+    }
+  };
+
+  const toggleInterest = (interest: string) => {
+    const nextInterests = selectedInterests.includes(interest)
+      ? selectedInterests.filter((item) => item !== interest)
+      : [...selectedInterests, interest];
+    setSelectedInterests(nextInterests);
+    if (nextInterests.length > 0) clearFieldError("interests");
+  };
+
+  const validateCurrentStep = (): boolean => {
+    setSubmitError("");
+    const nextErrors = { ...fieldErrors };
+    let isValid = true;
+
     if (step === 1) {
-      if (!originCountry || !originCity) {
-        setErrorMessage("Please select an origin.");
-        return false;
+      const areAllTripDetailsFieldsEmpty =
+        !originCountry &&
+        !originCity &&
+        !destCountry &&
+        !destCity &&
+        startDate === null &&
+        endDate === null;
+
+      nextErrors.originCountry = originCountry
+        ? ""
+        : "Please select an origin country.";
+      nextErrors.originCity = originCity ? "" : "Please select an origin city.";
+      nextErrors.destCountry = destCountry
+        ? ""
+        : "Please select a destination country.";
+      nextErrors.destCity = destCity ? "" : "Please select a destination city.";
+      nextErrors.startDate =
+        startDate?.isValid() === true ? "" : "Please select a start date.";
+      if (endDate?.isValid() !== true) {
+        nextErrors.endDate = "Please select an end date.";
+      } else if (
+        startDate?.isValid() === true &&
+        endDate.isBefore(startDate, "day")
+      ) {
+        nextErrors.endDate = "End date cannot be before start date.";
+      } else if (
+        startDate?.isValid() === true &&
+        endDate.diff(startDate, "day") + 1 > maxTripDays
+      ) {
+        nextErrors.endDate = "Trip duration cannot exceed 31 days.";
+      } else {
+        nextErrors.endDate = "";
       }
-      if (!country || !city) {
-        setErrorMessage("Please select a destination.");
-        return false;
-      }
-      if (!startDate || !endDate) {
-        setErrorMessage("Please select both a start and end date.");
-        return false;
+      isValid =
+        !nextErrors.originCountry &&
+        !nextErrors.originCity &&
+        !nextErrors.destCountry &&
+        !nextErrors.destCity &&
+        !nextErrors.startDate &&
+        !nextErrors.endDate;
+
+      if (areAllTripDetailsFieldsEmpty) {
+        setSubmitError(tripDetailsRequiredMessage);
       }
     }
-    if (step === 2 && (!budget || Number(budget) <= 0)) {
-      setErrorMessage("Please enter a valid budget greater than 0.");
-      return false;
+
+    if (step === 2) {
+      nextErrors.budget =
+        adults >= 1 && children >= 0 && budget
+          ? ""
+          : "Please select a budget level.";
+      isValid = !nextErrors.budget;
     }
-    return true;
+
+    if (step === 3) {
+      nextErrors.interests =
+        selectedInterests.length > 0
+          ? ""
+          : "Please select at least one interest.";
+      isValid = !nextErrors.interests;
+    }
+
+    setFieldErrors(nextErrors);
+    return isValid;
   };
+
   const goNext = () => {
-    if (validateCurrentStep()) setStep((current) => current + 1);
+    if (validateCurrentStep()) {
+      setStep((current) => current + 1);
+    }
   };
+
   const goBack = () => {
-    setErrorMessage("");
+    setSubmitError("");
     setStep((current) => Math.max(1, current - 1));
   };
+
   const handleSubmit = async () => {
-    setErrorMessage("");
-    if (selectedInterests.length === 0) {
-      setErrorMessage("Please select at least one interest.");
-      return;
-    }
+    setSubmitError("");
+    if (!validateCurrentStep()) return;
+
     setIsSubmitting(true);
     setGenerating(true);
     setProgress(0);
+
     try {
       const createTripPromise = createTrip({
-        destination: `${city?.name}, ${country?.name}`,
+        destination: `${destCity?.city}, ${destCountry?.country}`,
         start_date: startDate?.format("YYYY-MM-DD") ?? "",
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
-        budget: Number(budget),
+        budget: budget ? budgetAmounts[budget] : 0,
         travelers_count: adults + children,
       });
+
       const progressPromise = new Promise<void>((resolve) => {
         const interval = window.setInterval(() => {
           setProgress((current) => {
@@ -147,6 +348,7 @@ const TripPlanningForm = () => {
           });
         }, 180);
       });
+
       const [{ data: trip }] = await Promise.all([
         createTripPromise,
         progressPromise,
@@ -154,12 +356,13 @@ const TripPlanningForm = () => {
       console.log("Trip created:", trip);
       navigate(routesPaths.itinerary);
     } catch {
-      setErrorMessage("Something went wrong. Please try again.");
+      setSubmitError("Something went wrong. Please try again.");
     } finally {
       setGenerating(false);
       setIsSubmitting(false);
     }
   };
+
   if (generating) {
     return (
       <div className={mergeClasses(styles.page, styles.generatingPage)}>
@@ -171,8 +374,8 @@ const TripPlanningForm = () => {
             Creating your personalized journey...
           </Typography>
           <Typography component="p" className={styles.generatingText}>
-            Exploring {city?.name || "your destination"} and arranging a trip
-            around your interests.
+            Exploring {destCity?.city || "your destination"} and arranging a
+            trip around your interests.
           </Typography>
         </div>
         <div className={styles.progressWrapper}>
@@ -203,6 +406,7 @@ const TripPlanningForm = () => {
       </div>
     );
   }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.page}>
@@ -217,82 +421,99 @@ const TripPlanningForm = () => {
               itinerary in seconds.
             </Typography>
           </header>
+
           <div className={styles.steps}>
-            {steps.map((item, index) => (
-              <div
-                key={item.num}
-                className={mergeClasses(
-                  styles.stepItem,
-                  index < steps.length - 1 && styles.stepItemGrowing,
-                )}
-              >
-                <div className={styles.stepIdentity}>
-                  <Typography
-                    component="div"
-                    className={mergeClasses(
-                      styles.stepCircle,
-                      step >= item.num && styles.stepCircleReached,
-                      step === item.num && styles.stepCircleCurrent,
-                    )}
-                  >
-                    {step > item.num ? (
-                      <CheckIcon fontSize="small" />
-                    ) : (
-                      item.num
-                    )}
-                  </Typography>
-                  <Typography
-                    component="span"
-                    className={mergeClasses(
-                      styles.stepLabel,
-                      step >= item.num && styles.stepLabelReached,
-                      step === item.num && styles.stepLabelCurrent,
-                    )}
-                  >
-                    {item.label}
-                  </Typography>
+            {steps.map((item, index) => {
+              const isCurrent = step === item.num;
+              const isComplete = completedSteps[index] && !isCurrent;
+
+              return (
+                <div
+                  key={item.num}
+                  className={mergeClasses(
+                    styles.stepItem,
+                    index < steps.length - 1 && styles.stepItemGrowing,
+                  )}
+                >
+                  <div className={styles.stepIdentity}>
+                    <Typography
+                      component="div"
+                      className={mergeClasses(
+                        styles.stepCircle,
+                        (isComplete || isCurrent) && styles.stepCircleReached,
+                        isCurrent && styles.stepCircleCurrent,
+                      )}
+                    >
+                      {isComplete ? <CheckIcon fontSize="small" /> : item.num}
+                    </Typography>
+                    <Typography
+                      component="span"
+                      className={mergeClasses(
+                        styles.stepLabel,
+                        (isComplete || isCurrent) && styles.stepLabelReached,
+                        isCurrent && styles.stepLabelCurrent,
+                      )}
+                    >
+                      {item.label}
+                    </Typography>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={mergeClasses(
+                        styles.connector,
+                        completedSteps[index] && styles.connectorComplete,
+                      )}
+                    />
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={mergeClasses(
-                      styles.connector,
-                      step > item.num && styles.connectorComplete,
-                    )}
-                  />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
+
           <section className={styles.card}>
             {step === 1 && (
               <div className={styles.column24}>
+                {/* ORIGIN SECTION */}
                 <div>
-                  <Typography component="label" className={styles.label}>
+                  <Typography
+                    component="label"
+                    className={styles.label}
+                    sx={{ mb: 2.5, display: "block" }}
+                  >
                     Origin
                   </Typography>
                   <div className={styles.grid}>
                     <Autocomplete
                       options={allCountries}
-                      getOptionLabel={(option) => option.name}
+                      getOptionLabel={(option) => option.country}
+                      isOptionEqualToValue={(option, value) =>
+                        option.country_code === value.country_code
+                      }
                       value={originCountry}
                       onChange={handleOriginCountryChange}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           label="From (Country)"
-                          placeholder="e.g. Japan"
-                          sx={fieldSx}
+                          placeholder="e.g. France"
+                          sx={getFieldSx(!!originCountry)}
+                          error={!!fieldErrors.originCountry}
+                          helperText={getTripDetailsHelperText("originCountry")}
                         />
                       )}
                     />
                     <Autocomplete
                       options={originCities}
-                      getOptionLabel={(option) => option.name}
+                      getOptionLabel={(option) => option.city}
                       isOptionEqualToValue={(option, value) =>
-                        option.cityId === value.cityId
+                        option.destination_id === value.destination_id
                       }
                       value={originCity}
-                      onChange={(_event, value) => setOriginCity(value)}
+                      onChange={(_event, value) => {
+                        clearTripDetailsValidationDisplay();
+                        setOriginCity(value);
+                        if (value) clearFieldError("originCity");
+                      }}
                       disabled={!originCountry}
                       renderInput={(params) => (
                         <TextField
@@ -302,166 +523,316 @@ const TripPlanningForm = () => {
                               ? "From (City)"
                               : "Select a country first"
                           }
-                          placeholder={originCountry ? "e.g. Tokyo" : undefined}
-                          sx={fieldSx}
+                          placeholder={originCountry ? "e.g. Paris" : undefined}
+                          sx={getFieldSx(!!originCity)}
+                          error={!!fieldErrors.originCity}
+                          helperText={getTripDetailsHelperText("originCity")}
                         />
                       )}
                     />
                   </div>
                 </div>
+
+                <Divider sx={{ my: 1.5 }} />
                 <div>
-                  <Typography component="label" className={styles.label}>
+                  <Typography
+                    component="label"
+                    className={styles.label}
+                    sx={{ mb: 2.5, display: "block" }}
+                  >
                     Destination
                   </Typography>
                   <div className={styles.grid}>
                     <Autocomplete
                       options={allCountries}
-                      getOptionLabel={(option) => option.name}
-                      value={country}
-                      onChange={handleCountryChange}
+                      getOptionLabel={(option) => option.country}
+                      isOptionEqualToValue={(option, value) =>
+                        option.country_code === value.country_code
+                      }
+                      value={destCountry}
+                      onChange={handleDestCountryChange}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           label="To (Country)"
                           placeholder="e.g. France"
-                          sx={fieldSx}
+                          sx={getFieldSx(!!destCountry)}
+                          error={!!fieldErrors.destCountry}
+                          helperText={getTripDetailsHelperText("destCountry")}
                         />
                       )}
                     />
                     <Autocomplete
-                      options={cities}
-                      getOptionLabel={(option) => option.name}
+                      options={destCities}
+                      getOptionLabel={(option) => option.city}
                       isOptionEqualToValue={(option, value) =>
-                        option.cityId === value.cityId
+                        option.destination_id === value.destination_id
                       }
-                      value={city}
-                      onChange={(_event, value) => setCity(value)}
-                      disabled={!country}
+                      value={destCity}
+                      onChange={(_event, value) => {
+                        clearTripDetailsValidationDisplay();
+                        setDestCity(value);
+                        if (value) clearFieldError("destCity");
+                      }}
+                      disabled={!destCountry}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           label={
-                            country ? "To (City)" : "Select a country first"
+                            destCountry ? "To (City)" : "Select a country first"
                           }
-                          placeholder={country ? "e.g. Paris" : undefined}
-                          sx={fieldSx}
+                          placeholder={destCountry ? "e.g. Paris" : undefined}
+                          sx={getFieldSx(!!destCity)}
+                          error={!!fieldErrors.destCity}
+                          helperText={getTripDetailsHelperText("destCity")}
                         />
                       )}
                     />
                   </div>
                 </div>
-                <div className={styles.grid}>
-                  <div>
-                    <Typography component="label" className={styles.label}>
-                      Start Date
-                    </Typography>
-                    <DatePicker
-                      value={startDate}
-                      onChange={setStartDate}
-                      slotProps={{
-                        textField: { fullWidth: true, sx: fieldSx },
-                      }}
-                    />
+
+                <Divider sx={{ my: 1.5 }} />
+
+                {/* DATES SECTION */}
+                <div>
+                  <Typography
+                    component="label"
+                    className={styles.label}
+                    sx={{ mb: 2.5, display: "block" }}
+                  >
+                    Travel Dates
+                  </Typography>
+                  <div className={styles.grid}>
+                    <div>
+                      <Typography component="label" className={styles.label}>
+                        Start Date
+                      </Typography>
+                      <DatePicker
+                        value={startDate}
+                        onChange={(value) => {
+                          clearTripDetailsValidationDisplay();
+                          setStartDate(value);
+                          if (
+                            value?.isValid() === true &&
+                            endDate?.isValid() === true &&
+                            (endDate.isBefore(value, "day") ||
+                              endDate.diff(value, "day") + 1 > maxTripDays)
+                          ) {
+                            setEndDate(null);
+                          }
+                          if (value?.isValid()) clearFieldError("startDate");
+                        }}
+                        disablePast
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            sx: getFieldSx(startDate?.isValid() === true),
+                            error: !!fieldErrors.startDate,
+                            helperText: getTripDetailsHelperText("startDate"),
+                          },
+                          day: {
+                            sx: {
+                              "&.Mui-selected": {
+                                backgroundColor: semanticColors.interactive,
+                                color: semanticColors.bgPrimary,
+                              },
+                              "&.Mui-selected:hover": {
+                                backgroundColor: semanticColors.interactive,
+                              },
+                              "&.Mui-selected:focus": {
+                                backgroundColor: semanticColors.interactive,
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Typography component="label" className={styles.label}>
+                        End Date
+                      </Typography>
+                      <DatePicker
+                        value={endDate}
+                        onChange={(value) => {
+                          clearTripDetailsValidationDisplay();
+                          setEndDate(value);
+                          if (value?.isValid()) clearFieldError("endDate");
+                        }}
+                        disablePast
+                        minDate={startDate ?? undefined}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            sx: getFieldSx(endDate?.isValid() === true),
+                            error: !!fieldErrors.endDate,
+                            helperText: getTripDetailsHelperText("endDate"),
+                          },
+                          day: {
+                            sx: {
+                              "&.Mui-selected": {
+                                backgroundColor: semanticColors.interactive,
+                                color: semanticColors.bgPrimary,
+                              },
+                              "&.Mui-selected:hover": {
+                                backgroundColor: semanticColors.interactive,
+                              },
+                              "&.Mui-selected:focus": {
+                                backgroundColor: semanticColors.interactive,
+                              },
+                            },
+                          },
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Typography component="label" className={styles.label}>
-                      End Date
+                  {submitError === tripDetailsRequiredMessage && (
+                    <Typography
+                      component="p"
+                      className={styles.tripDetailsGeneralError}
+                    >
+                      {submitError}
                     </Typography>
-                    <DatePicker
-                      value={endDate}
-                      onChange={setEndDate}
-                      minDate={startDate ?? undefined}
-                      slotProps={{
-                        textField: { fullWidth: true, sx: fieldSx },
-                      }}
-                    />
-                  </div>
+                  )}
                 </div>
               </div>
             )}
+
             {step === 2 && (
               <div className={styles.column28}>
+                {/* TRAVELERS SECTION */}
                 <div>
-                  <Typography component="p" className={styles.label}>
-                    Adults
+                  <Typography
+                    component="p"
+                    className={styles.label}
+                    sx={{ mb: 1.5 }}
+                  >
+                    Travelers
                   </Typography>
-                  <div className={styles.counterRow}>
-                    <IconButton
-                      className={styles.counterButton}
-                      onClick={() =>
-                        setAdults((value) => Math.max(1, value - 1))
-                      }
-                      aria-label="Decrease adults"
+
+                  <div>
+                    <Typography
+                      component="p"
+                      className={styles.label}
+                      sx={{ fontSize: "0.875rem", mb: 1 }}
                     >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography component="span" className={styles.count}>
-                      {adults}
+                      Adults
                     </Typography>
-                    <IconButton
-                      className={styles.counterButton}
-                      onClick={() => setAdults((value) => value + 1)}
-                      aria-label="Increase adults"
+                    <div className={styles.counterRow}>
+                      <IconButton
+                        className={styles.counterButton}
+                        onClick={() =>
+                          setAdults((value) => Math.max(1, value - 1))
+                        }
+                        aria-label="Decrease adults"
+                      >
+                        <RemoveIcon />
+                      </IconButton>
+                      <Typography component="span" className={styles.count}>
+                        {adults}
+                      </Typography>
+                      <IconButton
+                        className={styles.counterButton}
+                        onClick={() => setAdults((value) => value + 1)}
+                        aria-label="Increase adults"
+                      >
+                        <AddIcon />
+                      </IconButton>
+                      <Typography component="span" className={styles.hint}>
+                        {adults === 1 ? "1 adult" : `${adults} adults`}
+                      </Typography>
+                    </div>
+                  </div>
+
+                  <div className={styles.travelerGroupSpacing}>
+                    <Typography
+                      component="p"
+                      className={styles.label}
+                      sx={{ fontSize: "0.875rem", mb: 1 }}
                     >
-                      <AddIcon />
-                    </IconButton>
-                    <Typography component="span" className={styles.hint}>
-                      {adults === 1 ? "1 adult" : `${adults} adults`}
+                      Children
                     </Typography>
+                    <div className={styles.counterRow}>
+                      <IconButton
+                        className={styles.counterButton}
+                        onClick={() =>
+                          setChildren((value) => Math.max(0, value - 1))
+                        }
+                        aria-label="Decrease children"
+                      >
+                        <RemoveIcon />
+                      </IconButton>
+                      <Typography component="span" className={styles.count}>
+                        {children}
+                      </Typography>
+                      <IconButton
+                        className={styles.counterButton}
+                        onClick={() => setChildren((value) => value + 1)}
+                        aria-label="Increase children"
+                      >
+                        <AddIcon />
+                      </IconButton>
+                      <Typography component="span" className={styles.hint}>
+                        {children === 0
+                          ? "No children"
+                          : `${children} children`}
+                      </Typography>
+                    </div>
                   </div>
                 </div>
+
+                <Divider sx={{ my: 1.5 }} />
+
+                {/* BUDGET SECTION */}
                 <div>
-                  <Typography component="p" className={styles.label}>
-                    Children
+                  <Typography
+                    component="span"
+                    id="budget-level-label"
+                    className={styles.label}
+                    sx={{ mb: 2, display: "block" }}
+                  >
+                    Budget Level
                   </Typography>
-                  <div className={styles.counterRow}>
-                    <IconButton
-                      className={styles.counterButton}
-                      onClick={() =>
-                        setChildren((value) => Math.max(0, value - 1))
-                      }
-                      aria-label="Decrease children"
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography component="span" className={styles.count}>
-                      {children}
-                    </Typography>
-                    <IconButton
-                      className={styles.counterButton}
-                      onClick={() => setChildren((value) => value + 1)}
-                      aria-label="Increase children"
-                    >
-                      <AddIcon />
-                    </IconButton>
-                    <Typography component="span" className={styles.hint}>
-                      {children === 0 ? "No children" : `${children} children`}
-                    </Typography>
-                  </div>
-                </div>
-                <div>
-                  <Typography component="label" className={styles.label}>
-                    Total Budget (USD)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="e.g. 2000"
+                  <RadioGroup
+                    row
+                    aria-labelledby="budget-level-label"
+                    aria-describedby={
+                      fieldErrors.budget ? "budget-level-error" : undefined
+                    }
+                    name="budget-level"
                     value={budget}
-                    onChange={handleBudgetChange}
-                    sx={fieldSx}
-                    slotProps={{
-                      input: {
-                        startAdornment: (
-                          <InputAdornment position="start">$</InputAdornment>
-                        ),
-                      },
+                    onChange={(event) => {
+                      setBudget(event.target.value as BudgetLevel);
+                      clearFieldError("budget");
                     }}
-                  />
+                    className={styles.budgetOptions}
+                  >
+                    {budgetOptions.map((option) => (
+                      <FormControlLabel
+                        key={option.value}
+                        value={option.value}
+                        control={<Radio />}
+                        label={option.label}
+                        className={mergeClasses(
+                          styles.budgetOption,
+                          budget === option.value &&
+                            styles.budgetOptionSelected,
+                        )}
+                      />
+                    ))}
+                  </RadioGroup>
+                  {fieldErrors.budget && (
+                    <Typography
+                      component="p"
+                      id="budget-level-error"
+                      className={styles.fieldError}
+                    >
+                      {fieldErrors.budget}
+                    </Typography>
+                  )}
                 </div>
               </div>
             )}
+
             {step === 3 && (
               <div>
                 <div className={styles.interestHeader}>
@@ -469,10 +840,10 @@ const TripPlanningForm = () => {
                     What are you interested in?
                   </Typography>
                   <Typography component="p" className={styles.interestText}>
-                    Select all that apply — AI will prioritize these in your
-                    itinerary.
+                    Select all that apply
                   </Typography>
                 </div>
+
                 <div className={styles.chips}>
                   {interestOptions.map((interest) => (
                     <Chip
@@ -484,10 +855,19 @@ const TripPlanningForm = () => {
                         styles.chip,
                         selectedInterests.includes(interest) &&
                           styles.chipActive,
+                        selectedInterests.includes(interest) &&
+                          styles.completedChoice,
                       )}
                     />
                   ))}
                 </div>
+
+                {fieldErrors.interests && (
+                  <Typography component="p" className={styles.fieldError}>
+                    {fieldErrors.interests}
+                  </Typography>
+                )}
+
                 {selectedInterests.includes("Other") && (
                   <div className={styles.otherField}>
                     <TextField
@@ -496,10 +876,11 @@ const TripPlanningForm = () => {
                       placeholder="e.g. Photography or local markets"
                       value={otherInterest}
                       onChange={(event) => setOtherInterest(event.target.value)}
-                      sx={fieldSx}
+                      sx={getFieldSx(!!otherInterest.trim())}
                     />
                   </div>
                 )}
+
                 {selectedInterests.length > 0 && (
                   <div className={styles.selectionNotice}>
                     <CheckIcon fontSize="small" aria-hidden="true" />
@@ -508,18 +889,18 @@ const TripPlanningForm = () => {
                       className={styles.selectionNoticeText}
                     >
                       {selectedInterests.length} interest
-                      {selectedInterests.length === 1 ? "" : "s"} selected — AI
-                      will tailor your itinerary around these preferences.
+                      {selectedInterests.length === 1 ? "" : "s"} selected
                     </Typography>
                   </div>
                 )}
+
                 <div className={styles.summary}>
                   <Typography component="h3" className={styles.summaryTitle}>
                     Trip Summary
                   </Typography>
                   <div className={styles.summaryGrid}>
                     {[
-                      ["Destination", city?.name || "—"],
+                      ["Destination", destCity?.city || "—"],
                       [
                         "Dates",
                         startDate && endDate
@@ -528,12 +909,11 @@ const TripPlanningForm = () => {
                       ],
                       [
                         "Travelers",
-                        `${adults + children} ${adults + children === 1 ? "person" : "people"}`,
+                        `${adults + children} ${
+                          adults + children === 1 ? "person" : "people"
+                        }`,
                       ],
-                      [
-                        "Budget",
-                        budget ? `$${Number(budget).toLocaleString()}` : "—",
-                      ],
+                      ["Budget", budget ? budgetLabels[budget] : "—"],
                       ["Interests", `${selectedInterests.length} selected`],
                       ["Style", "Balanced"],
                     ].map(([label, value]) => (
@@ -553,12 +933,14 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-            {errorMessage && (
+
+            {submitError && submitError !== tripDetailsRequiredMessage && (
               <Typography component="p" className={styles.error}>
-                {errorMessage}
+                {submitError}
               </Typography>
             )}
           </section>
+
           <div className={styles.navigation}>
             <AppButton
               appearance="secondary"
@@ -591,4 +973,5 @@ const TripPlanningForm = () => {
     </LocalizationProvider>
   );
 };
+
 export default TripPlanningForm;
