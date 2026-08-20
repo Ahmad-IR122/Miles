@@ -1,13 +1,13 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { colors, gradients } from "../theme/colors";
+import { gradients, semanticColors, warm, warmShadows } from "../theme/colors";
 import { layout, typographyPresets } from "../theme/typography";
 
 export const useFooterStyles = makeStyles({
   footer: {
     marginTop: layout.spacing[16],
     padding: `0 ${layout.padding.xl} ${layout.padding.xl}`,
-    backgroundColor: "#FFF9F5",
+    backgroundColor: warm.bgPage,
 
     "@media (max-width: 760px)": {
       marginTop: layout.spacing[10],
@@ -24,10 +24,10 @@ export const useFooterStyles = makeStyles({
     margin: "0 auto",
     padding: `${layout.padding["2xl"]} ${layout.padding["2xl"]} ${layout.padding.lg}`,
     background:
-      "linear-gradient(180deg, rgba(255, 252, 249, 0.96) 0%, rgba(255, 249, 245, 0.98) 100%)",
+      "linear-gradient(180deg, var(--warm-bg-surface-blur) 0%, var(--footer-shell-end) 100%)",
     borderRadius: "22px 22px 0 0",
-    boxShadow: "0 18px 44px rgba(47, 33, 27, 0.06)",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
+    boxShadow: warmShadows.lg,
+    ...shorthands.border("1px", "solid", warm.border),
     ...shorthands.borderBottom("0"),
 
     "@media (max-width: 980px)": {
@@ -72,12 +72,12 @@ export const useFooterStyles = makeStyles({
     alignItems: "center",
     columnGap: layout.gap.sm,
     width: "fit-content",
-    color: "#2F211B",
+    color: warm.textPrimary,
     textDecorationLine: "none",
     borderRadius: layout.radius.md,
 
     ":focus-visible": {
-      outlineColor: "#FF6B6B",
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "5px",
@@ -105,7 +105,7 @@ export const useFooterStyles = makeStyles({
 
   brandName: {
     ...typographyPresets.brand,
-    color: "#2F211B",
+    color: warm.textPrimary,
     fontSize: "26px",
     lineHeight: 1,
   },
@@ -113,7 +113,7 @@ export const useFooterStyles = makeStyles({
   description: {
     ...typographyPresets.body,
     margin: 0,
-    color: "#5F676C",
+    color: warm.textSecondary,
     lineHeight: 1.8,
   },
 
@@ -129,13 +129,13 @@ export const useFooterStyles = makeStyles({
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#FF6B6B",
-    backgroundColor: "#FFFFFF",
+    color: warm.coralBright,
+    backgroundColor: warm.bgSurface,
     borderRadius: layout.radius.full,
-    boxShadow: "0 8px 18px rgba(47, 33, 27, 0.08)",
+    boxShadow: warmShadows.xs,
     cursor: "pointer",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
-    transitionProperty: "color, transform, box-shadow",
+    ...shorthands.border("1px", "solid", warm.border),
+    transitionProperty: "background-color, color, transform, box-shadow",
     transitionDuration: "0.16s",
     transitionTimingFunction: "ease",
 
@@ -144,13 +144,14 @@ export const useFooterStyles = makeStyles({
     },
 
     ":hover": {
-      color: colors.rose,
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
       transform: "translateY(-2px)",
-      boxShadow: "0 12px 24px rgba(244, 63, 122, 0.15)",
+      boxShadow: warmShadows.roseSoft,
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "3px",
@@ -166,7 +167,7 @@ export const useFooterStyles = makeStyles({
   sectionTitle: {
     ...typographyPresets.h3,
     margin: 0,
-    color: "#3B1F13",
+    color: warm.textPrimary,
     fontSize: "15px",
   },
 
@@ -182,7 +183,7 @@ export const useFooterStyles = makeStyles({
     minHeight: "24px",
     display: "inline-flex",
     alignItems: "center",
-    color: "#5F676C",
+    color: warm.textSecondary,
     textDecorationLine: "none",
     borderRadius: layout.radius.full,
     transitionProperty: "color, transform",
@@ -190,12 +191,12 @@ export const useFooterStyles = makeStyles({
     transitionTimingFunction: "ease",
 
     ":hover": {
-      color: colors.rose,
+      color: warm.rose,
       transform: "translateX(2px)",
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "3px",
@@ -212,7 +213,7 @@ export const useFooterStyles = makeStyles({
   newsletterText: {
     ...typographyPresets.body,
     margin: 0,
-    color: "#5F676C",
+    color: warm.textSecondary,
     lineHeight: 1.65,
   },
 
@@ -227,19 +228,19 @@ export const useFooterStyles = makeStyles({
     minWidth: 0,
     height: "42px",
     padding: `0 ${layout.padding.md}`,
-    color: "#2F211B",
-    backgroundColor: "#FFFFFF",
+    color: warm.textPrimary,
+    backgroundColor: warm.bgSurface,
     borderRadius: layout.radius.sm,
-    boxShadow: "0 8px 18px rgba(47, 33, 27, 0.06)",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
+    boxShadow: warmShadows.xs,
+    ...shorthands.border("1px", "solid", warm.border),
     fontSize: "13px",
 
     "::placeholder": {
-      color: "#9C8D84",
+      color: warm.textTertiary,
     },
 
     ":focus": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "2px",
@@ -251,11 +252,11 @@ export const useFooterStyles = makeStyles({
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#FFFFFF",
+    color: semanticColors.textOnAccent,
     backgroundImage: gradients.primary,
     borderRadius: layout.radius.sm,
     cursor: "pointer",
-    boxShadow: "0 12px 24px rgba(244, 63, 122, 0.22)",
+    boxShadow: warmShadows.rose,
     ...shorthands.border("0"),
     transitionProperty: "transform, box-shadow",
     transitionDuration: "0.16s",
@@ -267,11 +268,11 @@ export const useFooterStyles = makeStyles({
 
     ":hover": {
       transform: "translateY(-1px)",
-      boxShadow: "0 14px 28px rgba(244, 63, 122, 0.28)",
+      boxShadow: warmShadows.roseHover,
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "3px",
@@ -284,8 +285,8 @@ export const useFooterStyles = makeStyles({
     zIndex: 1,
     margin: `${layout.spacing[10]} 0 0`,
     paddingTop: layout.spacing[3],
-    color: "#9C8D84",
-    ...shorthands.borderTop("1px", "solid", "rgba(243, 222, 212, 0.82)"),
+    color: warm.textTertiary,
+    ...shorthands.borderTop("1px", "solid", "var(--footer-divider)"),
   },
 
   decorHotAirBalloon: {
@@ -297,7 +298,7 @@ export const useFooterStyles = makeStyles({
     opacity: 0.34,
     borderRadius: "50% 50% 46% 46%",
     background:
-      "repeating-linear-gradient(90deg, #FF9B85 0 5px, #FFE1D6 5px 10px)",
+      "repeating-linear-gradient(90deg, var(--footer-decor-coral) 0 5px, var(--footer-decor-peach) 5px 10px)",
 
     "::before": {
       content: "\"\"",
@@ -306,7 +307,7 @@ export const useFooterStyles = makeStyles({
       bottom: "-8px",
       width: "10px",
       height: "7px",
-      backgroundColor: "#FFD8C7",
+      backgroundColor: "var(--footer-decor-peach)",
       borderRadius: "2px",
     },
 
@@ -330,10 +331,10 @@ export const useFooterStyles = makeStyles({
       top: 0,
       width: "14px",
       height: "14px",
-      backgroundColor: "#7F4A35",
+      backgroundColor: "var(--footer-decor-brown)",
       borderRadius: layout.radius.full,
       boxShadow:
-        "-12px 12px 0 -2px #FF6B6B, 0 16px 0 2px #FFD8C7, 10px 22px 0 -1px #7F7068",
+        "-12px 12px 0 -2px var(--footer-decor-coral-strong), 0 16px 0 2px var(--footer-decor-peach), 10px 22px 0 -1px var(--footer-decor-muted)",
     },
 
     "@media (max-width: 620px)": {
@@ -355,7 +356,7 @@ export const useFooterStyles = makeStyles({
       position: "absolute",
       inset: 0,
       clipPath: "polygon(0 42%, 100% 0, 72% 50%, 100% 100%, 0 58%, 42% 50%)",
-      backgroundColor: "#FF9B85",
+      backgroundColor: "var(--footer-decor-coral)",
     },
 
     "@media (max-width: 760px)": {
@@ -370,7 +371,7 @@ export const useFooterStyles = makeStyles({
     width: "56px",
     height: "18px",
     opacity: 0.2,
-    backgroundColor: "#FFD8C7",
+    backgroundColor: "var(--footer-decor-peach)",
     borderRadius: layout.radius.full,
 
     "::before": {
@@ -380,7 +381,7 @@ export const useFooterStyles = makeStyles({
       bottom: "6px",
       width: "20px",
       height: "20px",
-      backgroundColor: "#FFD8C7",
+      backgroundColor: "var(--footer-decor-peach)",
       borderRadius: layout.radius.full,
     },
 
@@ -397,7 +398,7 @@ export const useFooterStyles = makeStyles({
     height: "84px",
     opacity: 0.54,
     background:
-      "radial-gradient(80px 24px at 10% 100%, #FFE4D9 0 68%, transparent 69%), radial-gradient(160px 48px at 24% 100%, #FFDCD0 0 62%, transparent 63%), radial-gradient(220px 72px at 78% 100%, #FFD0C0 0 64%, transparent 65%), linear-gradient(180deg, transparent 0 66%, #FFE3D7 67% 100%)",
+      "radial-gradient(80px 24px at 10% 100%, var(--footer-hill-soft) 0 68%, transparent 69%), radial-gradient(160px 48px at 24% 100%, var(--footer-hill-mid) 0 62%, transparent 63%), radial-gradient(220px 72px at 78% 100%, var(--footer-hill-strong) 0 64%, transparent 65%), linear-gradient(180deg, transparent 0 66%, var(--footer-hill-base) 67% 100%)",
 
     "::before": {
       content: "\"\"",
@@ -408,7 +409,7 @@ export const useFooterStyles = makeStyles({
       height: "58px",
       opacity: 0.56,
       background:
-        "linear-gradient(90deg, transparent 0 18px, #EFB49D 18px 21px, transparent 21px 35px, #EFB49D 35px 38px, transparent 38px), radial-gradient(20px 16px at 18px 14px, #EFB49D 0 38%, transparent 40%), radial-gradient(22px 16px at 38px 10px, #EFB49D 0 38%, transparent 40%), radial-gradient(18px 14px at 52px 18px, #EFB49D 0 38%, transparent 40%)",
+        "linear-gradient(90deg, transparent 0 18px, var(--footer-tree) 18px 21px, transparent 21px 35px, var(--footer-tree) 35px 38px, transparent 38px), radial-gradient(20px 16px at 18px 14px, var(--footer-tree) 0 38%, transparent 40%), radial-gradient(22px 16px at 38px 10px, var(--footer-tree) 0 38%, transparent 40%), radial-gradient(18px 14px at 52px 18px, var(--footer-tree) 0 38%, transparent 40%)",
     },
 
     "@media (max-width: 760px)": {
