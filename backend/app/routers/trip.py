@@ -20,6 +20,17 @@ def create_trip(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    overlapping = trip_service.get_overlapping_trip(
+        db, current_user.id, payload.start_date, payload.end_date
+    )
+    if overlapping is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"trip dates overlap with existing trip {overlapping.id} "
+                f"({overlapping.start_date} to {overlapping.end_date})"
+            ),
+        )
     return trip_service.create_trip(db, current_user.id, payload)
 @router.get("", response_model=list[TripResponse])
 def list_trips(
@@ -27,6 +38,7 @@ def list_trips(
     db: Session = Depends(get_db),
 ):
     return trip_service.list_trips(db, current_user.id)
+
 @router.get("/{trip_id}", response_model=TripResponse)
 def read_trip(trip_id: int, db: Session = Depends(get_db)):
     trip = trip_service.get_trip(db, trip_id)
@@ -40,6 +52,11 @@ def read_trip(trip_id: int, db: Session = Depends(get_db)):
 def update_trip(trip_id: int, payload: TripUpdate, db: Session = Depends(get_db)):
     try:
         trip = trip_service.update_trip(db, trip_id, payload)
+    except trip_service.TripDateConflictError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
