@@ -17,7 +17,7 @@ export const navItems = [
   },
   {
     label: "My Trips",
-    path: routesPaths.myTrips,
+    path: routesPaths.savedTrips,
     icon: <PlaceOutlinedIcon aria-hidden="true" />,
   },
   {

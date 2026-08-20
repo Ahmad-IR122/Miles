@@ -16,13 +16,18 @@ const routesWithNav = new Set<string>([
   routesPaths.home,
   routesPaths.itinerary,
   routesPaths.chatbot,
+  routesPaths.savedTrips,
   ...routesWithBackNav,
 ]);
 
 const routesNeedingNavOffset = new Set<string>([
   routesPaths.itinerary,
   routesPaths.chatbot,
+  routesPaths.savedTrips,
 ]);
+
+const isItineraryDetailPath = (pathname: string) =>
+  pathname.startsWith(`${routesPaths.itinerary}/`);
 
 const routesWithFooter = new Set<string>([
   routesPaths.home,
@@ -34,10 +39,14 @@ const routesWithFooter = new Set<string>([
 const AppLayout = () => {
   const location = useLocation();
   const styles = useAppLayoutStyles();
-  const showNav = routesWithNav.has(location.pathname);
-  const showFooter = routesWithFooter.has(location.pathname);
-  const homeLink = routesWithBackNav.has(location.pathname);
-  const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
+  const isItineraryDetail = isItineraryDetailPath(location.pathname);
+  const showNav = routesWithNav.has(location.pathname) || isItineraryDetail;
+  const showFooter =
+    routesWithFooter.has(location.pathname) || isItineraryDetail;
+  const homeLink =
+    routesWithBackNav.has(location.pathname) || isItineraryDetail;
+  const needsNavOffset =
+    routesNeedingNavOffset.has(location.pathname) || isItineraryDetail;
 
   return (
     <div className={styles.root}>
