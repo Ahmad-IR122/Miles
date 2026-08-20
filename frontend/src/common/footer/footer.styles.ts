@@ -6,12 +6,16 @@ import { layout, typographyPresets } from "../theme/typography";
 export const useFooterStyles = makeStyles({
   footer: {
     marginTop: layout.spacing[16],
-    padding: `0 ${layout.padding.xl} ${layout.padding.xl}`,
+    padding: `0 clamp(${layout.padding.md}, 4vw, ${layout.padding.xl}) ${layout.padding.xl}`,
     backgroundColor: warm.bgPage,
 
     "@media (max-width: 760px)": {
       marginTop: layout.spacing[10],
       padding: `0 ${layout.padding.sm} ${layout.padding.lg}`,
+    },
+
+    "@media (max-width: 420px)": {
+      padding: `0 ${layout.padding.xs} ${layout.padding.md}`,
     },
   },
 
@@ -36,8 +40,13 @@ export const useFooterStyles = makeStyles({
 
     "@media (max-width: 760px)": {
       minHeight: "auto",
-      padding: `${layout.padding.lg} ${layout.padding.md}`,
+      padding: `${layout.padding.lg} ${layout.padding.md} ${layout.padding.xl}`,
       borderRadius: "18px 18px 0 0",
+    },
+
+    "@media (max-width: 420px)": {
+      padding: `${layout.padding.md} ${layout.padding.sm} ${layout.padding.lg}`,
+      borderRadius: "16px 16px 0 0",
     },
   },
 
@@ -51,12 +60,23 @@ export const useFooterStyles = makeStyles({
     alignItems: "start",
 
     "@media (max-width: 980px)": {
-      gridTemplateColumns: "1.2fr 1fr",
+      gridTemplateColumns: "minmax(0, 1.15fr) minmax(180px, 0.85fr)",
+      columnGap: layout.gap.xl,
+    },
+
+    "@media (max-width: 760px)": {
+      gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+      columnGap: layout.gap.lg,
+      rowGap: layout.gap.lg,
     },
 
     "@media (max-width: 620px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      rowGap: layout.gap.md,
+    },
+
+    "@media (max-width: 420px)": {
       gridTemplateColumns: "1fr",
-      rowGap: layout.gap.lg,
     },
   },
 
@@ -65,6 +85,26 @@ export const useFooterStyles = makeStyles({
     flexDirection: "column",
     rowGap: layout.gap.lg,
     maxWidth: "275px",
+
+    "@media (max-width: 980px)": {
+      maxWidth: "none",
+    },
+
+    "@media (max-width: 760px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+    },
+
+    "@media (max-width: 620px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      rowGap: layout.gap.md,
+    },
+
+    "@media (max-width: 420px)": {
+      gridColumnStart: "auto",
+      gridColumnEnd: "auto",
+    },
   },
 
   brand: {
@@ -82,6 +122,10 @@ export const useFooterStyles = makeStyles({
       outlineWidth: "2px",
       outlineOffset: "5px",
     },
+
+    "@media (max-width: 420px)": {
+      columnGap: layout.gap.xs,
+    },
   },
 
   logoFrame: {
@@ -94,6 +138,11 @@ export const useFooterStyles = makeStyles({
     justifyContent: "center",
     flexShrink: 0,
     backgroundColor: "transparent",
+
+    "@media (max-width: 420px)": {
+      width: "46px",
+      height: "46px",
+    },
   },
 
   logo: {
@@ -108,6 +157,10 @@ export const useFooterStyles = makeStyles({
     color: warm.textPrimary,
     fontSize: "26px",
     lineHeight: 1,
+
+    "@media (max-width: 420px)": {
+      fontSize: "23px",
+    },
   },
 
   description: {
@@ -115,12 +168,26 @@ export const useFooterStyles = makeStyles({
     margin: 0,
     color: warm.textSecondary,
     lineHeight: 1.8,
+
+    "@media (max-width: 760px)": {
+      maxWidth: "520px",
+    },
+
+    "@media (max-width: 420px)": {
+      lineHeight: 1.65,
+    },
   },
 
   socialLinks: {
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
+    flexWrap: "wrap",
+    rowGap: layout.gap.xs,
+
+    "@media (max-width: 420px)": {
+      columnGap: layout.gap.xs,
+    },
   },
 
   socialButton: {
@@ -156,12 +223,21 @@ export const useFooterStyles = makeStyles({
       outlineWidth: "2px",
       outlineOffset: "3px",
     },
+
+    "@media (max-width: 420px)": {
+      width: "36px",
+      height: "36px",
+    },
   },
 
   navSection: {
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.md,
+
+    "@media (max-width: 620px)": {
+      rowGap: layout.gap.sm,
+    },
   },
 
   sectionTitle: {
@@ -169,12 +245,20 @@ export const useFooterStyles = makeStyles({
     margin: 0,
     color: warm.textPrimary,
     fontSize: "15px",
+
+    "@media (max-width: 620px)": {
+      fontSize: "14px",
+    },
   },
 
   links: {
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.sm,
+
+    "@media (max-width: 620px)": {
+      rowGap: layout.gap.xs,
+    },
   },
 
   link: {
@@ -201,6 +285,10 @@ export const useFooterStyles = makeStyles({
       outlineWidth: "2px",
       outlineOffset: "3px",
     },
+
+    "@media (max-width: 620px)": {
+      minHeight: "30px",
+    },
   },
 
   newsletterSection: {
@@ -208,6 +296,23 @@ export const useFooterStyles = makeStyles({
     flexDirection: "column",
     rowGap: layout.gap.md,
     maxWidth: "320px",
+
+    "@media (max-width: 980px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      maxWidth: "none",
+    },
+
+    "@media (max-width: 620px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      rowGap: layout.gap.sm,
+    },
+
+    "@media (max-width: 420px)": {
+      gridColumnStart: "auto",
+      gridColumnEnd: "auto",
+    },
   },
 
   newsletterText: {
@@ -215,6 +320,10 @@ export const useFooterStyles = makeStyles({
     margin: 0,
     color: warm.textSecondary,
     lineHeight: 1.65,
+
+    "@media (max-width: 620px)": {
+      lineHeight: 1.55,
+    },
   },
 
   newsletterForm: {
@@ -222,6 +331,15 @@ export const useFooterStyles = makeStyles({
     gridTemplateColumns: "minmax(0, 1fr) 56px",
     columnGap: layout.gap.xs,
     maxWidth: "260px",
+
+    "@media (max-width: 980px)": {
+      maxWidth: "420px",
+    },
+
+    "@media (max-width: 420px)": {
+      gridTemplateColumns: "minmax(0, 1fr) 48px",
+      maxWidth: "none",
+    },
   },
 
   emailInput: {
@@ -244,6 +362,11 @@ export const useFooterStyles = makeStyles({
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "2px",
+    },
+
+    "@media (max-width: 420px)": {
+      height: "40px",
+      padding: `0 ${layout.padding.sm}`,
     },
   },
 
@@ -277,6 +400,10 @@ export const useFooterStyles = makeStyles({
       outlineWidth: "2px",
       outlineOffset: "3px",
     },
+
+    "@media (max-width: 420px)": {
+      height: "40px",
+    },
   },
 
   copyright: {
@@ -287,6 +414,15 @@ export const useFooterStyles = makeStyles({
     paddingTop: layout.spacing[3],
     color: warm.textTertiary,
     ...shorthands.borderTop("1px", "solid", "var(--footer-divider)"),
+
+    "@media (max-width: 620px)": {
+      marginTop: layout.spacing[7],
+      paddingTop: layout.spacing[4],
+    },
+
+    "@media (max-width: 420px)": {
+      marginTop: layout.spacing[6],
+    },
   },
 
   decorHotAirBalloon: {
@@ -413,8 +549,14 @@ export const useFooterStyles = makeStyles({
     },
 
     "@media (max-width: 760px)": {
-      height: "42px",
-      opacity: 0.35,
+      height: "52px",
+      opacity: 0.26,
+      transform: "translateY(10px)",
+    },
+
+    "@media (max-width: 420px)": {
+      height: "38px",
+      opacity: 0.2,
     },
   },
 });
