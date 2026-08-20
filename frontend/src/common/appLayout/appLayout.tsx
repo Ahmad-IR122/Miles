@@ -24,10 +24,18 @@ const routesNeedingNavOffset = new Set<string>([
   routesPaths.chatbot,
 ]);
 
+const routesWithFooter = new Set<string>([
+  routesPaths.home,
+  routesPaths.itinerary,
+  routesPaths.chatbot,
+  ...routesWithBackNav,
+]);
+
 const AppLayout = () => {
   const location = useLocation();
   const styles = useAppLayoutStyles();
   const showNav = routesWithNav.has(location.pathname);
+  const showFooter = routesWithFooter.has(location.pathname);
   const homeLink = routesWithBackNav.has(location.pathname);
   const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
 
@@ -36,7 +44,7 @@ const AppLayout = () => {
       {showNav ? <TopNav homeLink={homeLink} /> : null}
       <div className={needsNavOffset ? styles.navOffset : undefined}>
         <Outlet />
-        <Footer />
+        {showFooter ? <Footer /> : null}
       </div>
     </div>
   );

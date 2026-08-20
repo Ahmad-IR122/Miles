@@ -186,6 +186,76 @@
   --warm-shadow-rose-hover: 0 14px 28px
     light-dark(rgba(244, 63, 122, 0.28), rgba(244, 63, 122, 0.34));
 
+  /* Footer artwork and surface details */
+  --footer-shell-end: light-dark(
+    rgba(255, 249, 245, 0.98),
+    rgba(26, 19, 16, 0.98)
+  );
+  --footer-divider: light-dark(
+    rgba(243, 222, 212, 0.82),
+    rgba(58, 46, 39, 0.82)
+  );
+  --footer-decor-coral: light-dark(#ff9b85, #ff8f78);
+  --footer-decor-coral-strong: light-dark(#ff6b6b, #ff7f7f);
+  --footer-decor-peach: light-dark(#ffd8c7, #5a3a31);
+  --footer-decor-brown: light-dark(#7f4a35, #d89b7e);
+  --footer-decor-muted: light-dark(#7f7068, #a89184);
+  --footer-hill-soft: light-dark(#ffe4d9, #2d211c);
+  --footer-hill-mid: light-dark(#ffdcd0, #35251f);
+  --footer-hill-strong: light-dark(#ffd0c0, #462c25);
+  --footer-hill-base: light-dark(#ffe3d7, #241a16);
+  --footer-tree: light-dark(#efb49d, #8f5c4c);
+
+  /* Not found page illustration */
+  --not-found-bg: light-dark(#fffaf7, #15100d);
+  --not-found-glow: light-dark(
+    rgba(255, 217, 196, 0.4),
+    rgba(255, 122, 89, 0.12)
+  );
+  --not-found-sun-start: light-dark(
+    rgba(255, 230, 210, 0.75),
+    rgba(255, 138, 101, 0.16)
+  );
+  --not-found-sun-end: light-dark(
+    rgba(255, 244, 234, 0.4),
+    rgba(233, 79, 146, 0.06)
+  );
+  --not-found-cloud: light-dark(
+    rgba(255, 255, 255, 0.78),
+    rgba(245, 237, 231, 0.16)
+  );
+  --not-found-cloud-shadow: light-dark(
+    rgba(255, 255, 255, 0.72),
+    rgba(245, 237, 231, 0.13)
+  );
+  --not-found-ground: light-dark(
+    rgba(255, 218, 194, 0.84),
+    rgba(255, 138, 101, 0.18)
+  );
+  --not-found-post: light-dark(
+    linear-gradient(90deg, #8f5231, #b97655 46%, #7b442b),
+    linear-gradient(90deg, #5a3528, #9a654e 46%, #43281f)
+  );
+  --not-found-sign: light-dark(
+    linear-gradient(180deg, #ffd4ba, #efab86 56%, #d88f6e),
+    linear-gradient(180deg, #d98872, #9b5f49 58%, #714334)
+  );
+  --not-found-sign-text: light-dark(#6b4226, #2a1712);
+  --not-found-sign-shine: light-dark(
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 244, 234, 0.16)
+  );
+  --not-found-brown-line: light-dark(
+    rgba(107, 66, 38, 0.28),
+    rgba(42, 23, 18, 0.38)
+  );
+  --not-found-brown-mark: light-dark(
+    rgba(107, 66, 38, 0.62),
+    rgba(42, 23, 18, 0.7)
+  );
+  --not-found-rock: light-dark(#d99b79, #9b6650);
+  --not-found-rock-large: light-dark(#e0aa89, #b2775e);
+
   /* ---------------------------------------------------------------------
    * itinerary — the third palette, kept whole rather than folded into `warm`.
    *

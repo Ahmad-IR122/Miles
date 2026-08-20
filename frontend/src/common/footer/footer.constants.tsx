@@ -7,7 +7,7 @@ import { routesPaths } from "../../routes/routesPaths";
 
 export const planLinks = [
   { label: "Plan Your Trip", path: routesPaths.planTrip },
-  { label: "Destinations", path: routesPaths.recommendation },
+  { label: "Discover", path: routesPaths.recommendation },
   { label: "AI Itinerary", path: routesPaths.itinerary },
   { label: "Travel Guide", path: routesPaths.chatbot },
 ];
