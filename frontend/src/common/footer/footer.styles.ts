@@ -327,51 +327,66 @@ export const useFooterStyles = makeStyles({
   },
 
   newsletterForm: {
-    display: "grid",
-    gridTemplateColumns: "minmax(0, 1fr) 56px",
+    display: "flex",
+    alignItems: "center",
     columnGap: layout.gap.xs,
-    maxWidth: "260px",
+    width: "100%",
+    maxWidth: "320px",
+    padding: "4px",
+    backgroundColor: warm.bgSurface,
+    borderRadius: layout.radius.md,
+    boxShadow: warmShadows.sm,
+    ...shorthands.border("1px", "solid", warm.border),
+    transitionProperty: "box-shadow, outline-color",
+    transitionDuration: "0.16s",
+    transitionTimingFunction: "ease",
+
+    ":focus-within": {
+      outlineColor: warm.borderCoralBright,
+      outlineStyle: "solid",
+      outlineWidth: "2px",
+      outlineOffset: "2px",
+      boxShadow: warmShadows.roseSoft,
+    },
 
     "@media (max-width: 980px)": {
       maxWidth: "420px",
     },
 
     "@media (max-width: 420px)": {
-      gridTemplateColumns: "minmax(0, 1fr) 48px",
       maxWidth: "none",
     },
   },
 
   emailInput: {
+    flex: 1,
     minWidth: 0,
-    height: "42px",
+    height: "44px",
     padding: `0 ${layout.padding.md}`,
     color: warm.textPrimary,
-    backgroundColor: warm.bgSurface,
+    backgroundColor: "transparent",
     borderRadius: layout.radius.sm,
-    boxShadow: warmShadows.xs,
-    ...shorthands.border("1px", "solid", warm.border),
-    fontSize: "13px",
+    ...shorthands.border("0"),
+    fontSize: "14px",
 
     "::placeholder": {
       color: warm.textTertiary,
     },
 
     ":focus": {
-      outlineColor: warm.coral,
-      outlineStyle: "solid",
-      outlineWidth: "2px",
-      outlineOffset: "2px",
+      outlineStyle: "none",
     },
 
     "@media (max-width: 420px)": {
-      height: "40px",
+      height: "42px",
       padding: `0 ${layout.padding.sm}`,
     },
   },
 
   submitButton: {
-    height: "42px",
+    width: "52px",
+    height: "44px",
+    flexShrink: 0,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
@@ -386,7 +401,7 @@ export const useFooterStyles = makeStyles({
     transitionTimingFunction: "ease",
 
     "& svg": {
-      fontSize: "20px",
+      fontSize: "22px",
     },
 
     ":hover": {
@@ -395,14 +410,15 @@ export const useFooterStyles = makeStyles({
     },
 
     ":focus-visible": {
-      outlineColor: warm.coral,
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
       outlineWidth: "2px",
-      outlineOffset: "3px",
+      outlineOffset: "2px",
     },
 
     "@media (max-width: 420px)": {
-      height: "40px",
+      width: "48px",
+      height: "42px",
     },
   },
 
