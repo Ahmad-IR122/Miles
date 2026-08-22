@@ -1,17 +1,21 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { colors, gradients } from "../theme/colors";
+import { gradients, semanticColors, warm, warmShadows } from "../theme/colors";
 import { layout, typographyPresets } from "../theme/typography";
 
 export const useFooterStyles = makeStyles({
   footer: {
     marginTop: layout.spacing[16],
-    padding: `0 ${layout.padding.xl} ${layout.padding.xl}`,
-    backgroundColor: "#FFF9F5",
+    padding: `0 clamp(${layout.padding.md}, 4vw, ${layout.padding.xl}) ${layout.padding.xl}`,
+    backgroundColor: warm.bgPage,
 
     "@media (max-width: 760px)": {
       marginTop: layout.spacing[10],
       padding: `0 ${layout.padding.sm} ${layout.padding.lg}`,
+    },
+
+    "@media (max-width: 420px)": {
+      padding: `0 ${layout.padding.xs} ${layout.padding.md}`,
     },
   },
 
@@ -24,10 +28,10 @@ export const useFooterStyles = makeStyles({
     margin: "0 auto",
     padding: `${layout.padding["2xl"]} ${layout.padding["2xl"]} ${layout.padding.lg}`,
     background:
-      "linear-gradient(180deg, rgba(255, 252, 249, 0.96) 0%, rgba(255, 249, 245, 0.98) 100%)",
+      "linear-gradient(180deg, var(--warm-bg-surface-blur) 0%, var(--footer-shell-end) 100%)",
     borderRadius: "22px 22px 0 0",
-    boxShadow: "0 18px 44px rgba(47, 33, 27, 0.06)",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
+    boxShadow: warmShadows.lg,
+    ...shorthands.border("1px", "solid", warm.border),
     ...shorthands.borderBottom("0"),
 
     "@media (max-width: 980px)": {
@@ -36,8 +40,13 @@ export const useFooterStyles = makeStyles({
 
     "@media (max-width: 760px)": {
       minHeight: "auto",
-      padding: `${layout.padding.lg} ${layout.padding.md}`,
+      padding: `${layout.padding.lg} ${layout.padding.md} ${layout.padding.xl}`,
       borderRadius: "18px 18px 0 0",
+    },
+
+    "@media (max-width: 420px)": {
+      padding: `${layout.padding.md} ${layout.padding.sm} ${layout.padding.lg}`,
+      borderRadius: "16px 16px 0 0",
     },
   },
 
@@ -51,12 +60,23 @@ export const useFooterStyles = makeStyles({
     alignItems: "start",
 
     "@media (max-width: 980px)": {
-      gridTemplateColumns: "1.2fr 1fr",
+      gridTemplateColumns: "minmax(0, 1.15fr) minmax(180px, 0.85fr)",
+      columnGap: layout.gap.xl,
+    },
+
+    "@media (max-width: 760px)": {
+      gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+      columnGap: layout.gap.lg,
+      rowGap: layout.gap.lg,
     },
 
     "@media (max-width: 620px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      rowGap: layout.gap.md,
+    },
+
+    "@media (max-width: 420px)": {
       gridTemplateColumns: "1fr",
-      rowGap: layout.gap.lg,
     },
   },
 
@@ -65,6 +85,26 @@ export const useFooterStyles = makeStyles({
     flexDirection: "column",
     rowGap: layout.gap.lg,
     maxWidth: "275px",
+
+    "@media (max-width: 980px)": {
+      maxWidth: "none",
+    },
+
+    "@media (max-width: 760px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+    },
+
+    "@media (max-width: 620px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      rowGap: layout.gap.md,
+    },
+
+    "@media (max-width: 420px)": {
+      gridColumnStart: "auto",
+      gridColumnEnd: "auto",
+    },
   },
 
   brand: {
@@ -72,15 +112,19 @@ export const useFooterStyles = makeStyles({
     alignItems: "center",
     columnGap: layout.gap.sm,
     width: "fit-content",
-    color: "#2F211B",
+    color: warm.textPrimary,
     textDecorationLine: "none",
     borderRadius: layout.radius.md,
 
     ":focus-visible": {
-      outlineColor: "#FF6B6B",
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "5px",
+    },
+
+    "@media (max-width: 420px)": {
+      columnGap: layout.gap.xs,
     },
   },
 
@@ -94,6 +138,11 @@ export const useFooterStyles = makeStyles({
     justifyContent: "center",
     flexShrink: 0,
     backgroundColor: "transparent",
+
+    "@media (max-width: 420px)": {
+      width: "46px",
+      height: "46px",
+    },
   },
 
   logo: {
@@ -105,22 +154,40 @@ export const useFooterStyles = makeStyles({
 
   brandName: {
     ...typographyPresets.brand,
-    color: "#2F211B",
+    color: warm.textPrimary,
     fontSize: "26px",
     lineHeight: 1,
+
+    "@media (max-width: 420px)": {
+      fontSize: "23px",
+    },
   },
 
   description: {
     ...typographyPresets.body,
     margin: 0,
-    color: "#5F676C",
+    color: warm.textSecondary,
     lineHeight: 1.8,
+
+    "@media (max-width: 760px)": {
+      maxWidth: "520px",
+    },
+
+    "@media (max-width: 420px)": {
+      lineHeight: 1.65,
+    },
   },
 
   socialLinks: {
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
+    flexWrap: "wrap",
+    rowGap: layout.gap.xs,
+
+    "@media (max-width: 420px)": {
+      columnGap: layout.gap.xs,
+    },
   },
 
   socialButton: {
@@ -129,13 +196,13 @@ export const useFooterStyles = makeStyles({
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#FF6B6B",
-    backgroundColor: "#FFFFFF",
+    color: warm.coralBright,
+    backgroundColor: warm.bgSurface,
     borderRadius: layout.radius.full,
-    boxShadow: "0 8px 18px rgba(47, 33, 27, 0.08)",
+    boxShadow: warmShadows.xs,
     cursor: "pointer",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
-    transitionProperty: "color, transform, box-shadow",
+    ...shorthands.border("1px", "solid", warm.border),
+    transitionProperty: "background-color, color, transform, box-shadow",
     transitionDuration: "0.16s",
     transitionTimingFunction: "ease",
 
@@ -144,16 +211,22 @@ export const useFooterStyles = makeStyles({
     },
 
     ":hover": {
-      color: colors.rose,
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
       transform: "translateY(-2px)",
-      boxShadow: "0 12px 24px rgba(244, 63, 122, 0.15)",
+      boxShadow: warmShadows.roseSoft,
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "3px",
+    },
+
+    "@media (max-width: 420px)": {
+      width: "36px",
+      height: "36px",
     },
   },
 
@@ -161,19 +234,31 @@ export const useFooterStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.md,
+
+    "@media (max-width: 620px)": {
+      rowGap: layout.gap.sm,
+    },
   },
 
   sectionTitle: {
     ...typographyPresets.h3,
     margin: 0,
-    color: "#3B1F13",
+    color: warm.textPrimary,
     fontSize: "15px",
+
+    "@media (max-width: 620px)": {
+      fontSize: "14px",
+    },
   },
 
   links: {
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.sm,
+
+    "@media (max-width: 620px)": {
+      rowGap: layout.gap.xs,
+    },
   },
 
   link: {
@@ -182,7 +267,7 @@ export const useFooterStyles = makeStyles({
     minHeight: "24px",
     display: "inline-flex",
     alignItems: "center",
-    color: "#5F676C",
+    color: warm.textSecondary,
     textDecorationLine: "none",
     borderRadius: layout.radius.full,
     transitionProperty: "color, transform",
@@ -190,15 +275,19 @@ export const useFooterStyles = makeStyles({
     transitionTimingFunction: "ease",
 
     ":hover": {
-      color: colors.rose,
+      color: warm.rose,
       transform: "translateX(2px)",
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coral,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "3px",
+    },
+
+    "@media (max-width: 620px)": {
+      minHeight: "30px",
     },
   },
 
@@ -207,74 +296,129 @@ export const useFooterStyles = makeStyles({
     flexDirection: "column",
     rowGap: layout.gap.md,
     maxWidth: "320px",
+
+    "@media (max-width: 980px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      maxWidth: "none",
+    },
+
+    "@media (max-width: 620px)": {
+      gridColumnStart: 1,
+      gridColumnEnd: 3,
+      rowGap: layout.gap.sm,
+    },
+
+    "@media (max-width: 420px)": {
+      gridColumnStart: "auto",
+      gridColumnEnd: "auto",
+    },
   },
 
   newsletterText: {
     ...typographyPresets.body,
     margin: 0,
-    color: "#5F676C",
+    color: warm.textSecondary,
     lineHeight: 1.65,
+
+    "@media (max-width: 620px)": {
+      lineHeight: 1.55,
+    },
   },
 
   newsletterForm: {
-    display: "grid",
-    gridTemplateColumns: "minmax(0, 1fr) 56px",
+    display: "flex",
+    alignItems: "center",
     columnGap: layout.gap.xs,
-    maxWidth: "260px",
-  },
+    width: "100%",
+    maxWidth: "320px",
+    padding: "4px",
+    backgroundColor: warm.bgSurface,
+    borderRadius: layout.radius.md,
+    boxShadow: warmShadows.sm,
+    ...shorthands.border("1px", "solid", warm.border),
+    transitionProperty: "box-shadow, outline-color",
+    transitionDuration: "0.16s",
+    transitionTimingFunction: "ease",
 
-  emailInput: {
-    minWidth: 0,
-    height: "42px",
-    padding: `0 ${layout.padding.md}`,
-    color: "#2F211B",
-    backgroundColor: "#FFFFFF",
-    borderRadius: layout.radius.sm,
-    boxShadow: "0 8px 18px rgba(47, 33, 27, 0.06)",
-    ...shorthands.border("1px", "solid", "#F3DED4"),
-    fontSize: "13px",
-
-    "::placeholder": {
-      color: "#9C8D84",
-    },
-
-    ":focus": {
-      outlineColor: colors.coral,
+    ":focus-within": {
+      outlineColor: warm.borderCoralBright,
       outlineStyle: "solid",
       outlineWidth: "2px",
       outlineOffset: "2px",
+      boxShadow: warmShadows.roseSoft,
+    },
+
+    "@media (max-width: 980px)": {
+      maxWidth: "420px",
+    },
+
+    "@media (max-width: 420px)": {
+      maxWidth: "none",
+    },
+  },
+
+  emailInput: {
+    flex: 1,
+    minWidth: 0,
+    height: "44px",
+    padding: `0 ${layout.padding.md}`,
+    color: warm.textPrimary,
+    backgroundColor: "transparent",
+    borderRadius: layout.radius.sm,
+    ...shorthands.border("0"),
+    fontSize: "14px",
+
+    "::placeholder": {
+      color: warm.textTertiary,
+    },
+
+    ":focus": {
+      outlineStyle: "none",
+    },
+
+    "@media (max-width: 420px)": {
+      height: "42px",
+      padding: `0 ${layout.padding.sm}`,
     },
   },
 
   submitButton: {
-    height: "42px",
+    width: "52px",
+    height: "44px",
+    flexShrink: 0,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#FFFFFF",
+    color: semanticColors.textOnAccent,
     backgroundImage: gradients.primary,
     borderRadius: layout.radius.sm,
     cursor: "pointer",
-    boxShadow: "0 12px 24px rgba(244, 63, 122, 0.22)",
+    boxShadow: warmShadows.rose,
     ...shorthands.border("0"),
     transitionProperty: "transform, box-shadow",
     transitionDuration: "0.16s",
     transitionTimingFunction: "ease",
 
     "& svg": {
-      fontSize: "20px",
+      fontSize: "22px",
     },
 
     ":hover": {
       transform: "translateY(-1px)",
-      boxShadow: "0 14px 28px rgba(244, 63, 122, 0.28)",
+      boxShadow: warmShadows.roseHover,
     },
 
     ":focus-visible": {
-      outlineColor: colors.coral,
+      outlineColor: warm.coralBright,
       outlineStyle: "solid",
       outlineWidth: "2px",
-      outlineOffset: "3px",
+      outlineOffset: "2px",
+    },
+
+    "@media (max-width: 420px)": {
+      width: "48px",
+      height: "42px",
     },
   },
 
@@ -284,8 +428,17 @@ export const useFooterStyles = makeStyles({
     zIndex: 1,
     margin: `${layout.spacing[10]} 0 0`,
     paddingTop: layout.spacing[3],
-    color: "#9C8D84",
-    ...shorthands.borderTop("1px", "solid", "rgba(243, 222, 212, 0.82)"),
+    color: warm.textTertiary,
+    ...shorthands.borderTop("1px", "solid", "var(--footer-divider)"),
+
+    "@media (max-width: 620px)": {
+      marginTop: layout.spacing[7],
+      paddingTop: layout.spacing[4],
+    },
+
+    "@media (max-width: 420px)": {
+      marginTop: layout.spacing[6],
+    },
   },
 
   decorHotAirBalloon: {
@@ -297,7 +450,7 @@ export const useFooterStyles = makeStyles({
     opacity: 0.34,
     borderRadius: "50% 50% 46% 46%",
     background:
-      "repeating-linear-gradient(90deg, #FF9B85 0 5px, #FFE1D6 5px 10px)",
+      "repeating-linear-gradient(90deg, var(--footer-decor-coral) 0 5px, var(--footer-decor-peach) 5px 10px)",
 
     "::before": {
       content: "\"\"",
@@ -306,7 +459,7 @@ export const useFooterStyles = makeStyles({
       bottom: "-8px",
       width: "10px",
       height: "7px",
-      backgroundColor: "#FFD8C7",
+      backgroundColor: "var(--footer-decor-peach)",
       borderRadius: "2px",
     },
 
@@ -330,10 +483,10 @@ export const useFooterStyles = makeStyles({
       top: 0,
       width: "14px",
       height: "14px",
-      backgroundColor: "#7F4A35",
+      backgroundColor: "var(--footer-decor-brown)",
       borderRadius: layout.radius.full,
       boxShadow:
-        "-12px 12px 0 -2px #FF6B6B, 0 16px 0 2px #FFD8C7, 10px 22px 0 -1px #7F7068",
+        "-12px 12px 0 -2px var(--footer-decor-coral-strong), 0 16px 0 2px var(--footer-decor-peach), 10px 22px 0 -1px var(--footer-decor-muted)",
     },
 
     "@media (max-width: 620px)": {
@@ -355,7 +508,7 @@ export const useFooterStyles = makeStyles({
       position: "absolute",
       inset: 0,
       clipPath: "polygon(0 42%, 100% 0, 72% 50%, 100% 100%, 0 58%, 42% 50%)",
-      backgroundColor: "#FF9B85",
+      backgroundColor: "var(--footer-decor-coral)",
     },
 
     "@media (max-width: 760px)": {
@@ -370,7 +523,7 @@ export const useFooterStyles = makeStyles({
     width: "56px",
     height: "18px",
     opacity: 0.2,
-    backgroundColor: "#FFD8C7",
+    backgroundColor: "var(--footer-decor-peach)",
     borderRadius: layout.radius.full,
 
     "::before": {
@@ -380,7 +533,7 @@ export const useFooterStyles = makeStyles({
       bottom: "6px",
       width: "20px",
       height: "20px",
-      backgroundColor: "#FFD8C7",
+      backgroundColor: "var(--footer-decor-peach)",
       borderRadius: layout.radius.full,
     },
 
@@ -397,7 +550,7 @@ export const useFooterStyles = makeStyles({
     height: "84px",
     opacity: 0.54,
     background:
-      "radial-gradient(80px 24px at 10% 100%, #FFE4D9 0 68%, transparent 69%), radial-gradient(160px 48px at 24% 100%, #FFDCD0 0 62%, transparent 63%), radial-gradient(220px 72px at 78% 100%, #FFD0C0 0 64%, transparent 65%), linear-gradient(180deg, transparent 0 66%, #FFE3D7 67% 100%)",
+      "radial-gradient(80px 24px at 10% 100%, var(--footer-hill-soft) 0 68%, transparent 69%), radial-gradient(160px 48px at 24% 100%, var(--footer-hill-mid) 0 62%, transparent 63%), radial-gradient(220px 72px at 78% 100%, var(--footer-hill-strong) 0 64%, transparent 65%), linear-gradient(180deg, transparent 0 66%, var(--footer-hill-base) 67% 100%)",
 
     "::before": {
       content: "\"\"",
@@ -408,12 +561,18 @@ export const useFooterStyles = makeStyles({
       height: "58px",
       opacity: 0.56,
       background:
-        "linear-gradient(90deg, transparent 0 18px, #EFB49D 18px 21px, transparent 21px 35px, #EFB49D 35px 38px, transparent 38px), radial-gradient(20px 16px at 18px 14px, #EFB49D 0 38%, transparent 40%), radial-gradient(22px 16px at 38px 10px, #EFB49D 0 38%, transparent 40%), radial-gradient(18px 14px at 52px 18px, #EFB49D 0 38%, transparent 40%)",
+        "linear-gradient(90deg, transparent 0 18px, var(--footer-tree) 18px 21px, transparent 21px 35px, var(--footer-tree) 35px 38px, transparent 38px), radial-gradient(20px 16px at 18px 14px, var(--footer-tree) 0 38%, transparent 40%), radial-gradient(22px 16px at 38px 10px, var(--footer-tree) 0 38%, transparent 40%), radial-gradient(18px 14px at 52px 18px, var(--footer-tree) 0 38%, transparent 40%)",
     },
 
     "@media (max-width: 760px)": {
-      height: "42px",
-      opacity: 0.35,
+      height: "52px",
+      opacity: 0.26,
+      transform: "translateY(10px)",
+    },
+
+    "@media (max-width: 420px)": {
+      height: "38px",
+      opacity: 0.2,
     },
   },
 });

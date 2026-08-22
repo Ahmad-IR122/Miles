@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from sqlalchemy.orm import Session
 
@@ -11,6 +12,10 @@ from app.schemas import (
     TripUpdate,
 )
 from app.services.store import save_trip_request
+
+
+class TripDateConflictError(Exception):
+    """Raised when a trip's dates overlap another trip for the same user."""
 
 
 def create_trip_request(payload: TripRequest) -> TripRequestResponse:
@@ -39,6 +44,23 @@ def _check_dates(start_date, end_date) -> None:
         raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
 
 
+def get_overlapping_trip(
+    db: Session,
+    user_id: int,
+    start_date: date,
+    end_date: date,
+    exclude_trip_id: int | None = None,
+) -> Trip | None:
+    query = db.query(Trip).filter(
+        Trip.user_id == user_id,
+        Trip.start_date <= end_date,
+        Trip.end_date >= start_date,
+    )
+    if exclude_trip_id is not None:
+        query = query.filter(Trip.id != exclude_trip_id)
+    return query.first()
+
+
 def create_trip(db: Session, user_id: int, payload: TripCreate) -> Trip:
     trip = Trip(user_id=user_id, **payload.model_dump())
     db.add(trip)
@@ -64,10 +86,19 @@ def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
         return None
 
     changes = payload.model_dump(exclude_unset=True)
-    _check_dates(
-        changes.get("start_date", trip.start_date),
-        changes.get("end_date", trip.end_date),
+    new_start = changes.get("start_date", trip.start_date)
+    new_end = changes.get("end_date", trip.end_date)
+    _check_dates(new_start, new_end)
+
+    overlapping = get_overlapping_trip(
+        db, trip.user_id, new_start, new_end, exclude_trip_id=trip_id
     )
+    if overlapping is not None:
+        raise TripDateConflictError(
+            f"trip dates overlap with existing trip {overlapping.id} "
+            f"({overlapping.start_date} to {overlapping.end_date})"
+        )
+
     for field, value in changes.items():
         setattr(trip, field, value)
 

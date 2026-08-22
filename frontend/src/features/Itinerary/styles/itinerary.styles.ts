@@ -4,6 +4,7 @@ import {
   itinerary,
   itineraryGradients,
   itineraryShadows,
+  semanticColors,
   warm,
   warmGradients,
   warmShadows,
@@ -199,7 +200,7 @@ export const useItineraryStyles = makeStyles({
   modifyTripButton: {
     width: "100%",
     height: "52px",
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: itineraryGradients.coral,
     ...shorthands.borderRadius(layout.radius.pill),
     textTransform: "none",
@@ -234,7 +235,7 @@ export const useItineraryStyles = makeStyles({
     fontWeight: 850,
     boxShadow: itineraryShadows.export,
     ":hover": {
-      backgroundColor: colors.white,
+      backgroundColor: itinerary.surfaceRaised,
       boxShadow: itineraryShadows.exportHover,
     },
   },
@@ -354,13 +355,13 @@ export const useItineraryStyles = makeStyles({
     boxShadow: warmShadows.xs,
     ":hover": {
       color: warm.textPrimary,
-      backgroundColor: colors.white,
+      backgroundColor: itinerary.surfaceRaised,
       boxShadow: itineraryShadows.ghostHover,
     },
   },
   primaryButton: {
     minWidth: "88px",
-    color: colors.white,
+    color: semanticColors.textOnAccent,
     background: warmGradients.primary,
     boxShadow: itineraryShadows.primary,
     ":hover": {
@@ -405,7 +406,7 @@ export const useItineraryStyles = makeStyles({
   },
   dayTabActive: {
     background: itineraryGradients.coral,
-    color: `${colors.white} !important`,
+    color: `${semanticColors.textOnAccent} !important`,
     ...shorthands.borderColor(colors.transparent),
     boxShadow: itineraryShadows.dayTabActive,
   },
@@ -463,7 +464,7 @@ export const useItineraryStyles = makeStyles({
   },
   outlineBlueButton: {
     color: warm.coralBright,
-    backgroundColor: colors.white,
+    backgroundColor: itinerary.surfaceRaised,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
@@ -707,7 +708,7 @@ export const useItineraryStyles = makeStyles({
       itinerary.borderPeach20,
     ),
     ...shorthands.borderRadius(layout.radius.md),
-    backgroundColor: colors.white,
+    backgroundColor: itinerary.surfaceRaised,
     boxShadow: itineraryShadows.iconButton,
     ":hover": {
       backgroundColor: itinerary.bgHoverCream,

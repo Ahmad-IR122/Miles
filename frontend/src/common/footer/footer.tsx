@@ -1,4 +1,5 @@
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import { SignedIn } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 import logo from "../../assets/logo.svg";
@@ -43,27 +44,29 @@ const Footer = () => {
             </div>
           </section>
 
-          <nav className={styles.navSection} aria-label="Plan navigation">
-            <h2 className={styles.sectionTitle}>Plan</h2>
-            <div className={styles.links}>
-              {planLinks.map((item) => (
-                <Link className={styles.link} key={item.label} to={item.path}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+          <SignedIn>
+            <nav className={styles.navSection} aria-label="Plan navigation">
+              <h2 className={styles.sectionTitle}>Plan</h2>
+              <div className={styles.links}>
+                {planLinks.map((item) => (
+                  <Link className={styles.link} key={item.label} to={item.path}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
 
-          <nav className={styles.navSection} aria-label="Trips navigation">
-            <h2 className={styles.sectionTitle}>Trips</h2>
-            <div className={styles.links}>
-              {tripLinks.map((item) => (
-                <Link className={styles.link} key={item.path} to={item.path}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+            <nav className={styles.navSection} aria-label="Trips navigation">
+              <h2 className={styles.sectionTitle}>Trips</h2>
+              <div className={styles.links}>
+                {tripLinks.map((item) => (
+                  <Link className={styles.link} key={item.path} to={item.path}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </SignedIn>
 
           <section className={styles.newsletterSection}>
             <h2 className={styles.sectionTitle}>Stay in the loop</h2>

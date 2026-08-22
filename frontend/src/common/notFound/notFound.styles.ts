@@ -1,24 +1,30 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { colors, gradients, semanticColors } from "../theme/colors";
+import {
+  colors,
+  gradients,
+  semanticColors,
+  warm,
+  warmShadows,
+} from "../theme/colors";
 import { layout, typography } from "../theme/typography";
 
 export const useNotFoundStyles = makeStyles({
   root: {
-    minHeight: "calc(100dvh - 140px)",
+    minHeight: "100dvh",
     display: "grid",
     placeItems: "center",
-    padding: "72px 24px",
+    padding: "clamp(48px, 8vh, 84px) clamp(16px, 4vw, 32px)",
     background:
-      "radial-gradient(circle at 26% 28%, rgba(255, 217, 196, 0.4), transparent 30%), #fffaf7",
+      "radial-gradient(circle at 26% 28%, var(--not-found-glow), transparent 34%), radial-gradient(circle at 82% 72%, var(--color-bg-accent), transparent 30%), var(--not-found-bg)",
   },
 
   content: {
-    width: "min(940px, 100%)",
+    width: "min(980px, 100%)",
     display: "grid",
-    gridTemplateColumns: "minmax(280px, 1fr) minmax(280px, 0.95fr)",
+    gridTemplateColumns: "minmax(280px, 1.05fr) minmax(280px, 0.95fr)",
     alignItems: "center",
-    columnGap: "72px",
+    columnGap: "clamp(40px, 7vw, 88px)",
 
     "@media (max-width: 760px)": {
       gridTemplateColumns: "1fr",
@@ -29,7 +35,8 @@ export const useNotFoundStyles = makeStyles({
 
   illustration: {
     position: "relative",
-    minHeight: "310px",
+    minHeight: "330px",
+    filter: "drop-shadow(0 28px 44px rgba(0, 0, 0, 0.08))",
 
     "@media (max-width: 760px)": {
       minHeight: "260px",
@@ -46,7 +53,8 @@ export const useNotFoundStyles = makeStyles({
     height: "260px",
     borderRadius: "50%",
     background:
-      "linear-gradient(180deg, rgba(255, 230, 210, 0.75), rgba(255, 244, 234, 0.4))",
+      "linear-gradient(180deg, var(--not-found-sun-start), var(--not-found-sun-end))",
+    boxShadow: "inset 0 0 60px rgba(255, 255, 255, 0.08)",
   },
 
   cloud: {
@@ -54,9 +62,9 @@ export const useNotFoundStyles = makeStyles({
     width: "86px",
     height: "20px",
     borderRadius: "999px",
-    backgroundColor: "rgba(255, 255, 255, 0.78)",
+    backgroundColor: "var(--not-found-cloud)",
     boxShadow:
-      "36px 8px 0 rgba(255,255,255,0.72), 18px -14px 0 8px rgba(255,255,255,0.7)",
+      "36px 8px 0 var(--not-found-cloud-shadow), 18px -14px 0 8px var(--not-found-cloud-shadow)",
   },
 
   cloudLeft: {
@@ -80,7 +88,7 @@ export const useNotFoundStyles = makeStyles({
     ...shorthands.borderBottom("14px", "solid", "transparent"),
     ...shorthands.borderLeft("46px", "solid", colors.coral),
     transform: "rotate(-40deg)",
-    filter: "drop-shadow(0 10px 16px rgba(233, 79, 146, 0.18))",
+    filter: "drop-shadow(0 10px 16px rgba(233, 79, 146, 0.22))",
 
     "::after": {
       content: "\"\"",
@@ -89,7 +97,7 @@ export const useNotFoundStyles = makeStyles({
       left: "-39px",
       width: "26px",
       height: "2px",
-      backgroundColor: "rgba(255, 255, 255, 0.45)",
+      backgroundColor: "rgba(255, 255, 255, 0.5)",
       transform: "rotate(24deg)",
     },
   },
@@ -115,7 +123,7 @@ export const useNotFoundStyles = makeStyles({
     height: "30px",
     borderRadius: "50%",
     background:
-      "linear-gradient(90deg, rgba(255, 218, 194, 0), rgba(255, 218, 194, 0.84), rgba(255, 218, 194, 0))",
+      "linear-gradient(90deg, transparent, var(--not-found-ground), transparent)",
   },
 
   post: {
@@ -125,8 +133,8 @@ export const useNotFoundStyles = makeStyles({
     width: "24px",
     height: "178px",
     borderRadius: "6px",
-    background: "linear-gradient(90deg, #8f5231, #b97655 46%, #7b442b)",
-    boxShadow: "0 12px 18px rgba(107, 66, 38, 0.18)",
+    background: "var(--not-found-post)",
+    boxShadow: warmShadows.sm,
   },
 
   sign: {
@@ -137,17 +145,17 @@ export const useNotFoundStyles = makeStyles({
     height: "78px",
     display: "grid",
     placeItems: "center",
-    color: colors.brown,
+    color: "var(--not-found-sign-text)",
     fontFamily: typography.fontFamily.sans,
     fontSize: typography.fontSize.size6,
     fontWeight: typography.fontWeight.bold,
     lineHeight: typography.lineHeight.tight,
     textAlign: "center",
-    background: "linear-gradient(180deg, #ffd4ba, #efab86 56%, #d88f6e)",
+    background: "var(--not-found-sign)",
     clipPath: "polygon(0 0, 86% 0, 100% 50%, 86% 100%, 0 100%, 8% 50%)",
     transform: "rotate(5deg)",
     boxShadow:
-      "inset 0 0 0 4px rgba(255,255,255,0.2), 0 18px 26px rgba(107, 66, 38, 0.12)",
+      "inset 0 0 0 4px var(--not-found-sign-shine), 0 18px 26px rgba(0, 0, 0, 0.12)",
   },
 
   marker: {
@@ -157,7 +165,7 @@ export const useNotFoundStyles = makeStyles({
     width: "34px",
     height: "22px",
     borderRadius: "50%",
-    ...shorthands.border("1.5px", "solid", "rgba(107,66,38,0.28)"),
+    ...shorthands.border("1.5px", "solid", "var(--not-found-brown-line)"),
     transform: "rotate(24deg)",
 
     "::after": {
@@ -165,7 +173,7 @@ export const useNotFoundStyles = makeStyles({
       position: "absolute",
       right: "-24px",
       bottom: "-6px",
-      color: "rgba(107,66,38,0.62)",
+      color: "var(--not-found-brown-mark)",
       fontSize: typography.fontSize.size8,
       fontWeight: typography.fontWeight.bold,
     },
@@ -201,7 +209,7 @@ export const useNotFoundStyles = makeStyles({
     width: "20px",
     height: "12px",
     borderRadius: "50% 50% 44% 44%",
-    backgroundColor: "#d99b79",
+    backgroundColor: "var(--not-found-rock)",
   },
 
   rockOne: {
@@ -217,7 +225,7 @@ export const useNotFoundStyles = makeStyles({
     right: "38px",
     width: "34px",
     height: "21px",
-    backgroundColor: "#e0aa89",
+    backgroundColor: "var(--not-found-rock-large)",
   },
 
   copy: {
@@ -225,6 +233,7 @@ export const useNotFoundStyles = makeStyles({
 
     "@media (max-width: 760px)": {
       justifySelf: "center",
+      maxWidth: "520px",
     },
   },
 
@@ -243,7 +252,7 @@ export const useNotFoundStyles = makeStyles({
 
   title: {
     margin: "16px 0 0",
-    color: "#2b1e1c",
+    color: warm.textPrimary,
     fontFamily: typography.fontFamily.sans,
     fontSize: "clamp(24px, 3vw, 30px)",
     fontWeight: typography.fontWeight.bold,

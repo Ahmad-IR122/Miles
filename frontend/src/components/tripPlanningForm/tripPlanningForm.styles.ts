@@ -4,6 +4,7 @@ import {
   semanticColors,
   gradients,
   warm,
+  itinerary,
   itineraryShadows,
   itineraryGradients,
 } from "../../common/theme/colors";
@@ -13,9 +14,10 @@ import {
   typographyPresets,
 } from "../../common/theme/typography";
 export const fieldSx = {
-  "& .MuiOutlinedInput-root": {
+  "& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root": {
     borderRadius: layout.radius.md,
     fontSize: typography.fontSize.size4,
+    backgroundColor: semanticColors.bgPrimary,
     "& fieldset": {
       borderColor: semanticColors.borderDefault,
       borderWidth: layout.borderWidth.thin,
@@ -27,6 +29,9 @@ export const fieldSx = {
       borderColor: semanticColors.interactive,
       borderWidth: layout.borderWidth.thin,
     },
+    "&.Mui-error fieldset": {
+      borderColor: semanticColors.textError,
+    },
   },
   "& .MuiInputLabel-root": {
     fontSize: typography.fontSize.size4,
@@ -35,7 +40,44 @@ export const fieldSx = {
   "& .MuiInputLabel-root.Mui-focused": {
     color: semanticColors.interactive,
   },
+  "& .MuiInputLabel-root.Mui-error": {
+    color: semanticColors.textError,
+  },
+  "& .MuiFormHelperText-root.Mui-error": {
+    color: semanticColors.textError,
+  },
 };
+
+export const completedFieldSx = {
+  "& .MuiOutlinedInput-root:not(.Mui-error):not(.Mui-focused), & .MuiPickersOutlinedInput-root:not(.Mui-error):not(.Mui-focused)":
+    {
+      "& fieldset": {
+        borderColor: `color-mix(in srgb, ${colors.success} 55%, transparent)`,
+      },
+      "&:hover fieldset": {
+        borderColor: `color-mix(in srgb, ${colors.success} 70%, transparent)`,
+      },
+    },
+};
+
+export const getFieldSx = (isCompleted: boolean) =>
+  isCompleted ? { ...fieldSx, ...completedFieldSx } : fieldSx;
+
+/**
+ * Geometry of the circular progress ring that wraps the loading sprite.
+ * The SVG viewBox is 1:1 with pixels so the plane, positioned in CSS, can
+ * share the same radius as the stroked circle.
+ */
+export const progressRing = {
+  size: 240,
+  radius: 110,
+  stroke: 12,
+  /** The plane flies just outside the stroke so it never smudges into it. */
+  planeRadius: 126,
+} as const;
+
+export const progressRingCircumference = 2 * Math.PI * progressRing.radius;
+
 export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
@@ -57,11 +99,13 @@ export const useTripPlanningFormStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    backgroundImage: itineraryGradients.spriteHalo,
     "& img": {
       width: "100%",
       height: "100%",
       objectFit: "contain",
       imageRendering: "pixelated",
+      filter: itineraryShadows.sprite,
     },
   },
   centered: { textAlign: "center" },
@@ -73,38 +117,52 @@ export const useTripPlanningFormStyles = makeStyles({
   generatingText: {
     fontSize: typography.fontSize.size5,
     color: semanticColors.textSecondary,
-    marginBottom: layout.gap.xl,
   },
-  progressWrapper: {
+  progressRing: {
     position: "relative",
-    width: "680px",
-    maxWidth: "92vw",
+    width: `${progressRing.size}px`,
+    height: `${progressRing.size}px`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  progressTrack: {
+  // Rotated so the sweep starts at 12 o'clock instead of the SVG default 3.
+  progressRingSvg: {
+    position: "absolute",
+    top: "0",
+    left: "0",
     width: "100%",
-    backgroundColor: semanticColors.bgTrack,
-    borderRadius: layout.radius.full,
-    height: layout.spacing[6],
-    overflow: "hidden",
-  },
-  progressBar: {
     height: "100%",
-    backgroundImage: gradients.progress,
-    borderRadius: layout.radius.full,
-    transitionProperty: "width",
-    transitionDuration: layout.duration.fast,
-    transitionTimingFunction: "ease",
+    transform: "rotate(-90deg)",
   },
+  progressRingTrack: {
+    fill: "none",
+    stroke: semanticColors.bgTrack,
+    strokeWidth: `${progressRing.stroke}px`,
+  },
+  progressRingFill: {
+    fill: "none",
+    stroke: "url(#loadingProgressGradient)",
+    strokeWidth: `${progressRing.stroke}px`,
+    strokeLinecap: "round",
+    filter: itineraryShadows.progressGlow,
+    transitionProperty: "stroke-dashoffset",
+    transitionDuration: layout.duration.normal,
+    transitionTimingFunction: "linear",
+  },
+  progressRingGradientStart: { stopColor: warm.coralBright },
+  progressRingGradientEnd: { stopColor: itinerary.pink },
+  // Parked at the centre; the inline transform walks it around the ring.
   progressPlane: {
     position: "absolute",
     top: "50%",
+    left: "50%",
     color: warm.coralBright,
-    fontSize: typography.fontSize.size10,
-    transform: "translate(-50%, -50%) rotate(-18deg)",
+    fontSize: typography.fontSize.size11,
     filter: itineraryShadows.planeIcon,
-    transitionProperty: "left",
-    transitionDuration: layout.duration.fast,
-    transitionTimingFunction: "ease",
+    transitionProperty: "transform",
+    transitionDuration: layout.duration.normal,
+    transitionTimingFunction: "linear",
     pointerEvents: "none",
   },
   progressStatus: {
@@ -186,19 +244,24 @@ export const useTripPlanningFormStyles = makeStyles({
   connectorComplete: { backgroundImage: gradients.progress },
   card: {
     backgroundColor: semanticColors.bgPrimary,
+    backgroundImage: gradients.summary,
     borderRadius: layout.radius.xl,
     ...shorthands.border(
       layout.borderWidth.thin,
       "solid",
-      semanticColors.borderDefault,
+      semanticColors.borderAccentLight,
     ),
     padding: layout.padding.xl,
     marginBottom: layout.gap.md,
     boxShadow: semanticColors.shadowStrong,
+    "& .MuiDivider-root": {
+      ...shorthands.borderColor(semanticColors.borderAccentLight),
+    },
   },
   column24: { display: "flex", flexDirection: "column", rowGap: layout.gap.lg },
   column28: { display: "flex", flexDirection: "column", rowGap: layout.gap.xl },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: layout.gap.md },
+  travelerGroupSpacing: { marginTop: layout.spacing[4] },
   label: {
     ...typographyPresets.label,
     color: semanticColors.textPrimary,
@@ -244,6 +307,45 @@ export const useTripPlanningFormStyles = makeStyles({
   hint: {
     ...typographyPresets.caption,
     color: semanticColors.textTertiary,
+  },
+  budgetOptions: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
+    gap: layout.gap.xl,
+    width: "100%",
+  },
+  budgetOption: {
+    flexGrow: 1,
+    flexBasis: "0",
+    minWidth: "0",
+    margin: "0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: semanticColors.textSecondary,
+    cursor: "pointer",
+    "& .MuiRadio-root": {
+      color: semanticColors.textDisabled,
+      padding: layout.gap.sm,
+    },
+    "& .MuiRadio-root.Mui-focusVisible": {
+      outlineColor: semanticColors.interactive,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+      borderRadius: layout.radius.full,
+    },
+    "& .MuiFormControlLabel-label": {
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.medium,
+    },
+  },
+  budgetOptionSelected: {
+    "& .MuiRadio-root.Mui-checked": {
+      color: semanticColors.interactive,
+    },
   },
   currency: {
     color: semanticColors.textSecondary,
@@ -299,6 +401,15 @@ export const useTripPlanningFormStyles = makeStyles({
     ":hover": {
       ...shorthands.borderColor(semanticColors.interactive),
       backgroundColor: semanticColors.bgInteractiveSubtle,
+    },
+  },
+  completedChoice: {
+    ...shorthands.borderColor("rgba(16, 185, 129, 0.6)"),
+    ":hover": {
+      ...shorthands.borderColor("rgba(16, 185, 129, 0.75)"),
+    },
+    ":focus-visible": {
+      outlineColor: "rgba(16, 185, 129, 0.8)",
     },
   },
   otherField: { marginTop: layout.gap.md },
@@ -360,6 +471,22 @@ export const useTripPlanningFormStyles = makeStyles({
     color: semanticColors.textError,
     fontSize: typography.fontSize.size3,
     marginTop: layout.gap.lg,
+    marginBottom: 0,
+  },
+  fieldError: {
+    color: semanticColors.textError,
+    fontSize: typography.fontSize.size2,
+    lineHeight: typography.lineHeight.normal,
+    marginTop: layout.spacing[1],
+    marginBottom: 0,
+  },
+  tripDetailsGeneralError: {
+    width: "100%",
+    color: semanticColors.textError,
+    fontSize: typography.fontSize.size2,
+    lineHeight: typography.lineHeight.normal,
+    textAlign: "center",
+    marginTop: layout.gap.md,
     marginBottom: 0,
   },
   navigation: {

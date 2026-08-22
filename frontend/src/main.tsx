@@ -1,21 +1,45 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { ClerkProvider } from "@clerk/clerk-react";
 
+import "./common/theme/theme.css";
 import "./index.css";
 import "./i18n";
 import router from "./routes/router";
-import { clerkAppearance } from "./features/auth/styles/clerkAppearance.styles";
-import { clerkPublishableKey } from "./features/auth/utils/clerkConfig";
+import { AppThemeProvider } from "./common/theme/appThemeProvider";
+import { ThemeModeProvider } from "./common/theme/themeModeProvider";
+import SplashScreen from "./components/splashScreen/splashScreen";
+import { AppClerkProvider } from "./features/auth/appClerkProvider";
+
+const STARTUP_SPLASH_DURATION = 1800;
+
+const AppStartup = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(
+      () => setIsLoading(false),
+      STARTUP_SPLASH_DURATION,
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  return <RouterProvider router={router} />;
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ClerkProvider
-      appearance={clerkAppearance}
-      publishableKey={clerkPublishableKey}
-    >
-      <RouterProvider router={router} />
-    </ClerkProvider>
+    <ThemeModeProvider>
+      <AppThemeProvider>
+        <AppClerkProvider>
+          <AppStartup />
+        </AppClerkProvider>
+      </AppThemeProvider>
+    </ThemeModeProvider>
   </StrictMode>,
 );
