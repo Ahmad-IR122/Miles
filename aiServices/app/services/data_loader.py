@@ -4,12 +4,16 @@ from io import BytesIO
 import pandas as pd
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
+from dotenv import load_dotenv
 
+load_dotenv()
 ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER")
 
 credential = DefaultAzureCredential()
 blob_service_client = BlobServiceClient(account_url=ACCOUNT_URL, credential=credential)
+
+
 
 def load_csv(blob_name : str) -> pd.DataFrame:
     """
