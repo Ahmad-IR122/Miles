@@ -495,4 +495,14 @@ export const useTripPlanningFormStyles = makeStyles({
     alignItems: "center",
   },
   hidden: { visibility: "hidden" },
+  bookedDay: {
+    "&.MuiPickerDay-root": {
+      backgroundColor: warm.bgTint,
+      color: warm.rose,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    "&.MuiPickerDay-root:hover": {
+      backgroundColor: warm.bgTint,
+    },
+  },
 });
