@@ -15,6 +15,7 @@ blob_service_client = BlobServiceClient(account_url=ACCOUNT_URL, credential=cred
 
 
 
+
 def load_csv(blob_name : str) -> pd.DataFrame:
     """
     Load a CSV file from Azure Blob Storage and return it as a pandas DataFrame.
