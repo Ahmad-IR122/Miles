@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -15,23 +15,27 @@ import IconButton from "@mui/material/IconButton";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import type { Dayjs } from "dayjs";
+import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
+import dayjs, { type Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
-import { createTrip } from "../../api/trip";
+import { createTrip, getTrips } from "../../api/trip";
+import type { Trip } from "../../types/trip";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../../common/AppButton/appButton";
 import { semanticColors } from "../../common/theme/colors";
 import destinations from "../../data/destinations.json";
 import {
   getFieldSx,
+  progressRing,
+  progressRingCircumference,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
-
 type Destination = {
   destination_id: string;
   city: string;
@@ -39,33 +43,27 @@ type Destination = {
   country_code: string;
   region: string;
 };
-
 type CountryOption = {
   country: string;
   country_code: string;
   region: string;
 };
-
 type BudgetLevel = "LOW" | "MID" | "HIGH";
-
 const budgetLabels: Record<BudgetLevel, string> = {
   LOW: "Low",
   MID: "Mid",
   HIGH: "High",
 };
-
 const budgetOptions: { value: BudgetLevel; label: string }[] = [
   { value: "LOW", label: budgetLabels.LOW },
   { value: "MID", label: budgetLabels.MID },
   { value: "HIGH", label: budgetLabels.HIGH },
 ];
-
 const budgetAmounts: Record<BudgetLevel, number> = {
   LOW: 1000,
   MID: 2000,
   HIGH: 3000,
 };
-
 type FieldErrors = {
   originCountry: string;
   originCity: string;
@@ -76,7 +74,6 @@ type FieldErrors = {
   budget: string;
   interests: string;
 };
-
 const emptyFieldErrors: FieldErrors = {
   originCountry: "",
   originCity: "",
@@ -87,17 +84,14 @@ const emptyFieldErrors: FieldErrors = {
   budget: "",
   interests: "",
 };
-
 const tripDetailsRequiredMessage =
   "Please fill the required fields before moving on.";
 const maxTripDays = 31;
-
 const steps = [
   { num: 1, label: "Trip Details" },
   { num: 2, label: "Travelers & Budget" },
   { num: 3, label: "Interests" },
 ];
-
 // Extract unique countries from destinations
 const getUniqueCountries = (): CountryOption[] => {
   const countryMap = new Map<string, CountryOption>();
@@ -114,45 +108,67 @@ const getUniqueCountries = (): CountryOption[] => {
     a.country.localeCompare(b.country),
   );
 };
-
 // Get cities for a specific country
 const getCitiesForCountry = (countryCode: string): Destination[] => {
   return destinations
     .filter((dest: Destination) => dest.country_code === countryCode)
     .sort((a, b) => a.city.localeCompare(b.city));
 };
-
 const allCountries = getUniqueCountries();
-
+const createBookedDay = (existingTrips: Trip[]) => {
+  const BookedDay = (props: PickerDayProps) => {
+    const styles = useTripPlanningFormStyles();
+    const { day, outsideCurrentMonth, ...other } = props;
+    const isPast = day.isBefore(dayjs(), "day");
+    const isBooked =
+      !isPast &&
+      !outsideCurrentMonth &&
+      existingTrips.some(
+        (trip) =>
+          !day.isBefore(trip.start_date, "day") &&
+          !day.isAfter(trip.end_date, "day"),
+      );
+    const dayElement = (
+      <PickerDay
+        {...other}
+        day={day}
+        outsideCurrentMonth={outsideCurrentMonth}
+        className={isBooked ? styles.bookedDay : undefined}
+      />
+    );
+    if (!isBooked) return dayElement;
+    return (
+      <Tooltip title="This day is already booked in another trip" arrow>
+        <span>{dayElement}</span>
+      </Tooltip>
+    );
+  };
+  return BookedDay;
+};
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [budget, setBudget] = useState<BudgetLevel | "">("");
-
   // Origin
   const [originCountry, setOriginCountry] = useState<CountryOption | null>(
     null,
   );
   const [originCity, setOriginCity] = useState<Destination | null>(null);
   const [originCities, setOriginCities] = useState<Destination[]>([]);
-
   // Destination
   const [destCountry, setDestCountry] = useState<CountryOption | null>(null);
   const [destCity, setDestCity] = useState<Destination | null>(null);
   const [destCities, setDestCities] = useState<Destination[]>([]);
-
   // Dates & travelers
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-
   // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [otherInterest, setOtherInterest] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>(emptyFieldErrors);
-
   const isTripDetailsComplete =
     !!originCountry &&
     !!originCity &&
@@ -167,19 +183,41 @@ const TripPlanningForm = () => {
     isTravelersBudgetComplete,
     isInterestsComplete,
   ];
-
   // Loading & errors
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [submitError, setSubmitError] = useState("");
-
+  const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
+  useEffect(() => {
+    getTrips()
+      .then(({ data }) => setExistingTrips(data))
+      .catch(() => {
+        // Non-fatal: if this fails we just skip client-side date blocking;
+        // the backend's overlap check still protects against overlaps.
+      });
+  }, []);
+  const isDateBooked = (date: Dayjs) =>
+    existingTrips.some(
+      (trip) =>
+        !date.isBefore(trip.start_date, "day") &&
+        !date.isAfter(trip.end_date, "day"),
+    );
+  const rangesOverlap = (
+    startA: Dayjs,
+    endA: Dayjs,
+    startB: Dayjs,
+    endB: Dayjs,
+  ) => !startA.isAfter(endB, "day") && !startB.isAfter(endA, "day");
+  const BookedDay = useMemo(
+    () => createBookedDay(existingTrips),
+    [existingTrips],
+  );
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors((current) =>
       current[field] ? { ...current, [field]: "" } : current,
     );
   };
-
   const clearTripDetailsValidationDisplay = () => {
     setFieldErrors((current) => ({
       ...current,
@@ -194,10 +232,8 @@ const TripPlanningForm = () => {
       current === tripDetailsRequiredMessage ? "" : current,
     );
   };
-
   const getTripDetailsHelperText = (field: keyof FieldErrors) =>
     submitError === tripDetailsRequiredMessage ? "" : fieldErrors[field];
-
   const handleOriginCountryChange = (
     _event: SyntheticEvent,
     value: CountryOption | null,
@@ -212,7 +248,6 @@ const TripPlanningForm = () => {
       setOriginCities([]);
     }
   };
-
   const handleDestCountryChange = (
     _event: SyntheticEvent,
     value: CountryOption | null,
@@ -234,12 +269,10 @@ const TripPlanningForm = () => {
     setSelectedInterests(nextInterests);
     if (nextInterests.length > 0) clearFieldError("interests");
   };
-
   const validateCurrentStep = (): boolean => {
     setSubmitError("");
     const nextErrors = { ...fieldErrors };
     let isValid = true;
-
     if (step === 1) {
       const areAllTripDetailsFieldsEmpty =
         !originCountry &&
@@ -248,7 +281,6 @@ const TripPlanningForm = () => {
         !destCity &&
         startDate === null &&
         endDate === null;
-
       nextErrors.originCountry = originCountry
         ? ""
         : "Please select an origin country.";
@@ -257,7 +289,6 @@ const TripPlanningForm = () => {
         ? ""
         : "Please select a destination country.";
       nextErrors.destCity = destCity ? "" : "Please select a destination city.";
-
       nextErrors.startDate =
         startDate?.isValid() === true ? "" : "Please select a start date.";
       if (endDate?.isValid() !== true) {
@@ -282,12 +313,27 @@ const TripPlanningForm = () => {
         !nextErrors.destCity &&
         !nextErrors.startDate &&
         !nextErrors.endDate;
-
       if (areAllTripDetailsFieldsEmpty) {
         setSubmitError(tripDetailsRequiredMessage);
       }
+      if (isValid && startDate && endDate) {
+        const overlapsExisting = existingTrips.some((trip) =>
+          rangesOverlap(
+            startDate,
+            endDate,
+            dayjs(trip.start_date),
+            dayjs(trip.end_date),
+          ),
+        );
+        if (overlapsExisting) {
+          setFieldErrors(nextErrors);
+          setSubmitError(
+            "Those dates overlap a trip you already have planned. Pick a different date range.",
+          );
+          return false;
+        }
+      }
     }
-
     if (step === 2) {
       nextErrors.budget =
         adults >= 1 && children >= 0 && budget
@@ -295,7 +341,6 @@ const TripPlanningForm = () => {
           : "Please select a budget level.";
       isValid = !nextErrors.budget;
     }
-
     if (step === 3) {
       nextErrors.interests =
         selectedInterests.length > 0
@@ -303,30 +348,24 @@ const TripPlanningForm = () => {
           : "Please select at least one interest.";
       isValid = !nextErrors.interests;
     }
-
     setFieldErrors(nextErrors);
     return isValid;
   };
-
   const goNext = () => {
     if (validateCurrentStep()) {
       setStep((current) => current + 1);
     }
   };
-
   const goBack = () => {
     setSubmitError("");
     setStep((current) => Math.max(1, current - 1));
   };
-
   const handleSubmit = async () => {
     setSubmitError("");
     if (!validateCurrentStep()) return;
-
     setIsSubmitting(true);
     setGenerating(true);
     setProgress(0);
-
     try {
       const createTripPromise = createTrip({
         destination: `${destCity?.city}, ${destCountry?.country}`,
@@ -335,7 +374,6 @@ const TripPlanningForm = () => {
         budget: budget ? budgetAmounts[budget] : 0,
         travelers_count: adults + children,
       });
-
       const progressPromise = new Promise<void>((resolve) => {
         const interval = window.setInterval(() => {
           setProgress((current) => {
@@ -348,7 +386,6 @@ const TripPlanningForm = () => {
           });
         }, 180);
       });
-
       const [{ data: trip }] = await Promise.all([
         createTripPromise,
         progressPromise,
@@ -362,12 +399,69 @@ const TripPlanningForm = () => {
       setIsSubmitting(false);
     }
   };
-
   if (generating) {
     return (
       <div className={mergeClasses(styles.page, styles.generatingPage)}>
-        <div className={styles.generatingIcon} aria-hidden="true">
-          <LoadingSprite />
+        <div
+          className={styles.progressRing}
+          role="progressbar"
+          aria-label="Itinerary generation progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress)}
+        >
+          <svg
+            className={styles.progressRingSvg}
+            viewBox={`0 0 ${progressRing.size} ${progressRing.size}`}
+            aria-hidden="true"
+          >
+            <defs>
+              {/* Top-to-bottom, so the sweep runs coral -> pink in the
+                  direction it travels. */}
+              <linearGradient
+                id="loadingProgressGradient"
+                x1="0.5"
+                y1="0"
+                x2="0.5"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  className={styles.progressRingGradientStart}
+                />
+                <stop
+                  offset="100%"
+                  className={styles.progressRingGradientEnd}
+                />
+              </linearGradient>
+            </defs>
+            <circle
+              className={styles.progressRingTrack}
+              cx={progressRing.size / 2}
+              cy={progressRing.size / 2}
+              r={progressRing.radius}
+            />
+            <circle
+              className={styles.progressRingFill}
+              cx={progressRing.size / 2}
+              cy={progressRing.size / 2}
+              r={progressRing.radius}
+              strokeDasharray={progressRingCircumference}
+              strokeDashoffset={
+                progressRingCircumference * (1 - progress / 100)
+              }
+            />
+          </svg>
+          <div className={styles.generatingIcon} aria-hidden="true">
+            <LoadingSprite />
+          </div>
+          <FlightTakeoffIcon
+            className={styles.progressPlane}
+            style={{
+              // Walk to the point on the ring, then face along the tangent.
+              transform: `translate(-50%, -50%) rotate(${(progress / 100) * 360}deg) translateY(-${progressRing.planeRadius}px) rotate(35deg)`,
+            }}
+          />
         </div>
         <div className={styles.centered}>
           <Typography component="h1" className={styles.generatingTitle}>
@@ -377,18 +471,6 @@ const TripPlanningForm = () => {
             Exploring {destCity?.city || "your destination"} and arranging a
             trip around your interests.
           </Typography>
-        </div>
-        <div className={styles.progressWrapper}>
-          <div className={styles.progressTrack}>
-            <div
-              className={styles.progressBar}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <FlightTakeoffIcon
-            className={styles.progressPlane}
-            style={{ left: `${progress}%` }}
-          />
         </div>
         <Typography
           component="p"
@@ -406,7 +488,6 @@ const TripPlanningForm = () => {
       </div>
     );
   }
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.page}>
@@ -421,12 +502,10 @@ const TripPlanningForm = () => {
               itinerary in seconds.
             </Typography>
           </header>
-
           <div className={styles.steps}>
             {steps.map((item, index) => {
               const isCurrent = step === item.num;
               const isComplete = completedSteps[index] && !isCurrent;
-
               return (
                 <div
                   key={item.num}
@@ -469,7 +548,6 @@ const TripPlanningForm = () => {
               );
             })}
           </div>
-
           <section className={styles.card}>
             {step === 1 && (
               <div className={styles.column24}>
@@ -503,11 +581,7 @@ const TripPlanningForm = () => {
                       )}
                     />
                     <Autocomplete
-                      options={originCities.filter(
-                        (city) =>
-                          !destCity ||
-                          city.destination_id !== destCity.destination_id,
-                      )}
+                      options={originCities}
                       getOptionLabel={(option) => option.city}
                       isOptionEqualToValue={(option, value) =>
                         option.destination_id === value.destination_id
@@ -536,7 +610,6 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 </div>
-
                 <Divider sx={{ my: 1.5 }} />
                 <div>
                   <Typography
@@ -567,11 +640,7 @@ const TripPlanningForm = () => {
                       )}
                     />
                     <Autocomplete
-                      options={destCities.filter(
-                        (city) =>
-                          !originCity ||
-                          city.destination_id !== originCity.destination_id,
-                      )}
+                      options={destCities}
                       getOptionLabel={(option) => option.city}
                       isOptionEqualToValue={(option, value) =>
                         option.destination_id === value.destination_id
@@ -598,9 +667,7 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 </div>
-
                 <Divider sx={{ my: 1.5 }} />
-
                 {/* DATES SECTION */}
                 <div>
                   <Typography
@@ -631,6 +698,8 @@ const TripPlanningForm = () => {
                           if (value?.isValid()) clearFieldError("startDate");
                         }}
                         disablePast
+                        shouldDisableDate={isDateBooked}
+                        slots={{ day: BookedDay }}
                         slotProps={{
                           textField: {
                             fullWidth: true,
@@ -668,11 +737,8 @@ const TripPlanningForm = () => {
                         }}
                         disablePast
                         minDate={startDate ?? undefined}
-                        maxDate={
-                          startDate
-                            ? startDate.add(maxTripDays - 1, "day")
-                            : undefined
-                        }
+                        shouldDisableDate={isDateBooked}
+                        slots={{ day: BookedDay }}
                         slotProps={{
                           textField: {
                             fullWidth: true,
@@ -709,7 +775,6 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {step === 2 && (
               <div className={styles.column28}>
                 {/* TRAVELERS SECTION */}
@@ -721,7 +786,6 @@ const TripPlanningForm = () => {
                   >
                     Travelers
                   </Typography>
-
                   <div>
                     <Typography
                       component="p"
@@ -755,7 +819,6 @@ const TripPlanningForm = () => {
                       </Typography>
                     </div>
                   </div>
-
                   <div className={styles.travelerGroupSpacing}>
                     <Typography
                       component="p"
@@ -792,9 +855,7 @@ const TripPlanningForm = () => {
                     </div>
                   </div>
                 </div>
-
                 <Divider sx={{ my: 1.5 }} />
-
                 {/* BUDGET SECTION */}
                 <div>
                   <Typography
@@ -845,7 +906,6 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {step === 3 && (
               <div>
                 <div className={styles.interestHeader}>
@@ -856,7 +916,6 @@ const TripPlanningForm = () => {
                     Select all that apply
                   </Typography>
                 </div>
-
                 <div className={styles.chips}>
                   {interestOptions.map((interest) => (
                     <Chip
@@ -868,17 +927,17 @@ const TripPlanningForm = () => {
                         styles.chip,
                         selectedInterests.includes(interest) &&
                           styles.chipActive,
+                        selectedInterests.includes(interest) &&
+                          styles.completedChoice,
                       )}
                     />
                   ))}
                 </div>
-
                 {fieldErrors.interests && (
                   <Typography component="p" className={styles.fieldError}>
                     {fieldErrors.interests}
                   </Typography>
                 )}
-
                 {selectedInterests.includes("Other") && (
                   <div className={styles.otherField}>
                     <TextField
@@ -891,7 +950,6 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 )}
-
                 {selectedInterests.length > 0 && (
                   <div className={styles.selectionNotice}>
                     <CheckIcon fontSize="small" aria-hidden="true" />
@@ -904,19 +962,18 @@ const TripPlanningForm = () => {
                     </Typography>
                   </div>
                 )}
-
                 <div className={styles.summary}>
                   <Typography component="h3" className={styles.summaryTitle}>
                     Trip Summary
                   </Typography>
                   <div className={styles.summaryGrid}>
                     {[
-                      ["Destination", destCity?.city || "—"],
+                      ["Destination", destCity?.city || "-"],
                       [
                         "Dates",
                         startDate && endDate
-                          ? `${startDate.format("YYYY-MM-DD")} → ${endDate.format("YYYY-MM-DD")}`
-                          : "—",
+                          ? `${startDate.format("YYYY-MM-DD")} -> ${endDate.format("YYYY-MM-DD")}`
+                          : "-",
                       ],
                       [
                         "Travelers",
@@ -924,7 +981,7 @@ const TripPlanningForm = () => {
                           adults + children === 1 ? "person" : "people"
                         }`,
                       ],
-                      ["Budget", budget ? budgetLabels[budget] : "—"],
+                      ["Budget", budget ? budgetLabels[budget] : "-"],
                       ["Interests", `${selectedInterests.length} selected`],
                       ["Style", "Balanced"],
                     ].map(([label, value]) => (
@@ -944,14 +1001,12 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
-
             {submitError && submitError !== tripDetailsRequiredMessage && (
               <Typography component="p" className={styles.error}>
                 {submitError}
               </Typography>
             )}
           </section>
-
           <div className={styles.navigation}>
             <AppButton
               appearance="secondary"
@@ -984,5 +1039,4 @@ const TripPlanningForm = () => {
     </LocalizationProvider>
   );
 };
-
 export default TripPlanningForm;

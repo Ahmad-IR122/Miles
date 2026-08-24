@@ -4,6 +4,7 @@ import {
   semanticColors,
   gradients,
   warm,
+  itinerary,
   itineraryShadows,
   itineraryGradients,
 } from "../../common/theme/colors";
@@ -62,6 +63,21 @@ export const completedFieldSx = {
 export const getFieldSx = (isCompleted: boolean) =>
   isCompleted ? { ...fieldSx, ...completedFieldSx } : fieldSx;
 
+/**
+ * Geometry of the circular progress ring that wraps the loading sprite.
+ * The SVG viewBox is 1:1 with pixels so the plane, positioned in CSS, can
+ * share the same radius as the stroked circle.
+ */
+export const progressRing = {
+  size: 240,
+  radius: 110,
+  stroke: 12,
+  /** The plane flies just outside the stroke so it never smudges into it. */
+  planeRadius: 126,
+} as const;
+
+export const progressRingCircumference = 2 * Math.PI * progressRing.radius;
+
 export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
@@ -83,11 +99,13 @@ export const useTripPlanningFormStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    backgroundImage: itineraryGradients.spriteHalo,
     "& img": {
       width: "100%",
       height: "100%",
       objectFit: "contain",
       imageRendering: "pixelated",
+      filter: itineraryShadows.sprite,
     },
   },
   centered: { textAlign: "center" },
@@ -99,38 +117,52 @@ export const useTripPlanningFormStyles = makeStyles({
   generatingText: {
     fontSize: typography.fontSize.size5,
     color: semanticColors.textSecondary,
-    marginBottom: layout.gap.xl,
   },
-  progressWrapper: {
+  progressRing: {
     position: "relative",
-    width: "680px",
-    maxWidth: "92vw",
+    width: `${progressRing.size}px`,
+    height: `${progressRing.size}px`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  progressTrack: {
+  // Rotated so the sweep starts at 12 o'clock instead of the SVG default 3.
+  progressRingSvg: {
+    position: "absolute",
+    top: "0",
+    left: "0",
     width: "100%",
-    backgroundColor: semanticColors.bgTrack,
-    borderRadius: layout.radius.full,
-    height: layout.spacing[6],
-    overflow: "hidden",
-  },
-  progressBar: {
     height: "100%",
-    backgroundImage: gradients.progress,
-    borderRadius: layout.radius.full,
-    transitionProperty: "width",
-    transitionDuration: layout.duration.fast,
-    transitionTimingFunction: "ease",
+    transform: "rotate(-90deg)",
   },
+  progressRingTrack: {
+    fill: "none",
+    stroke: semanticColors.bgTrack,
+    strokeWidth: `${progressRing.stroke}px`,
+  },
+  progressRingFill: {
+    fill: "none",
+    stroke: "url(#loadingProgressGradient)",
+    strokeWidth: `${progressRing.stroke}px`,
+    strokeLinecap: "round",
+    filter: itineraryShadows.progressGlow,
+    transitionProperty: "stroke-dashoffset",
+    transitionDuration: layout.duration.normal,
+    transitionTimingFunction: "linear",
+  },
+  progressRingGradientStart: { stopColor: warm.coralBright },
+  progressRingGradientEnd: { stopColor: itinerary.pink },
+  // Parked at the centre; the inline transform walks it around the ring.
   progressPlane: {
     position: "absolute",
     top: "50%",
+    left: "50%",
     color: warm.coralBright,
-    fontSize: typography.fontSize.size10,
-    transform: "translate(-50%, -50%) rotate(-18deg)",
+    fontSize: typography.fontSize.size11,
     filter: itineraryShadows.planeIcon,
-    transitionProperty: "left",
-    transitionDuration: layout.duration.fast,
-    transitionTimingFunction: "ease",
+    transitionProperty: "transform",
+    transitionDuration: layout.duration.normal,
+    transitionTimingFunction: "linear",
     pointerEvents: "none",
   },
   progressStatus: {
@@ -363,15 +395,21 @@ export const useTripPlanningFormStyles = makeStyles({
   },
   chipActive: {
     ...shorthands.borderColor(semanticColors.interactive),
-    backgroundColor: `${semanticColors.interactive} !important`,
-    color: `${semanticColors.bgPrimary} !important`,
+    backgroundColor: colors.coralTint,
+    color: semanticColors.interactive,
     fontWeight: typography.fontWeight.bold,
     ":hover": {
       ...shorthands.borderColor(semanticColors.interactive),
-      backgroundColor: `${semanticColors.interactive} !important`,
+      backgroundColor: semanticColors.bgInteractiveSubtle,
+    },
+  },
+  completedChoice: {
+    ...shorthands.borderColor("rgba(16, 185, 129, 0.6)"),
+    ":hover": {
+      ...shorthands.borderColor("rgba(16, 185, 129, 0.75)"),
     },
     ":focus-visible": {
-      outlineColor: semanticColors.interactive,
+      outlineColor: "rgba(16, 185, 129, 0.8)",
     },
   },
   otherField: { marginTop: layout.gap.md },
@@ -457,4 +495,14 @@ export const useTripPlanningFormStyles = makeStyles({
     alignItems: "center",
   },
   hidden: { visibility: "hidden" },
+  bookedDay: {
+    "&.MuiPickerDay-root": {
+      backgroundColor: warm.bgTint,
+      color: warm.rose,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    "&.MuiPickerDay-root:hover": {
+      backgroundColor: warm.bgTint,
+    },
+  },
 });
