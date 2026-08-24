@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user
 from app.db.db import get_db
+from app.models import User
 from app.schemas.interest import InterestResponse
 from app.schemas.trip_interest import TripInterestCreate
 from app.services import interest_service, trip_interest_service, trip_service
@@ -17,9 +19,10 @@ router = APIRouter(prefix="/trips/{trip_id}/interests", tags=["trip-interests"])
 def add_trip_interest(
     trip_id: int,
     payload: TripInterestCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if trip_service.get_trip(db, trip_id) is None:
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"trip {trip_id} not found",
@@ -46,8 +49,12 @@ def add_trip_interest(
 
 
 @router.get("", response_model=list[InterestResponse])
-def list_trip_interests(trip_id: int, db: Session = Depends(get_db)):
-    if trip_service.get_trip(db, trip_id) is None:
+def list_trip_interests(
+    trip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"trip {trip_id} not found",
@@ -60,8 +67,15 @@ def list_trip_interests(trip_id: int, db: Session = Depends(get_db)):
 def remove_trip_interest(
     trip_id: int,
     interest_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+
     removed = trip_interest_service.remove_trip_interest(db, trip_id, interest_id)
     if not removed:
         raise HTTPException(
