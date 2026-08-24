@@ -92,12 +92,14 @@ def generate_itinerary_for_trip(db: Session, trip_id: int, user_id: int) -> DBIt
     return itinerary
 
 
-def _load(itinerary_id: UUID):
+def _load(itinerary_id: UUID, user_id: int):
     itinerary = get_itinerary(itinerary_id)
-    if itinerary is None:
+    if itinerary is None or itinerary.user_id != user_id:
+        # Treat "exists but belongs to someone else" the same as "doesn't
+        # exist" so ownership can't be probed from the outside.
         raise NotFound(f"itinerary {itinerary_id} not found")
     trip = get_trip_request(itinerary.trip_request_id)
-    if trip is None:
+    if trip is None or trip.user_id != user_id:
         raise NotFound(f"trip request {itinerary.trip_request_id} not found")
     return itinerary, trip
 
@@ -147,8 +149,8 @@ def _regenerate(
     return save_itinerary(itinerary)
 
 
-def regenerate_trip(itinerary_id: UUID) -> Itinerary:
-    itinerary, _ = _load(itinerary_id)
+def regenerate_trip(itinerary_id: UUID, user_id: int) -> Itinerary:
+    itinerary, _ = _load(itinerary_id, user_id)
     return _regenerate(
         itinerary,
         "/itinerary/regenerate",
@@ -158,8 +160,8 @@ def regenerate_trip(itinerary_id: UUID) -> Itinerary:
     )
 
 
-def regenerate_day(itinerary_id: UUID, day_number: int) -> Itinerary:
-    itinerary, _ = _load(itinerary_id)
+def regenerate_day(itinerary_id: UUID, day_number: int, user_id: int) -> Itinerary:
+    itinerary, _ = _load(itinerary_id, user_id)
     _find_day(itinerary, day_number)
     return _regenerate(
         itinerary,
@@ -171,9 +173,9 @@ def regenerate_day(itinerary_id: UUID, day_number: int) -> Itinerary:
 
 
 def regenerate_activity(
-    itinerary_id: UUID, day_number: int, activity_id: UUID
+    itinerary_id: UUID, day_number: int, activity_id: UUID, user_id: int
 ) -> Itinerary:
-    itinerary, _ = _load(itinerary_id)
+    itinerary, _ = _load(itinerary_id, user_id)
     _, day = _find_day(itinerary, day_number)
 
     for position, activity in enumerate(day.activities):
@@ -191,7 +193,28 @@ def regenerate_activity(
     )
 
 
-def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
+def _owned_itinerary_query(db: Session, user_id: int):
+    """Base query for itineraries reachable from user_id via their trips."""
+    return (
+        db.query(DBItinerary)
+        .join(Trip, Trip.id == DBItinerary.trip_id)
+        .filter(Trip.user_id == user_id)
+    )
+
+
+def create_itinerary(db: Session, user_id: int, itinerary_data: ItineraryCreate):
+    # The itinerary must be created on a trip the caller actually owns.
+    trip = (
+        db.query(Trip)
+        .filter(Trip.id == itinerary_data.trip_id, Trip.user_id == user_id)
+        .one_or_none()
+    )
+    if trip is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"trip {itinerary_data.trip_id} not found",
+        )
+
     itinerary = DBItinerary(**itinerary_data.model_dump())
 
     db.add(itinerary)
@@ -201,12 +224,16 @@ def create_itinerary(db: Session, itinerary_data: ItineraryCreate):
     return itinerary
 
 
-def get_all_itineraries(db: Session):
-    return db.query(DBItinerary).all()
+def get_all_itineraries(db: Session, user_id: int):
+    return _owned_itinerary_query(db, user_id).all()
 
 
-def get_itinerary_by_id(db: Session, itinerary_id: int):
-    itinerary = db.query(DBItinerary).filter(DBItinerary.id == itinerary_id).first()
+def get_itinerary_by_id(db: Session, itinerary_id: int, user_id: int):
+    itinerary = (
+        _owned_itinerary_query(db, user_id)
+        .filter(DBItinerary.id == itinerary_id)
+        .one_or_none()
+    )
 
     if not itinerary:
         raise HTTPException(
@@ -220,11 +247,27 @@ def get_itinerary_by_id(db: Session, itinerary_id: int):
 def update_itinerary(
     db: Session,
     itinerary_id: int,
+    user_id: int,
     itinerary_data: ItineraryUpdate,
 ):
-    itinerary = get_itinerary_by_id(db, itinerary_id)
+    itinerary = get_itinerary_by_id(db, itinerary_id, user_id)
 
     update_data = itinerary_data.model_dump(exclude_unset=True)
+
+    new_trip_id = update_data.get("trip_id")
+    if new_trip_id is not None and new_trip_id != itinerary.trip_id:
+        # Moving an itinerary to a different trip must not let a user hand
+        # their data to (or take data from) a trip they don't own.
+        owns_target_trip = (
+            db.query(Trip)
+            .filter(Trip.id == new_trip_id, Trip.user_id == user_id)
+            .one_or_none()
+        )
+        if owns_target_trip is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"trip {new_trip_id} not found",
+            )
 
     for key, value in update_data.items():
         setattr(itinerary, key, value)
@@ -235,8 +278,8 @@ def update_itinerary(
     return itinerary
 
 
-def delete_itinerary(db: Session, itinerary_id: int):
-    itinerary = get_itinerary_by_id(db, itinerary_id)
+def delete_itinerary(db: Session, itinerary_id: int, user_id: int):
+    itinerary = get_itinerary_by_id(db, itinerary_id, user_id)
 
     db.delete(itinerary)
     db.commit()

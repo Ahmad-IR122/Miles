@@ -18,11 +18,12 @@ class TripDateConflictError(Exception):
     """Raised when a trip's dates overlap another trip for the same user."""
 
 
-def create_trip_request(payload: TripRequest) -> TripRequestResponse:
+def create_trip_request(user_id: int, payload: TripRequest) -> TripRequestResponse:
     request_id = str(uuid.uuid4())
     return save_trip_request(
         TripRequestResponse(
             request_id=request_id,
+            user_id=user_id,
             origin=payload.origin,
             destination=payload.destination,
             start_date=payload.start_date,
@@ -51,6 +52,7 @@ def get_overlapping_trip(
     end_date: date,
     exclude_trip_id: int | None = None,
 ) -> Trip | None:
+    """Return a trip belonging to user_id whose dates overlap the given range."""
     query = db.query(Trip).filter(
         Trip.user_id == user_id,
         Trip.start_date <= end_date,
@@ -69,19 +71,28 @@ def create_trip(db: Session, user_id: int, payload: TripCreate) -> Trip:
     return trip
 
 
-def list_trips(db: Session, user_id: int | None = None) -> list[Trip]:
-    query = db.query(Trip)
-    if user_id is not None:
-        query = query.filter(Trip.user_id == user_id)
-    return query.order_by(Trip.created_at.desc()).all()
+def list_trips(db: Session, user_id: int) -> list[Trip]:
+    return (
+        db.query(Trip)
+        .filter(Trip.user_id == user_id)
+        .order_by(Trip.created_at.desc())
+        .all()
+    )
 
 
-def get_trip(db: Session, trip_id: int) -> Trip | None:
-    return db.get(Trip, trip_id)
+def get_trip(db: Session, trip_id: int, user_id: int) -> Trip | None:
+    """Return the trip only if it exists and belongs to user_id."""
+    return (
+        db.query(Trip)
+        .filter(Trip.id == trip_id, Trip.user_id == user_id)
+        .one_or_none()
+    )
 
 
-def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
-    trip = db.get(Trip, trip_id)
+def update_trip(
+    db: Session, trip_id: int, user_id: int, payload: TripUpdate
+) -> Trip | None:
+    trip = get_trip(db, trip_id, user_id)
     if trip is None:
         return None
 
@@ -91,7 +102,7 @@ def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
     _check_dates(new_start, new_end)
 
     overlapping = get_overlapping_trip(
-        db, trip.user_id, new_start, new_end, exclude_trip_id=trip_id
+        db, user_id, new_start, new_end, exclude_trip_id=trip_id
     )
     if overlapping is not None:
         raise TripDateConflictError(
@@ -107,8 +118,8 @@ def update_trip(db: Session, trip_id: int, payload: TripUpdate) -> Trip | None:
     return trip
 
 
-def delete_trip(db: Session, trip_id: int) -> bool:
-    trip = db.get(Trip, trip_id)
+def delete_trip(db: Session, trip_id: int, user_id: int) -> bool:
+    trip = get_trip(db, trip_id, user_id)
     if trip is None:
         return False
 

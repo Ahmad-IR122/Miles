@@ -26,6 +26,7 @@ class DayPlan(BaseModel):
 
 class Itinerary(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    user_id: int
     trip_request_id: str
     destination: str
     days: list[DayPlan] = Field(default_factory=list)

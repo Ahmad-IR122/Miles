@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user
 from app.db.db import get_db
+from app.models import User
 from app.schemas.trip_preference import (
     TripPreferenceCreate,
     TripPreferenceResponse,
@@ -20,9 +22,10 @@ router = APIRouter(prefix="/trips/{trip_id}/preferences", tags=["trip-preference
 def create_trip_preference(
     trip_id: int,
     payload: TripPreferenceCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if trip_service.get_trip(db, trip_id) is None:
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"trip {trip_id} not found",
@@ -38,7 +41,17 @@ def create_trip_preference(
 
 
 @router.get("", response_model=TripPreferenceResponse)
-def read_trip_preference(trip_id: int, db: Session = Depends(get_db)):
+def read_trip_preference(
+    trip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+
     preference = trip_preference_service.get_trip_preference(db, trip_id)
     if preference is None:
         raise HTTPException(
@@ -52,11 +65,16 @@ def read_trip_preference(trip_id: int, db: Session = Depends(get_db)):
 def update_trip_preference(
     trip_id: int,
     payload: TripPreferenceUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    preference = trip_preference_service.update_trip_preference(
-        db, trip_id, payload
-    )
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+
+    preference = trip_preference_service.update_trip_preference(db, trip_id, payload)
     if preference is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -66,7 +84,17 @@ def update_trip_preference(
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
-def delete_trip_preference(trip_id: int, db: Session = Depends(get_db)) -> None:
+def delete_trip_preference(
+    trip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    if trip_service.get_trip(db, trip_id, current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"trip {trip_id} not found",
+        )
+
     deleted = trip_preference_service.delete_trip_preference(db, trip_id)
     if not deleted:
         raise HTTPException(

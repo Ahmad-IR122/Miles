@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.security import get_current_user
 from app.db import get_db
+from app.models import User
 from app.schemas import (
     ActivityCreate,
     ActivityResponse,
@@ -20,13 +22,23 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 def create_activity(
     itinerary_day_id: int,
     activity: ActivityCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return activity_service.create_activity(
+    created = activity_service.create_activity(
         db,
         itinerary_day_id,
+        current_user.id,
         activity,
     )
+
+    if created is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"itinerary day {itinerary_day_id} not found",
+        )
+
+    return created
 
 
 @router.get(
@@ -35,12 +47,22 @@ def create_activity(
 )
 def list_activities(
     itinerary_day_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return activity_service.list_activities(
+    activities = activity_service.list_activities(
         db,
         itinerary_day_id,
+        current_user.id,
     )
+
+    if activities is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"itinerary day {itinerary_day_id} not found",
+        )
+
+    return activities
 
 
 @router.get(
@@ -49,11 +71,13 @@ def list_activities(
 )
 def get_activity(
     activity_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     activity = activity_service.get_activity(
         db,
         activity_id,
+        current_user.id,
     )
 
     if activity is None:
@@ -72,11 +96,13 @@ def get_activity(
 def update_activity(
     activity_id: int,
     activity: ActivityUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     updated_activity = activity_service.update_activity(
         db,
         activity_id,
+        current_user.id,
         activity,
     )
 
@@ -95,11 +121,13 @@ def update_activity(
 )
 def delete_activity(
     activity_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     deleted = activity_service.delete_activity(
         db,
         activity_id,
+        current_user.id,
     )
 
     if not deleted:
