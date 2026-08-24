@@ -11,24 +11,25 @@ from app.models import User
 from app.schemas import (
     Itinerary,
     ItineraryCreate,
+    ItineraryDetailResponse,
     ItineraryResponse,
     ItineraryUpdate,
 )
 from app.services import itinerary_service
-from app.services.ai_client import post, preferences_from, to_day
 from app.services.itinerary_service import (
     NotFound,
+    generate_itinerary_for_trip,
     regenerate_activity,
     regenerate_day,
     regenerate_trip,
 )
-from app.services.store import get_trip_request, list_itineraries, save_itinerary
+from app.services.store import list_itineraries
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
 
 class CreateItineraryRequest(BaseModel):
-    trip_request_id: str
+    trip_id: int
 
 
 def _guard(action):
@@ -59,29 +60,17 @@ def get_stored_itineraries(current_user: User = Depends(get_current_user)):
     return {"data": owned}
 
 
-@router.post("", response_model=Itinerary, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=ItineraryDetailResponse, status_code=status.HTTP_201_CREATED
+)
 def create_generated_itinerary(
     payload: CreateItineraryRequest,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    trip = get_trip_request(payload.trip_request_id)
-    if trip is None or trip.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"trip request {payload.trip_request_id} not found",
-        )
-
-    def action():
-        raw = post("/itinerary/", {"preferences": preferences_from(trip)})
-        itinerary = Itinerary(
-            user_id=current_user.id,
-            trip_request_id=trip.request_id,
-            destination=trip.destination,
-            days=[to_day(day, i + 1) for i, day in enumerate(raw["days"])],
-        )
-        return save_itinerary(itinerary)
-
-    return _guard(action)
+    return _guard(
+        lambda: generate_itinerary_for_trip(db, payload.trip_id, current_user.id)
+    )
 
 
 @router.post("/{itinerary_id}/regenerate", response_model=Itinerary)
