@@ -2,8 +2,8 @@ import os
 from io import BytesIO
 
 import pandas as pd
-from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 
 load_dotenv()

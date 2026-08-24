@@ -1,7 +1,7 @@
+import ast
 import re
 
 import pandas as pd
-
 from data_loader import load_recommendation_data
 
 
@@ -16,35 +16,61 @@ def normalize_text(text: str) -> str:
     return text.lower().strip()
 
 
-def parse_interests(
-    value: str,
-) -> list[
-    str
-]:  # this function used to clean and parse the interests from the CSV files, splitting them by '|' and converting them to lowercase
+def parse_interests(value: str) -> list[str]:
     """
-    Convert activity interest tags into a list.
+    Parse and normalize interest tags.
 
-    Example:
+    Examples:
     'Adventure|Food'
-    ->
-    ['adventure', 'food']
+        -> ['adventure', 'food']
+
+    "['Adventure|Food']"
+        -> ['adventure', 'food']
+
+    "['Adventure', 'Food']"
+        -> ['adventure', 'food']
     """
 
     if pd.isna(value):
         return []
+
+    value = str(value).strip()
+
+    interests = []
+
+    # Handle list-like strings
+    if value.startswith("[") and value.endswith("]"):
+        try:
+            parsed = ast.literal_eval(value)
+
+            if isinstance(parsed, list):
+                for item in parsed:
+                    parts = re.split(r"[|/,]", str(item))
+
+                    interests.extend(
+                        normalize_text(part) for part in parts if normalize_text(part)
+                    )
+
+                return interests
+
+        except (ValueError, SyntaxError):
+            pass
+
+    # Handle normal strings
     return [
-        normalize_text(interest)
-        for interest in re.split(r"[|/,]", str(value))
-        if normalize_text(interest)
+        normalize_text(part)
+        for part in re.split(r"[|/,]", value)
+        if normalize_text(part)
     ]
 
 
 def get_activity_interest_column(activities: pd.DataFrame) -> str | None:
     """
-    Find the column that contains activity tags/categories.
+    Find the column that contains activity interest tags.
     """
 
     possible_columns = (
+        "interest_tags",
         "interests",
         "interest",
         "categories",
@@ -129,14 +155,12 @@ def build_recommendation_profiles(
             "season_months",
         ]
     ].copy()
-    
+
     profiles = profiles.merge(interest_counts, on="destination_id", how="left")
-    
     profiles.fillna(0, inplace=True)  # Fill NaN values with 0 for interest counts
-    
     return profiles
-  
-  
+
+
 def main():
     destinations, activities, _ = load_recommendation_data()
 

@@ -21,11 +21,11 @@ __all__ = [
     "ItineraryActivity",
     "ItineraryDay",
     "ItineraryRequest",
+    "RecommendationRequest",
+    "RecommendationResponse",
     "RegenerateActivityRequest",
     "RegenerateDayRequest",
     "RegenerateItineraryRequest",
-    "RecommendationRequest",
-    "RecommendationResponse",
     "TravelDataItem",
     "TravelPreferences",
 ]
