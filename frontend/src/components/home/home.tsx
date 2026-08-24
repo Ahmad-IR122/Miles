@@ -3,6 +3,7 @@ import { Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import AppButton from "../../common/AppButton/appButton";
+import ThemeToggle from "../../common/theme/themeToggle";
 import logo from "../../assets/logo.svg";
 import homeImage from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
@@ -41,6 +42,8 @@ const Home = () => {
             <AppButton appearance="secondary" size="small" onClick={goToSignIn}>
               Sign In
             </AppButton>
+
+            <ThemeToggle />
           </div>
         </header>
       </SignedOut>

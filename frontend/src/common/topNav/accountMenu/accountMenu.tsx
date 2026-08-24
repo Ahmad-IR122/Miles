@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
-import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import Avatar from "@mui/material/Avatar";
@@ -16,7 +14,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { getTrips } from "../../../api/trip";
 import { routesPaths } from "../../../routes/routesPaths";
 import type { Trip } from "../../../types/trip";
-import { useThemeMode } from "../../theme/themeMode";
 import { useAccountMenuStyles } from "./accountMenu.styles";
 const getDatesInRange = (start: Dayjs, end: Dayjs): Dayjs[] => {
   const dates: Dayjs[] = [];
@@ -48,8 +45,6 @@ const AccountMenu = () => {
   const styles = useAccountMenuStyles();
   const { user } = useUser();
   const { signOut, openUserProfile } = useClerk();
-  const { resolvedTheme, toggleTheme } = useThemeMode();
-  const isDark = resolvedTheme === "dark";
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const open = Boolean(anchorEl);
@@ -135,19 +130,6 @@ const AccountMenu = () => {
         </div>
         <div className={styles.divider} />
         <div className={styles.actions}>
-          <Button
-            className={styles.actionButton}
-            onClick={toggleTheme}
-            startIcon={
-              isDark ? (
-                <LightModeOutlinedIcon fontSize="small" />
-              ) : (
-                <DarkModeOutlinedIcon fontSize="small" />
-              )
-            }
-          >
-            {isDark ? "Light mode" : "Dark mode"}
-          </Button>
           <Button
             className={styles.actionButton}
             onClick={handleManageAccount}

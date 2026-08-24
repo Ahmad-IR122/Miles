@@ -9,6 +9,7 @@ import logo from "../../assets/logo.svg";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
+import ThemeToggle from "../theme/themeToggle";
 import { navItems } from "./navItems";
 import { useTopNavStyles } from "./topNav.styles";
 import AccountMenu from "./accountMenu/accountMenu";
@@ -122,6 +123,7 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
             <div className={styles.signedOutSpacer} />
           </SignedOut>
           <div className={styles.actions}>
+            <ThemeToggle />
             <SignedOut>
               {homeLink && (
                 <AppButton
