@@ -1,8 +1,9 @@
 from datetime import date, time
 from uuid import UUID, uuid4
-from app.schemas.activity import ActivityResponse
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.schemas.activity import ActivityResponse
 
 
 class Activity(BaseModel):
