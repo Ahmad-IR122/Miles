@@ -1,21 +1,95 @@
+from datetime import date as DateType
+from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.models import Activity as DBActivity
 from app.models import Itinerary as DBItinerary
+from app.models import ItineraryDay as DBItineraryDay
+from app.models import Trip
 from app.schemas import (
     DayPlan,
     Itinerary,
     ItineraryCreate,
     ItineraryUpdate,
 )
-from app.services.ai_client import from_itinerary, post, to_day
+from app.services.ai_client import (
+    _parse_time,
+    from_itinerary,
+    post,
+    preferences_from_trip,
+    to_day,
+)
 from app.services.store import get_itinerary, get_trip_request, save_itinerary
+from app.services.trip_interest_service import list_trip_interests
 
 
 class NotFound(LookupError):
     """Requested itinerary, day, or activity does not exist."""
+
+def _to_decimal(value: str | None) -> Decimal | None:
+    """Best-effort parse of the AI service's free-text estimated_cost field."""
+    if not value:
+        return None
+    cleaned = "".join(ch for ch in value if ch.isdigit() or ch == ".")
+    if not cleaned:
+        return None
+    try:
+        return Decimal(cleaned)
+    except InvalidOperation:
+        return None
+
+
+def generate_itinerary_for_trip(db: Session, trip_id: int, user_id: int) -> DBItinerary:
+    trip = db.get(Trip, trip_id)
+    if trip is None or trip.user_id != user_id:
+        raise NotFound(f"trip {trip_id} not found")
+
+    interest_names = [interest.name for interest in list_trip_interests(db, trip_id)]
+    preferences = preferences_from_trip(trip, interest_names)
+
+    raw = post("/itinerary/", {"preferences": preferences})
+
+    itinerary = DBItinerary(trip_id=trip_id, version=1, generated_by="aiServices")
+    db.add(itinerary)
+    db.flush()
+
+    for day_index, raw_day in enumerate(raw["days"]):
+        day = DBItineraryDay(
+            itinerary_id=itinerary.id,
+            day_number=day_index + 1,
+            date=DateType.fromisoformat(raw_day["date"]),
+        )
+        db.add(day)
+        db.flush()
+
+        for position, raw_activity in enumerate(raw_day["activities"]):
+            start_time = _parse_time(raw_activity["time"])
+            end_time = (
+                datetime.combine(day.date, start_time)
+                + timedelta(minutes=raw_activity["duration_minutes"])
+            ).time()
+
+            db.add(
+                DBActivity(
+                    itinerary_day_id=day.id,
+                    name=raw_activity["activity"],
+                    description=raw_activity.get("recommendation"),
+                    location_name=raw_activity.get("location"),
+                    start_time=start_time,
+                    end_time=end_time,
+                    estimated_cost=_to_decimal(raw_activity.get("estimated_cost")),
+                    category=raw_activity.get("category"),
+                    activity_order=position + 1,
+                )
+            )
+
+    db.commit()
+    db.refresh(itinerary)
+    return itinerary
 
 
 def _load(itinerary_id: UUID):

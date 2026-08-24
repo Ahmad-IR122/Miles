@@ -1,5 +1,6 @@
 from datetime import date, time
 from uuid import UUID, uuid4
+from app.schemas.activity import ActivityResponse
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -49,3 +50,27 @@ class ItineraryResponse(BaseModel):
     generated_by: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class ItineraryDayResponse(BaseModel):
+    id: int
+    itinerary_id: int
+    day_number: int
+    date: date
+    title: str | None
+    summary: str | None
+    activities: list["ActivityResponse"] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ItineraryDetailResponse(BaseModel):
+    id: int
+    trip_id: int
+    version: int
+    generated_by: str | None
+    days: list[ItineraryDayResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+ItineraryDayResponse.model_rebuild()

@@ -81,3 +81,13 @@ def preferences_from(trip: TripRequestResponse) -> dict:
         "interests": interests,
         "budget": str(trip.budget),
     }
+
+def preferences_from_trip(trip, interest_names: list[str]) -> dict:
+    """Build the aiServices TravelPreferences payload from a DB Trip row."""
+    return {
+        "destination": trip.destination,
+        "start_date": str(trip.start_date),
+        "end_date": str(trip.end_date),
+        "interests": interest_names,
+        "budget": str(trip.budget) if trip.budget is not None else "",
+    }
