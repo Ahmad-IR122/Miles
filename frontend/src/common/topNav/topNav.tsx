@@ -36,12 +36,12 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
         className={styles.brand}
         onClick={() => navigate(routesPaths.home)}
         type="button"
-        aria-label="TravelAI home"
+        aria-label="Miles home"
       >
         <div className={styles.standaloneLogoFrame}>
-          <img src={logo} alt="TravelAI logo" className={styles.logo} />
+          <img src={logo} alt="Miles logo" className={styles.logo} />
         </div>
-        <span className={styles.standaloneBrandName}>TravelAI</span>
+        <span className={styles.standaloneBrandName}>Miles</span>
       </button>
     </div>
   );

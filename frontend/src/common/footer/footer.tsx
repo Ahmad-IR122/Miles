@@ -19,12 +19,12 @@ const Footer = () => {
         <div className={styles.decorCloud} aria-hidden="true" />
         <div className={styles.decorLandscape} aria-hidden="true" />
         <div className={styles.content}>
-          <section className={styles.brandSection} aria-label="TravelAI">
+          <section className={styles.brandSection} aria-label="Miles">
             <Link className={styles.brand} to={routesPaths.home}>
               <span className={styles.logoFrame}>
-                <img src={logo} alt="TravelAI logo" className={styles.logo} />
+                <img src={logo} alt="Miles logo" className={styles.logo} />
               </span>
-              <span className={styles.brandName}>TravelAI</span>
+              <span className={styles.brandName}>Miles</span>
             </Link>
             <p className={styles.description}>
               Your AI travel companion for discovering amazing places, planning
@@ -92,7 +92,7 @@ const Footer = () => {
         </div>
 
         <p className={styles.copyright}>
-          &copy; 2026 TravelAI. All rights reserved.
+          &copy; 2026 Miles. All rights reserved.
         </p>
       </div>
     </footer>

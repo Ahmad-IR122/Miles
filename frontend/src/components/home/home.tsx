@@ -31,7 +31,7 @@ const Home = () => {
               />
             </div>
 
-            <span className={styles.brandName}>TravelAI</span>
+            <span className={styles.brandName}>Miles</span>
           </div>
 
           <div className={styles.signInArea}>
@@ -61,8 +61,8 @@ const Home = () => {
           </Typography>
 
           <Typography component="p" className={styles.description}>
-            TravelAI creates personalized trips around where you want to go and
-            the way you love to travel.
+            Miles creates personalized trips around where you want to go and the
+            way you love to travel.
           </Typography>
 
           <SignedOut>

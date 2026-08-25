@@ -13,7 +13,7 @@ export type ThemeMode = "light" | "dark" | "system";
 /** What "system" actually resolved to — never "system" itself. */
 export type ResolvedTheme = "light" | "dark";
 
-export const THEME_STORAGE_KEY = "travelai-theme";
+export const THEME_STORAGE_KEY = "Miles-theme";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 

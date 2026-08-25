@@ -1,17 +1,17 @@
 const en = {
   translation: {
     app: {
-      name: "TravelAI",
+      name: "Miles",
     },
     topNav: {
       navigationLabel: "Main navigation",
-      logoAlt: "TravelAI logo",
+      logoAlt: "Miles logo",
       backHome: "Back to home",
     },
     home: {
       hero: {
         titlePrefix: "Plan your perfect",
-        titleAccent: "trip with AI",
+        titleAccent: "trip with Miles",
         description:
           "Tell us where you're going and what you love, and get a personalized itinerary with flights, activities, must-see places, and hidden gems, all in one place.",
         cta: "Plan Your Trip",
