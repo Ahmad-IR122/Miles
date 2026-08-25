@@ -2,6 +2,7 @@ import ast
 import re
 
 import pandas as pd
+import numpy as np
 from data_loader import load_recommendation_data
 
 INTEREST_COLUMNS = [
@@ -27,6 +28,7 @@ def normalize_text(text: str) -> str:
 
     return text.lower().strip()
 
+
 def normalize_interest_scores(profiles: pd.DataFrame) -> pd.DataFrame:
     profiles = profiles.copy()
 
@@ -37,6 +39,7 @@ def normalize_interest_scores(profiles: pd.DataFrame) -> pd.DataFrame:
             profiles[column] = profiles[column] / max_value
 
     return profiles
+
 
 def build_user_profile(user_preferences: dict) -> dict:
     """
@@ -206,16 +209,65 @@ def build_recommendation_profiles(
     return profiles
 
 
-def main(): # jsut for bug testing 
+def calculate_cosine_similarity(user_profile: dict, destination: pd.Series) -> float:
+    """
+    Calculate cosine similarity between
+    user interests and a destination profile.
+    """
+
+    user_vector = np.array(
+        [user_profile["interests"].get(interest, 0.0) for interest in INTEREST_COLUMNS],
+        dtype=float,
+    )
+
+    destination_vector = np.array(
+        [destination.get(interest, 0.0) for interest in INTEREST_COLUMNS], 
+        dtype=float
+    )
+    
+    user_norm = np.linalg.norm(user_vector)
+    destination_norm = np.linalg.norm(destination_vector)
+    
+    if user_norm == 0 or destination_norm == 0:
+        return 0.0
+    similarity = np.dot(
+      user_vector, destination_vector
+    ) / (user_norm * destination_norm)
+    
+    return round(float(similarity), 4)
+
+def calculate_similarity_scores(
+    profiles: pd.DataFrame,
+    user_profile: dict,
+) -> pd.DataFrame:
+
+    profiles = profiles.copy()
+
+    profiles["similarity_score"] = profiles.apply(
+        lambda destination: calculate_cosine_similarity(
+            user_profile,
+            destination,
+        ),
+        axis=1,
+    )
+
+    return profiles
+
+
+def main():
+    # Load recommendation datasets
     destinations, activities, _ = load_recommendation_data()
 
+    # Build destination profiles
     profiles = build_recommendation_profiles(
         destinations=destinations,
         activities=activities,
     )
 
+    # Normalize destination interest scores
     profiles = normalize_interest_scores(profiles)
 
+    # Temporary user preferences for testing
     user_preferences = {
         "interests": [
             "Adventure",
@@ -227,23 +279,35 @@ def main(): # jsut for bug testing
         "style": "nature",
     }
 
+    # Build user profile
     user_profile = build_user_profile(user_preferences)
+
+    # Calculate cosine similarity for every destination
+    profiles = calculate_similarity_scores(
+        profiles,
+        user_profile,
+    )
+
+    # Sort destinations from highest similarity to lowest
+    results = profiles.sort_values(
+        by="similarity_score",
+        ascending=False,
+    )
 
     print("\nUser Profile:")
     print(user_profile)
 
-    print("\nDestination Profiles:")
+    print("\nTop Recommendations:")
     print(
-        profiles[
+        results[
             [
                 "city",
-                "adventure",
-                "nature",
-                "food",
-                "history",
-                "nightlife",
+                "country",
+                "style",
+                "budget_level",
+                "similarity_score",
             ]
-        ].head()
+        ].head(10)
     )
 
 
