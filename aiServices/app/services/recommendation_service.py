@@ -1,8 +1,8 @@
 import ast
 import re
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from data_loader import load_recommendation_data
 
 INTEREST_COLUMNS = [
@@ -22,6 +22,11 @@ BUDGET_LEVELS = {
     "mid": 2,
     "high": 3,
 }
+
+SIMILARITY_WEIGHT = 0.60
+BUDGET_WEIGHT = 0.20
+SEASON_WEIGHT = 0.15
+STYLE_WEIGHT = 0.05
 
 
 def normalize_text(text: str) -> str:
@@ -320,87 +325,139 @@ def calculate_season_score(travel_month: int, season_months) -> float:
     except (ValueError, TypeError, SyntaxError):
         return 0.0
 
+
 def calculate_season_scores(profiles: pd.DataFrame, user_profile: dict) -> pd.DataFrame:
-  profiles = profiles.copy()
-  
-  profiles["season_score_match"] = profiles["season_months"].apply(
-    lambda destination_season: calculate_season_score(
-      user_profile.get("travel_month"), destination_season
+    profiles = profiles.copy()
+
+    profiles["season_score_match"] = profiles["season_months"].apply(
+        lambda destination_season: calculate_season_score(
+            user_profile.get("travel_month"), destination_season
+        )
     )
-  )
-  
-  return profiles
-def main():
-    # Load datasets
+
+    return profiles
+
+
+def calculate_style_score(user_style: str, destination_style: str) -> float:
+    """
+    Calculate how well the user's preferred style
+    matches the destination style.
+    """
+
+    user_style = normalize_text(user_style)
+    destination_style = normalize_text(destination_style)
+
+    if not user_style or not destination_style:
+        return 0.0
+    if user_style == destination_style:
+        return 1.0
+    return 0.0
+
+
+def calculate_style_scores(profiles: pd.DataFrame, user_profile: dict) -> pd.DataFrame:
+
+    profiles = profiles.copy()
+
+    profiles["style_score_match"] = profiles["style"].apply(
+        lambda destination_style: calculate_style_score(
+            user_profile.get("style", ""),
+            destination_style,
+        )
+    )
+
+    return profiles
+
+
+def calculate_final_scores(
+    profiles: pd.DataFrame,
+) -> pd.DataFrame:
+    profiles = profiles.copy()
+
+    profiles["final_score"] = (
+        profiles["similarity_score"] * SIMILARITY_WEIGHT
+        + profiles["budget_score_match"] * BUDGET_WEIGHT
+        + profiles["season_score_match"] * SEASON_WEIGHT
+        + profiles["style_score_match"] * STYLE_WEIGHT
+    )
+
+    profiles["final_score"] = profiles["final_score"].round(4)
+
+    return profiles
+
+
+def recommend_destinations(
+    user_preferences: dict,
+    limit: int = 5,
+) -> pd.DataFrame:
+    """
+    Generate personalized destination recommendations.
+
+    Steps:
+    1. Load recommendation data
+    2. Build destination profiles
+    3. Normalize interest scores
+    4. Build user profile
+    5. Calculate similarity
+    6. Calculate budget, season, and style matches
+    7. Calculate final score
+    8. Rank destinations
+    9. Return top N recommendations
+    """
+
     destinations, activities, _ = load_recommendation_data()
 
-    # Build destination profiles
     profiles = build_recommendation_profiles(
         destinations=destinations,
         activities=activities,
     )
 
-    # Normalize interest scores
     profiles = normalize_interest_scores(profiles)
 
-    # Temporary user data for testing
-    user_preferences = {
-        "interests": [
-            "Adventure",
-            "Nature",
-            "Food",
-        ],
-        "budget_level": "mid",
-        "travel_month": 8,
-        "style": "nature",
-    }
-
-    # Build user profile
     user_profile = build_user_profile(user_preferences)
 
-    # Calculate cosine similarity
     profiles = calculate_similarity_scores(
         profiles,
         user_profile,
     )
 
-    # Calculate budget match
     profiles = calculate_budget_scores(
         profiles,
         user_profile,
     )
 
-    # Calculate season match
     profiles = calculate_season_scores(
         profiles,
         user_profile,
     )
 
-    # Temporary sorting by similarity only
-    # Later we will sort using the final score
+    profiles = calculate_style_scores(
+        profiles,
+        user_profile,
+    )
+
+    profiles = calculate_final_scores(
+        profiles,
+    )
+
     results = profiles.sort_values(
-        by="similarity_score",
+        by="final_score",
         ascending=False,
     )
 
-    print("\nUser Profile:")
-    print(user_profile)
+    recommendations = results[
+        [
+            "destination_id",
+            "city",
+            "country",
+            "region",
+            "style",
+            "budget_level",
+            "similarity_score",
+            "budget_score_match",
+            "season_score_match",
+            "style_score_match",
+            "final_score",
+        ]
+    ].head(limit)
 
-    print("\nTop Recommendations:")
-    print(
-        results[
-            [
-                "city",
-                "country",
-                "style",
-                "budget_level",
-                "similarity_score",
-                "budget_score_match",
-                "season_score_match",
-            ]
-        ].head(10)
-    )
-
-
-if __name__ == "__main__":
-    main()
+    return recommendations.to_dict(orient="records")
