@@ -17,6 +17,12 @@ INTEREST_COLUMNS = [
     "shopping",
 ]
 
+BUDGET_LEVELS = {
+    "low": 1,
+    "mid": 2,
+    "high": 3,
+}
+
 
 def normalize_text(text: str) -> str:
     """
@@ -42,18 +48,13 @@ def normalize_interest_scores(profiles: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_user_profile(user_preferences: dict) -> dict:
-    """
-    Build a user profile using the same interest features
-    used in destination profiles.
-    """
-
-    user_intrests = {
+    user_interests = {
         normalize_text(interest) for interest in user_preferences.get("interests", [])
     }
 
     interest_vector = {
-        interest: 1.0 if interest in user_intrests else 0.0
-        for interest in user_intrests
+        interest: 1.0 if interest in user_interests else 0.0
+        for interest in INTEREST_COLUMNS
     }
 
     return {
@@ -221,20 +222,20 @@ def calculate_cosine_similarity(user_profile: dict, destination: pd.Series) -> f
     )
 
     destination_vector = np.array(
-        [destination.get(interest, 0.0) for interest in INTEREST_COLUMNS], 
-        dtype=float
+        [destination.get(interest, 0.0) for interest in INTEREST_COLUMNS], dtype=float
     )
-    
+
     user_norm = np.linalg.norm(user_vector)
     destination_norm = np.linalg.norm(destination_vector)
-    
+
     if user_norm == 0 or destination_norm == 0:
         return 0.0
-    similarity = np.dot(
-      user_vector, destination_vector
-    ) / (user_norm * destination_norm)
-    
+    similarity = np.dot(user_vector, destination_vector) / (
+        user_norm * destination_norm
+    )
+
     return round(float(similarity), 4)
+
 
 def calculate_similarity_scores(
     profiles: pd.DataFrame,
@@ -254,8 +255,83 @@ def calculate_similarity_scores(
     return profiles
 
 
+def calculate_budget_score(user_budget: str, destination_budget: str) -> float:
+
+    user_budget = normalize_text(user_budget)
+    destination_budget = normalize_text(destination_budget)
+
+    user_value = BUDGET_LEVELS.get(user_budget)
+    destination_value = BUDGET_LEVELS.get(destination_budget)
+
+    if user_value is None or destination_value is None:
+        return 0.0
+
+    difference = abs(user_value - destination_value)
+
+    if difference == 0:
+        return 1.0
+
+    if difference == 1:
+        return 0.7
+
+    return 0.3
+
+
+def calculate_budget_scores(profiles: pd.DataFrame, user_profile: dict) -> pd.DataFrame:
+
+    profiles = profiles.copy()
+
+    profiles["budget_score_match"] = profiles.apply(
+        lambda destination: calculate_budget_score(
+            user_profile.get("budget_level", ""),
+            destination.get("budget_level", ""),
+        ),
+        axis=1,
+    )
+
+    return profiles
+
+
+def calculate_season_score(travel_month: int, season_months) -> float:
+    """
+    Calculate how well the user's travel month
+    matches the destination season.
+
+    Exact month match -> 1.0
+    No match          -> 0.0
+    """
+
+    if travel_month is None or pd.isna(season_months):
+        return 0.0
+
+    try:
+        # Handle values like:
+        # "[6, 7, 8]"
+        if isinstance(season_months, str):
+            season_months = ast.literal_eval(season_months)
+
+        if not isinstance(season_months, (list, tuple, set)):
+            return 0.0
+
+        months = [int(month) for month in season_months]
+
+        return 1.0 if int(travel_month) in months else 0.0
+
+    except (ValueError, TypeError, SyntaxError):
+        return 0.0
+
+def calculate_season_scores(profiles: pd.DataFrame, user_profile: dict) -> pd.DataFrame:
+  profiles = profiles.copy()
+  
+  profiles["season_score_match"] = profiles["season_months"].apply(
+    lambda destination_season: calculate_season_score(
+      user_profile.get("travel_month"), destination_season
+    )
+  )
+  
+  return profiles
 def main():
-    # Load recommendation datasets
+    # Load datasets
     destinations, activities, _ = load_recommendation_data()
 
     # Build destination profiles
@@ -264,10 +340,10 @@ def main():
         activities=activities,
     )
 
-    # Normalize destination interest scores
+    # Normalize interest scores
     profiles = normalize_interest_scores(profiles)
 
-    # Temporary user preferences for testing
+    # Temporary user data for testing
     user_preferences = {
         "interests": [
             "Adventure",
@@ -282,13 +358,26 @@ def main():
     # Build user profile
     user_profile = build_user_profile(user_preferences)
 
-    # Calculate cosine similarity for every destination
+    # Calculate cosine similarity
     profiles = calculate_similarity_scores(
         profiles,
         user_profile,
     )
 
-    # Sort destinations from highest similarity to lowest
+    # Calculate budget match
+    profiles = calculate_budget_scores(
+        profiles,
+        user_profile,
+    )
+
+    # Calculate season match
+    profiles = calculate_season_scores(
+        profiles,
+        user_profile,
+    )
+
+    # Temporary sorting by similarity only
+    # Later we will sort using the final score
     results = profiles.sort_values(
         by="similarity_score",
         ascending=False,
@@ -306,6 +395,8 @@ def main():
                 "style",
                 "budget_level",
                 "similarity_score",
+                "budget_score_match",
+                "season_score_match",
             ]
         ].head(10)
     )
