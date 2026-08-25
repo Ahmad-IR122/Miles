@@ -4,6 +4,18 @@ import re
 import pandas as pd
 from data_loader import load_recommendation_data
 
+INTEREST_COLUMNS = [
+    "adventure",
+    "art & culture",
+    "food",
+    "history",
+    "nature",
+    "nightlife",
+    "other",
+    "relaxation",
+    "shopping",
+]
+
 
 def normalize_text(text: str) -> str:
     """
@@ -14,6 +26,39 @@ def normalize_text(text: str) -> str:
         return ""
 
     return text.lower().strip()
+
+def normalize_interest_scores(profiles: pd.DataFrame) -> pd.DataFrame:
+    profiles = profiles.copy()
+
+    for column in INTEREST_COLUMNS:
+        max_value = profiles[column].max()
+
+        if max_value > 0:
+            profiles[column] = profiles[column] / max_value
+
+    return profiles
+
+def build_user_profile(user_preferences: dict) -> dict:
+    """
+    Build a user profile using the same interest features
+    used in destination profiles.
+    """
+
+    user_intrests = {
+        normalize_text(interest) for interest in user_preferences.get("interests", [])
+    }
+
+    interest_vector = {
+        interest: 1.0 if interest in user_intrests else 0.0
+        for interest in user_intrests
+    }
+
+    return {
+        "interests": interest_vector,
+        "budget_level": normalize_text(user_preferences.get("budget_level", "")),
+        "travel_month": user_preferences.get("travel_month"),
+        "style": normalize_text(user_preferences.get("style", "")),
+    }
 
 
 def parse_interests(value: str) -> list[str]:
@@ -161,7 +206,7 @@ def build_recommendation_profiles(
     return profiles
 
 
-def main():
+def main(): # jsut for bug testing 
     destinations, activities, _ = load_recommendation_data()
 
     profiles = build_recommendation_profiles(
@@ -169,14 +214,37 @@ def main():
         activities=activities,
     )
 
+    profiles = normalize_interest_scores(profiles)
+
+    user_preferences = {
+        "interests": [
+            "Adventure",
+            "Nature",
+            "Food",
+        ],
+        "budget_level": "mid",
+        "travel_month": 8,
+        "style": "nature",
+    }
+
+    user_profile = build_user_profile(user_preferences)
+
+    print("\nUser Profile:")
+    print(user_profile)
+
     print("\nDestination Profiles:")
-    print(profiles.head())
-
-    print("\nProfile Columns:")
-    print(profiles.columns.tolist())
-
-    print("\nTotal Profiles:")
-    print(len(profiles))
+    print(
+        profiles[
+            [
+                "city",
+                "adventure",
+                "nature",
+                "food",
+                "history",
+                "nightlife",
+            ]
+        ].head()
+    )
 
 
 if __name__ == "__main__":
