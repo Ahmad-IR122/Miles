@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SyntheticEvent,
+} from "react";
 import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -90,6 +96,7 @@ const emptyFieldErrors: FieldErrors = {
 const tripDetailsRequiredMessage =
   "Please fill the required fields before moving on.";
 const maxTripDays = 31;
+const minInterests = 3;
 const steps = [
   { num: 1, label: "Trip Details" },
   { num: 2, label: "Travelers & Budget" },
@@ -171,6 +178,7 @@ const TripPlanningForm = () => {
   // Interests
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [otherInterest, setOtherInterest] = useState("");
+  const interestsSectionRef = useRef<HTMLDivElement | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>(emptyFieldErrors);
   const isTripDetailsComplete =
     !!originCountry &&
@@ -180,7 +188,7 @@ const TripPlanningForm = () => {
     !!startDate &&
     !!endDate;
   const isTravelersBudgetComplete = adults >= 1 && children >= 0 && !!budget;
-  const isInterestsComplete = selectedInterests.length > 0;
+  const isInterestsComplete = selectedInterests.length >= minInterests;
   const completedSteps = [
     isTripDetailsComplete,
     isTravelersBudgetComplete,
@@ -270,7 +278,7 @@ const TripPlanningForm = () => {
       ? selectedInterests.filter((item) => item !== interest)
       : [...selectedInterests, interest];
     setSelectedInterests(nextInterests);
-    if (nextInterests.length > 0) clearFieldError("interests");
+    if (nextInterests.length >= minInterests) clearFieldError("interests");
   };
   const validateCurrentStep = (): boolean => {
     setSubmitError("");
@@ -346,9 +354,9 @@ const TripPlanningForm = () => {
     }
     if (step === 3) {
       nextErrors.interests =
-        selectedInterests.length > 0
+        selectedInterests.length >= minInterests
           ? ""
-          : "Please select at least one interest.";
+          : `Please select at least ${minInterests} interests.`;
       isValid = !nextErrors.interests;
     }
     setFieldErrors(nextErrors);
@@ -365,7 +373,15 @@ const TripPlanningForm = () => {
   };
   const handleSubmit = async () => {
     setSubmitError("");
-    if (!validateCurrentStep()) return;
+    if (!validateCurrentStep()) {
+      if (step === 3) {
+        interestsSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+      return;
+    }
     setIsSubmitting(true);
     setGenerating(true);
     setProgress(0);
@@ -546,6 +562,7 @@ const TripPlanningForm = () => {
                         styles.stepLabel,
                         (isComplete || isCurrent) && styles.stepLabelReached,
                         isCurrent && styles.stepLabelCurrent,
+                        !isCurrent && styles.stepLabelHideOnMobile,
                       )}
                     >
                       {item.label}
@@ -923,12 +940,30 @@ const TripPlanningForm = () => {
             )}
             {step === 3 && (
               <div>
-                <div className={styles.interestHeader}>
-                  <Typography component="h3" className={styles.interestTitle}>
-                    What are you interested in?
-                  </Typography>
+                <div
+                  ref={interestsSectionRef}
+                  className={styles.interestHeader}
+                >
+                  <div className={styles.interestHeaderRow}>
+                    <Typography component="h3" className={styles.interestTitle}>
+                      What are you interested in?
+                    </Typography>
+                    <span
+                      className={mergeClasses(
+                        styles.interestCounter,
+                        selectedInterests.length >= minInterests &&
+                          styles.interestCounterComplete,
+                      )}
+                    >
+                      {selectedInterests.length}
+                    </span>
+                    title=
+                    {`You have selected ${selectedInterests.length} interests.`}
+                  </div>
                   <Typography component="p" className={styles.interestText}>
-                    Select all that apply
+                    {selectedInterests.length >= minInterests
+                      ? "Select all that apply"
+                      : `Choose at least ${minInterests} to personalize your trip`}
                   </Typography>
                 </div>
                 <div className={styles.chips}>
@@ -942,17 +977,10 @@ const TripPlanningForm = () => {
                         styles.chip,
                         selectedInterests.includes(interest) &&
                           styles.chipActive,
-                        selectedInterests.includes(interest) &&
-                          styles.completedChoice,
                       )}
                     />
                   ))}
                 </div>
-                {fieldErrors.interests && (
-                  <Typography component="p" className={styles.fieldError}>
-                    {fieldErrors.interests}
-                  </Typography>
-                )}
                 {selectedInterests.includes("Other") && (
                   <div className={styles.otherField}>
                     <TextField
@@ -963,18 +991,6 @@ const TripPlanningForm = () => {
                       onChange={(event) => setOtherInterest(event.target.value)}
                       sx={getFieldSx(!!otherInterest.trim())}
                     />
-                  </div>
-                )}
-                {selectedInterests.length > 0 && (
-                  <div className={styles.selectionNotice}>
-                    <CheckIcon fontSize="small" aria-hidden="true" />
-                    <Typography
-                      component="p"
-                      className={styles.selectionNoticeText}
-                    >
-                      {selectedInterests.length} interest
-                      {selectedInterests.length === 1 ? "" : "s"} selected
-                    </Typography>
                   </div>
                 )}
                 <div className={styles.summary}>

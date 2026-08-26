@@ -1,6 +1,5 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
@@ -83,39 +82,22 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   </Button>
                 );
               })}
-              {!isHomePage && (
-                <Button
-                  className={mergeClasses(
-                    styles.navItem,
-                    location.pathname === routesPaths.planTrip &&
-                      styles.navItemActive,
-                  )}
-                  onClick={() => navigate(routesPaths.planTrip)}
-                  type="button"
-                  startIcon={<AutoAwesomeIcon aria-hidden="true" />}
-                  aria-current={
-                    location.pathname === routesPaths.planTrip
-                      ? "page"
-                      : undefined
-                  }
-                >
-                  Plan Trip
-                </Button>
-              )}
               <Button
                 className={mergeClasses(
                   styles.navItem,
-                  location.pathname === routesPaths.chatbot &&
+                  location.pathname === routesPaths.planTrip &&
                     styles.navItemActive,
                 )}
-                onClick={() => navigate(routesPaths.chatbot)}
+                onClick={() => navigate(routesPaths.planTrip)}
                 type="button"
-                startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
+                startIcon={<AutoAwesomeIcon aria-hidden="true" />}
                 aria-current={
-                  location.pathname === routesPaths.chatbot ? "page" : undefined
+                  location.pathname === routesPaths.planTrip
+                    ? "page"
+                    : undefined
                 }
               >
-                AI Chat
+                Plan Trip
               </Button>
             </div>
           </SignedIn>

@@ -3,7 +3,6 @@ export const routesPaths = {
   planTrip: "/plan-trip",
   itinerary: "/itinerary",
   myTrips: "/my-trips",
-  chatbot: "/chatbot",
   signUp: "/sign-up",
   signIn: "/sign-in",
   recommendation: "/discover",

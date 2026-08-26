@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "../common/appLayout/appLayout";
 import Home from "./home";
 import Itinerary from "../features/Itinerary/pages/itinerary";
-import ChatPage from "../features/chatbot/pages/chatPage";
 import PlanTrip from "./plan-trip";
 import SignUpPage from "../features/auth/pages/signUp";
 import SignInPage from "../features/auth/pages/signIn";
@@ -53,14 +52,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Itinerary />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: routesPaths.chatbot,
-        element: (
-          <ProtectedRoute>
-            <ChatPage />
           </ProtectedRoute>
         ),
       },

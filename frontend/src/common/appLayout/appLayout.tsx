@@ -15,14 +15,12 @@ const routesWithBackNav = new Set<string>([
 const routesWithNav = new Set<string>([
   routesPaths.home,
   routesPaths.itinerary,
-  routesPaths.chatbot,
   routesPaths.savedTrips,
   ...routesWithBackNav,
 ]);
 
 const routesNeedingNavOffset = new Set<string>([
   routesPaths.itinerary,
-  routesPaths.chatbot,
   routesPaths.savedTrips,
 ]);
 
@@ -32,7 +30,6 @@ const isItineraryDetailPath = (pathname: string) =>
 const routesWithFooter = new Set<string>([
   routesPaths.home,
   routesPaths.itinerary,
-  routesPaths.chatbot,
   ...routesWithBackNav,
 ]);
 
