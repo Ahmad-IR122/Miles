@@ -2,12 +2,13 @@ from pydantic import BaseModel, Field
 
 
 class RecommendationRequest(BaseModel):
-  interests: list[str] = Field(default_factory=list)
-  budget_level:str
-  travel_month: int = Field(ge=1, le=12)
-  style: str
-  limit: int = Field(default=5, ge=1, le=20)
-  
+    interests: list[str] = Field(default_factory=list)
+    budget_level: str
+    travel_month: int = Field(ge=1, le=12)
+    style: str
+    limit: int = Field(default=5, ge=1, le=20)
+
+
 class RecommendationItem(BaseModel):
     destination_id: str
     city: str

@@ -406,7 +406,6 @@ const TripPlanningForm = () => {
           JSON.stringify(recommendationPreferences),
         );
       }
-      console.log("Trip created:", trip);
       navigate(routesPaths.itinerary);
     } catch {
       setSubmitError("Something went wrong. Please try again.");

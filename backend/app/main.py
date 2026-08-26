@@ -10,6 +10,7 @@ from app.routers import (
     health,
     interest,
     itinerary,
+    recommendations,
     test_db,
     trip,
     trip_interest,
@@ -46,3 +47,4 @@ app.include_router(clerk_webhook.router)
 app.include_router(interest.router)
 app.include_router(trip_interest.router)
 app.include_router(trip_preference.router)
+app.include_router(recommendations.router)

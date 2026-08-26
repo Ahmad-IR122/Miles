@@ -6,7 +6,6 @@ import {
   type RecommendationRequestPayload,
 } from "../../../api/recommendations";
 import placeholderImage from "../../../assets/image.svg";
-import { interestOptions } from "../../../constants/interests";
 import type {
   PriceLevel,
   RecommendationPlace,
@@ -15,6 +14,13 @@ import type {
 
 const latestRecommendationPreferencesKey = "latestRecommendationPreferences";
 const defaultRecommendationLimit = 5;
+const mockRecommendationPayload: RecommendationRequestPayload = {
+  interests: ["Adventure", "Nature", "Food"],
+  budget_level: "high",
+  travel_month: 1,
+  style: "nature",
+  limit: 6,
+};
 
 const apiBudgetMap: Record<
   RecommendationPreferences["budgetLevel"],
@@ -78,11 +84,7 @@ const toRecommendationPayload = (
 });
 
 const getBrowseRecommendationsPayload = (): RecommendationRequestPayload => ({
-  interests: interestOptions.filter((interest) => interest !== "Other"),
-  budget_level: "mid",
-  travel_month: new Date().getMonth() + 1,
-  style: "balanced",
-  limit: defaultRecommendationLimit,
+  ...mockRecommendationPayload,
 });
 
 const getRecommendationCategory = (

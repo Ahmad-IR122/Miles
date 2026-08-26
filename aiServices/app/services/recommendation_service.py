@@ -305,13 +305,11 @@ def calculate_season_score(travel_month: int, season_months) -> float:
     Exact month match -> 1.0
     No match          -> 0.0
     """
-
-    if travel_month is None or pd.isna(season_months):
-        return 0.0
-
     try:
         # Handle values like:
         # "[6, 7, 8]"
+        if travel_month is None or pd.isna(season_months):
+          return 0.0
         if isinstance(season_months, str):
             season_months = ast.literal_eval(season_months)
 

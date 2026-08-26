@@ -8,3 +8,5 @@ uvicorn
 python-dotenv
 httpx
 pytest
+numpy=2.3.5
+pandas=2.3.3

@@ -1,13 +1,4 @@
-import axios from "axios";
-
-const AI_SERVICE_URL =
-  import.meta.env.VITE_AI_SERVICE_URL ??
-  import.meta.env.VITE_API_URL ??
-  "http://127.0.0.1:8001/";
-
-const recommendationsApi = axios.create({
-  baseURL: AI_SERVICE_URL,
-});
+import { api } from "./api";
 
 export type RecommendationRequestPayload = {
   interests: string[];
@@ -36,7 +27,4 @@ export type RecommendationResponse = {
 };
 
 export const getRecommendations = (payload: RecommendationRequestPayload) =>
-  recommendationsApi.post<RecommendationResponse>(
-    "/api/recommendations/",
-    payload,
-  );
+  api.post<RecommendationResponse>("/api/recommendations/", payload);
