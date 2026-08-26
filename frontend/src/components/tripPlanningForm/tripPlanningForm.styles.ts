@@ -78,6 +78,12 @@ export const progressRing = {
 
 export const progressRingCircumference = 2 * Math.PI * progressRing.radius;
 
+/** Shared breakpoints for the responsive rules below. */
+const bp = {
+  tablet: "(max-width: 640px)",
+  mobile: "(max-width: 420px)",
+} as const;
+
 export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
@@ -92,6 +98,9 @@ export const useTripPlanningFormStyles = makeStyles({
     padding: layout.padding["2xl"],
     rowGap: layout.gap.xl,
     backgroundImage: itineraryGradients.page,
+    [`@media ${bp.tablet}`]: {
+      padding: layout.padding.lg,
+    },
   },
   generatingIcon: {
     width: "140px",
@@ -173,12 +182,21 @@ export const useTripPlanningFormStyles = makeStyles({
     padding: `${layout.navHeight + 60}px ${layout.padding.lg} ${layout.padding["2xl"]}`,
     maxWidth: "760px",
     margin: "0 auto",
+    [`@media ${bp.tablet}`]: {
+      padding: `${layout.navHeight + 32}px ${layout.padding.md} ${layout.padding.xl}`,
+    },
+    [`@media ${bp.mobile}`]: {
+      padding: `${layout.navHeight + 24}px ${layout.padding.sm} ${layout.padding.lg}`,
+    },
   },
   header: { marginBottom: layout.gap.xl },
   title: {
     ...typographyPresets.h1,
     color: semanticColors.textPrimary,
     margin: `0 0 ${layout.gap.sm}`,
+    [`@media ${bp.tablet}`]: {
+      fontSize: "clamp(1.5rem, 6vw, 2.25rem)",
+    },
   },
   gradientText: {
     fontStyle: "italic",
@@ -194,6 +212,9 @@ export const useTripPlanningFormStyles = makeStyles({
     color: semanticColors.textSecondary,
     margin: 0,
     lineHeight: typography.lineHeight.relaxed,
+    [`@media ${bp.tablet}`]: {
+      fontSize: typography.fontSize.size4,
+    },
   },
   steps: {
     display: "flex",
@@ -233,6 +254,11 @@ export const useTripPlanningFormStyles = makeStyles({
   },
   stepLabelReached: { color: semanticColors.textPrimary },
   stepLabelCurrent: { fontWeight: typography.fontWeight.bold },
+  stepLabelHideOnMobile: {
+    [`@media ${bp.mobile}`]: {
+      display: "none",
+    },
+  },
   connector: {
     flexGrow: 1,
     height: "2px",
@@ -240,6 +266,9 @@ export const useTripPlanningFormStyles = makeStyles({
     backgroundColor: semanticColors.borderDefault,
     transitionProperty: "background",
     transitionDuration: layout.duration.slow,
+    [`@media ${bp.mobile}`]: {
+      margin: `0 ${layout.gap.sm}`,
+    },
   },
   connectorComplete: { backgroundImage: gradients.progress },
   card: {
@@ -257,10 +286,24 @@ export const useTripPlanningFormStyles = makeStyles({
     "& .MuiDivider-root": {
       ...shorthands.borderColor(semanticColors.borderAccentLight),
     },
+    [`@media ${bp.tablet}`]: {
+      padding: layout.padding.lg,
+    },
+    [`@media ${bp.mobile}`]: {
+      padding: layout.padding.md,
+      borderRadius: layout.radius.lg,
+    },
   },
   column24: { display: "flex", flexDirection: "column", rowGap: layout.gap.lg },
   column28: { display: "flex", flexDirection: "column", rowGap: layout.gap.xl },
-  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: layout.gap.md },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: layout.gap.md,
+    [`@media ${bp.tablet}`]: {
+      gridTemplateColumns: "1fr",
+    },
+  },
   travelerGroupSpacing: { marginTop: layout.spacing[4] },
   label: {
     ...typographyPresets.label,
@@ -271,6 +314,8 @@ export const useTripPlanningFormStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.md,
+    rowGap: layout.gap.sm,
+    flexWrap: "wrap",
   },
   counterButton: {
     width: layout.controlSize.lg,
@@ -315,17 +360,27 @@ export const useTripPlanningFormStyles = makeStyles({
     justifyContent: "space-between",
     gap: layout.gap.xl,
     width: "100%",
+    [`@media ${bp.mobile}`]: {
+      flexDirection: "column",
+      flexWrap: "wrap",
+      gap: layout.gap.sm,
+    },
   },
   budgetOption: {
     flexGrow: 1,
     flexBasis: "0",
     minWidth: "0",
     margin: "0",
+    padding: `${layout.gap.sm} ${layout.gap.md}`,
+    borderRadius: layout.radius.md,
+    ...shorthands.border(layout.borderWidth.thin, "solid", "transparent"),
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: semanticColors.textSecondary,
     cursor: "pointer",
+    transitionProperty: "border-color, background-color, color",
+    transitionDuration: layout.duration.normal,
     "& .MuiRadio-root": {
       color: semanticColors.textDisabled,
       padding: layout.gap.sm,
@@ -341,10 +396,26 @@ export const useTripPlanningFormStyles = makeStyles({
       fontSize: typography.fontSize.size4,
       fontWeight: typography.fontWeight.medium,
     },
+    [`@media ${bp.mobile}`]: {
+      justifyContent: "flex-start",
+      width: "100%",
+    },
   },
   budgetOptionSelected: {
+    color: semanticColors.interactive,
+    backgroundColor: semanticColors.bgInteractiveSubtle,
+    borderRadius: layout.radius.md,
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.interactive,
+    ),
     "& .MuiRadio-root.Mui-checked": {
       color: semanticColors.interactive,
+    },
+    "& .MuiFormControlLabel-label": {
+      color: semanticColors.interactive,
+      fontWeight: typography.fontWeight.bold,
     },
   },
   currency: {
@@ -352,11 +423,35 @@ export const useTripPlanningFormStyles = makeStyles({
     marginRight: layout.gap.sm,
   },
   interestHeader: { marginBottom: layout.gap.lg },
+  interestHeaderRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    columnGap: layout.gap.md,
+    rowGap: layout.gap.sm,
+    flexWrap: "wrap",
+  },
   interestTitle: {
     fontSize: typography.fontSize.size7,
     fontWeight: typography.fontWeight.bold,
     color: semanticColors.textPrimary,
     margin: `0 0 ${layout.gap.sm}`,
+  },
+  interestCounter: {
+    flexShrink: 0,
+    fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.bold,
+    color: semanticColors.textTertiary,
+    backgroundColor: semanticColors.bgSecondary,
+    borderRadius: layout.radius.full,
+    padding: `${layout.spacing[1]} ${layout.gap.md}`,
+    marginBottom: layout.gap.sm,
+    transitionProperty: "background-color, color",
+    transitionDuration: layout.duration.normal,
+  },
+  interestCounterComplete: {
+    color: semanticColors.bgPrimary,
+    backgroundImage: gradients.primary,
   },
   interestText: {
     fontSize: typography.fontSize.size3,
@@ -395,12 +490,15 @@ export const useTripPlanningFormStyles = makeStyles({
   },
   chipActive: {
     ...shorthands.borderColor(semanticColors.interactive),
-    backgroundColor: colors.coralTint,
-    color: semanticColors.interactive,
+    backgroundImage: gradients.primary,
+    color: semanticColors.bgPrimary,
     fontWeight: typography.fontWeight.bold,
+    boxShadow: semanticColors.shadowInteractive,
+    "& .MuiChip-label": { padding: `${layout.gap.sm} ${layout.gap.md}` },
     ":hover": {
       ...shorthands.borderColor(semanticColors.interactive),
-      backgroundColor: semanticColors.bgInteractiveSubtle,
+      backgroundImage: gradients.primary,
+      opacity: 0.92,
     },
   },
   completedChoice: {
@@ -413,26 +511,6 @@ export const useTripPlanningFormStyles = makeStyles({
     },
   },
   otherField: { marginTop: layout.gap.md },
-  selectionNotice: {
-    marginTop: layout.gap.lg,
-    padding: `${layout.gap.sm} ${layout.gap.md}`,
-    borderRadius: layout.radius.md,
-    backgroundColor: semanticColors.bgInteractiveSubtle,
-    ...shorthands.border(
-      layout.borderWidth.hairline,
-      "solid",
-      semanticColors.borderAccentLight,
-    ),
-    color: semanticColors.interactive,
-    display: "flex",
-    alignItems: "center",
-    columnGap: layout.gap.sm,
-  },
-  selectionNoticeText: {
-    margin: 0,
-    ...typographyPresets.label,
-    color: semanticColors.interactive,
-  },
   summary: {
     marginTop: layout.gap.lg,
     backgroundImage: gradients.summary,
@@ -455,6 +533,10 @@ export const useTripPlanningFormStyles = makeStyles({
     gridTemplateColumns: "1fr 1fr",
     columnGap: layout.spacing[8],
     rowGap: layout.gap.sm,
+    [`@media ${bp.mobile}`]: {
+      gridTemplateColumns: "1fr",
+      rowGap: layout.gap.md,
+    },
   },
   summaryKey: {
     fontSize: typography.fontSize.size2,
@@ -493,6 +575,8 @@ export const useTripPlanningFormStyles = makeStyles({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: layout.gap.sm,
   },
   hidden: { visibility: "hidden" },
   bookedDay: {
