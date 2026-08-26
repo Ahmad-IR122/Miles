@@ -1,0 +1,109 @@
+name: AI Services - Deploy to App Service
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - aiServices/**
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: AI services environment variable
+  - name: pythonVersion
+    value: "3.11"
+  - name: webAppName
+    value: "AI26s-Project-A-WebApp-AI"
+  - name: resourceGroupName
+    value: "AI26s-Team-A"
+  - name: healthUrl
+    value: "https://ai26s-project-a-webapp-ai-btf4bceecacgbwav.westeurope-01.azurewebsites.net/health"
+
+steps:
+  - checkout: self
+
+  - task: UsePythonVersion@0
+    displayName: Use Python
+    inputs:
+      versionSpec: "$(pythonVersion)"
+
+  # git archive writes POSIX paths and skips .venv/.env automatically.
+  # Do not build this zip with Compress-Archive - it writes backslash
+  # separators and the app fails on Linux with ModuleNotFoundError.
+  - script: git archive --format=zip -o "$(Build.ArtifactStagingDirectory)/aiServices.zip" HEAD:aiServices
+    displayName: Package aiServices
+
+  - task: AzureAppServiceSettings@1
+    displayName: Push AI service settings to App Service
+    inputs:
+      azureSubscription: "ASAL AI Division (2e86f627-8cc4-485d-ba56-95d274edbddd)"
+      appName: "$(webAppName)"
+      resourceGroupName: "$(resourceGroupName)"
+      appSettings: |
+        [
+          {
+            "name": "AZURE_OPENAI_ENDPOINT",
+            "value": "$(AZURE_OPENAI_ENDPOINT)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_OPENAI_DEPLOYMENT",
+            "value": "$(AZURE_OPENAI_DEPLOYMENT)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_OPENAI_API_KEY",
+            "value": "$(AZURE_OPENAI_API_KEY)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_OPENAI_API_VERSION",
+            "value": "$(AZURE_OPENAI_API_VERSION)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_SEARCH_ENDPOINT",
+            "value": "$(AZURE_SEARCH_ENDPOINT)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_SEARCH_API_KEY",
+            "value": "$(AZURE_SEARCH_API_KEY)",
+            "slotSetting": false
+          },
+          {
+            "name": "AZURE_SEARCH_INDEX_NAME",
+            "value": "$(AZURE_SEARCH_INDEX_NAME)",
+            "slotSetting": false
+          },
+          {
+            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+            "value": "true",
+            "slotSetting": false
+          }
+        ]
+
+  - task: AzureWebApp@1
+    displayName: Deploy to App Service
+    inputs:
+      azureSubscription: "ASAL AI Division (2e86f627-8cc4-485d-ba56-95d274edbddd)"
+      appType: webAppLinux
+      appName: "$(webAppName)"
+      resourceGroupName: "$(resourceGroupName)"
+      package: "$(Build.ArtifactStagingDirectory)/aiServices.zip"
+      runtimeStack: "PYTHON|3.11"
+      startUpCommand: "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      deploymentMethod: zipDeploy
+
+  # Heavier dependency set than the backend (openai, azure-identity,
+  # azure-search-documents), so the first-deploy Oryx build can take longer
+  # than the default 5-minute window. Give it up to 10 minutes.
+  - script: bash .pipelines/scripts/wait-for-health.sh "$(healthUrl)"
+    displayName: Verify /health
+    env:
+      ATTEMPTS: 40
