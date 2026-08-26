@@ -9,13 +9,11 @@ export const planLinks = [
   { label: "Plan Your Trip", path: routesPaths.planTrip },
   { label: "Discover", path: routesPaths.recommendation },
   { label: "AI Itinerary", path: routesPaths.itinerary },
-  { label: "Travel Guide", path: routesPaths.chatbot },
 ];
 
 export const tripLinks = [
   { label: "My Trips", path: routesPaths.itinerary },
   { label: "Discover", path: routesPaths.recommendation },
-  { label: "AI Chat", path: routesPaths.chatbot },
   { label: "Home", path: routesPaths.home },
 ];
 

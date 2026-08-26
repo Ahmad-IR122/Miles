@@ -1,6 +1,5 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
@@ -102,21 +101,6 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   Plan Trip
                 </Button>
               )}
-              <Button
-                className={mergeClasses(
-                  styles.navItem,
-                  location.pathname === routesPaths.chatbot &&
-                    styles.navItemActive,
-                )}
-                onClick={() => navigate(routesPaths.chatbot)}
-                type="button"
-                startIcon={<ChatBubbleOutlinedIcon aria-hidden="true" />}
-                aria-current={
-                  location.pathname === routesPaths.chatbot ? "page" : undefined
-                }
-              >
-                AI Chat
-              </Button>
             </div>
           </SignedIn>
           <SignedOut>
