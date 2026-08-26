@@ -8,6 +8,7 @@ export type Activity =
       title: string;
       category?: ActivityCategory | string;
       time?: string;
+      endTime?: string;
       duration?: string;
       description?: string;
       location?: string;

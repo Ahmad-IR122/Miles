@@ -12,9 +12,9 @@ const SplashScreen = () => {
       <TravelPattern />
       <div className={styles.content}>
         <div className={styles.logoWrapper}>
-          <img src={logo} alt="TravelAI logo" className={styles.logo} />
+          <img src={logo} alt="Miles logo" className={styles.logo} />
         </div>
-        <h1 className={styles.title}>TravelAI</h1>
+        <h1 className={styles.title}>Miles</h1>
         <p className={styles.slogan}>Plan Less. Explore More</p>
         <div className={styles.loadingBar}>
           <TravelLoadingBar />

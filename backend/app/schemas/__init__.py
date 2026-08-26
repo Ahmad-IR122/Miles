@@ -14,6 +14,8 @@ from .itinerary import (
     DayPlan,
     Itinerary,
     ItineraryCreate,
+    ItineraryDayResponse,
+    ItineraryDetailResponse,
     ItineraryResponse,
     ItineraryUpdate,
 )
@@ -42,6 +44,8 @@ __all__ = [
     "InterestUpdate",
     "Itinerary",
     "ItineraryCreate",
+    "ItineraryDayResponse",
+    "ItineraryDetailResponse",
     "ItineraryResponse",
     "ItineraryUpdate",
     "MAX_TRIP_DAYS",

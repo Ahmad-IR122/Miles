@@ -1,8 +1,15 @@
 import { api } from "./api";
-import type { Itinerary, TripRequest } from "../types/itinerary";
+import type {
+  GeneratedItinerary,
+  Itinerary,
+  TripRequest,
+} from "../types/itinerary";
 
 export const getItineraries = () =>
   api.get<{ data: Itinerary[] }>("/itinerary");
+
+export const generateItinerary = (tripId: number) =>
+  api.post<GeneratedItinerary>("/itinerary", { trip_id: tripId });
 
 export const getTripRequest = (requestId: string) =>
   api.get<TripRequest>(`/trip-requests/${requestId}`);

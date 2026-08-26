@@ -9,6 +9,7 @@ import logo from "../../assets/logo.svg";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";
+import ThemeToggle from "../theme/themeToggle";
 import { navItems } from "./navItems";
 import { useTopNavStyles } from "./topNav.styles";
 import AccountMenu from "./accountMenu/accountMenu";
@@ -35,12 +36,12 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
         className={styles.brand}
         onClick={() => navigate(routesPaths.home)}
         type="button"
-        aria-label="TravelAI home"
+        aria-label="Miles home"
       >
         <div className={styles.standaloneLogoFrame}>
-          <img src={logo} alt="TravelAI logo" className={styles.logo} />
+          <img src={logo} alt="Miles logo" className={styles.logo} />
         </div>
-        <span className={styles.standaloneBrandName}>TravelAI</span>
+        <span className={styles.standaloneBrandName}>Miles</span>
       </button>
     </div>
   );
@@ -122,6 +123,7 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
             <div className={styles.signedOutSpacer} />
           </SignedOut>
           <div className={styles.actions}>
+            <ThemeToggle />
             <SignedOut>
               {homeLink && (
                 <AppButton

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../../../api/api";
 import {
   regenerateActivity,
@@ -6,18 +7,38 @@ import {
   regenerateTrip,
 } from "../../../api/itinerary";
 import { useRegenerate } from "../../../hooks/useRegenerate";
+import type { GeneratedItinerary } from "../../../types/itinerary";
+import type { Trip as ApiTrip } from "../../../types/trip";
 import type { Activity, Trip } from "../types/itinerary.types";
-import { adaptItineraries, adaptItinerary } from "../utils/adaptItinerary";
+import {
+  adaptGeneratedItinerary,
+  adaptItineraries,
+  adaptItinerary,
+} from "../utils/adaptItinerary";
 
 const itineraryLoadError =
   "We couldn't load the itinerary. Please check that the backend is running and try again.";
 
+type LocationState = { trip?: ApiTrip; itinerary?: GeneratedItinerary } | null;
+
 export const useItinerary = () => {
-  const [itineraries, setItineraryData] = useState<Trip[]>([]);
+  const location = useLocation();
+  const state = (location.state ?? null) as LocationState;
+  const hasGenerated = !!(state?.trip && state?.itinerary);
+
+  const [itineraries, setItineraryData] = useState<Trip[]>(
+    hasGenerated
+      ? [adaptGeneratedItinerary(state!.trip!, state!.itinerary!)]
+      : [],
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasGenerated);
 
   useEffect(() => {
+    if (hasGenerated) {
+      return;
+    }
+
     const fetchItinerary = async () => {
       try {
         const response = await api.get("/itinerary");
@@ -35,6 +56,7 @@ export const useItinerary = () => {
     };
 
     fetchItinerary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const regenerate = useRegenerate((updated) => {

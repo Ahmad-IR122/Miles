@@ -3,6 +3,7 @@ import { Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import AppButton from "../../common/AppButton/appButton";
+import ThemeToggle from "../../common/theme/themeToggle";
 import logo from "../../assets/logo.svg";
 import homeImage from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
@@ -30,7 +31,7 @@ const Home = () => {
               />
             </div>
 
-            <span className={styles.brandName}>TravelAI</span>
+            <span className={styles.brandName}>Miles</span>
           </div>
 
           <div className={styles.signInArea}>
@@ -41,6 +42,8 @@ const Home = () => {
             <AppButton appearance="secondary" size="small" onClick={goToSignIn}>
               Sign In
             </AppButton>
+
+            <ThemeToggle />
           </div>
         </header>
       </SignedOut>
@@ -58,8 +61,8 @@ const Home = () => {
           </Typography>
 
           <Typography component="p" className={styles.description}>
-            TravelAI creates personalized trips around where you want to go and
-            the way you love to travel.
+            Miles creates personalized trips around where you want to go and the
+            way you love to travel.
           </Typography>
 
           <SignedOut>

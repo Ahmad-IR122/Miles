@@ -1,4 +1,4 @@
-import { useEffect, useState, type SyntheticEvent } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -15,13 +15,16 @@ import IconButton from "@mui/material/IconButton";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
 import dayjs, { type Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
+import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
 import type { Trip } from "../../types/trip";
 import { routesPaths } from "../../routes/routesPaths";
@@ -115,6 +118,36 @@ const getCitiesForCountry = (countryCode: string): Destination[] => {
     .sort((a, b) => a.city.localeCompare(b.city));
 };
 const allCountries = getUniqueCountries();
+const createBookedDay = (existingTrips: Trip[]) => {
+  const BookedDay = (props: PickerDayProps) => {
+    const styles = useTripPlanningFormStyles();
+    const { day, outsideCurrentMonth, ...other } = props;
+    const isPast = day.isBefore(dayjs(), "day");
+    const isBooked =
+      !isPast &&
+      !outsideCurrentMonth &&
+      existingTrips.some(
+        (trip) =>
+          !day.isBefore(trip.start_date, "day") &&
+          !day.isAfter(trip.end_date, "day"),
+      );
+    const dayElement = (
+      <PickerDay
+        {...other}
+        day={day}
+        outsideCurrentMonth={outsideCurrentMonth}
+        className={isBooked ? styles.bookedDay : undefined}
+      />
+    );
+    if (!isBooked) return dayElement;
+    return (
+      <Tooltip title="This day is already booked in another trip" arrow>
+        <span>{dayElement}</span>
+      </Tooltip>
+    );
+  };
+  return BookedDay;
+};
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
   const navigate = useNavigate();
@@ -179,6 +212,10 @@ const TripPlanningForm = () => {
     startB: Dayjs,
     endB: Dayjs,
   ) => !startA.isAfter(endB, "day") && !startB.isAfter(endA, "day");
+  const BookedDay = useMemo(
+    () => createBookedDay(existingTrips),
+    [existingTrips],
+  );
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors((current) =>
       current[field] ? { ...current, [field]: "" } : current,
@@ -333,7 +370,7 @@ const TripPlanningForm = () => {
     setGenerating(true);
     setProgress(0);
     try {
-      const createTripPromise = createTrip({
+      const { data: trip } = await createTrip({
         destination: `${destCity?.city}, ${destCountry?.country}`,
         start_date: startDate?.format("YYYY-MM-DD") ?? "",
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
@@ -352,10 +389,8 @@ const TripPlanningForm = () => {
           });
         }, 180);
       });
-      const [{ data: trip }] = await Promise.all([
-        createTripPromise,
-        progressPromise,
-      ]);
+
+      await Promise.all([generateItinerary(trip.id), progressPromise]);
       if (budget && startDate) {
         const interests = selectedInterests
           .filter((interest) => interest !== "Other")
@@ -397,7 +432,7 @@ const TripPlanningForm = () => {
             aria-hidden="true"
           >
             <defs>
-              {/* Top-to-bottom, so the sweep runs coral → pink in the
+              {/* Top-to-bottom, so the sweep runs coral -> pink in the
                   direction it travels. */}
               <linearGradient
                 id="loadingProgressGradient"
@@ -680,6 +715,7 @@ const TripPlanningForm = () => {
                         }}
                         disablePast
                         shouldDisableDate={isDateBooked}
+                        slots={{ day: BookedDay }}
                         slotProps={{
                           textField: {
                             fullWidth: true,
@@ -718,6 +754,7 @@ const TripPlanningForm = () => {
                         disablePast
                         minDate={startDate ?? undefined}
                         shouldDisableDate={isDateBooked}
+                        slots={{ day: BookedDay }}
                         slotProps={{
                           textField: {
                             fullWidth: true,

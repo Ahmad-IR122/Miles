@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/env";
 
 declare global {
   interface Window {
@@ -10,10 +11,8 @@ declare global {
   }
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000/";
-
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
 });
 api.interceptors.request.use(async (config) => {
   try {

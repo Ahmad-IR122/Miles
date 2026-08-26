@@ -44,6 +44,7 @@ class TripRequest(BaseModel):
 
 class TripRequestResponse(BaseModel):
     request_id: str
+    user_id: int
     origin: str
     destination: str
     start_date: date
