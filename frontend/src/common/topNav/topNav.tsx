@@ -82,25 +82,23 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   </Button>
                 );
               })}
-              {!isHomePage && (
-                <Button
-                  className={mergeClasses(
-                    styles.navItem,
-                    location.pathname === routesPaths.planTrip &&
-                      styles.navItemActive,
-                  )}
-                  onClick={() => navigate(routesPaths.planTrip)}
-                  type="button"
-                  startIcon={<AutoAwesomeIcon aria-hidden="true" />}
-                  aria-current={
-                    location.pathname === routesPaths.planTrip
-                      ? "page"
-                      : undefined
-                  }
-                >
-                  Plan Trip
-                </Button>
-              )}
+              <Button
+                className={mergeClasses(
+                  styles.navItem,
+                  location.pathname === routesPaths.planTrip &&
+                    styles.navItemActive,
+                )}
+                onClick={() => navigate(routesPaths.planTrip)}
+                type="button"
+                startIcon={<AutoAwesomeIcon aria-hidden="true" />}
+                aria-current={
+                  location.pathname === routesPaths.planTrip
+                    ? "page"
+                    : undefined
+                }
+              >
+                Plan Trip
+              </Button>
             </div>
           </SignedIn>
           <SignedOut>
