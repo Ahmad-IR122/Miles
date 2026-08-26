@@ -24,6 +24,7 @@ import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
 import dayjs, { type Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
+import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
 import type { Trip } from "../../types/trip";
 import { routesPaths } from "../../routes/routesPaths";
@@ -367,7 +368,7 @@ const TripPlanningForm = () => {
     setGenerating(true);
     setProgress(0);
     try {
-      const createTripPromise = createTrip({
+      const { data: trip } = await createTrip({
         destination: `${destCity?.city}, ${destCountry?.country}`,
         start_date: startDate?.format("YYYY-MM-DD") ?? "",
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
@@ -386,12 +387,13 @@ const TripPlanningForm = () => {
           });
         }, 180);
       });
-      const [{ data: trip }] = await Promise.all([
-        createTripPromise,
+
+      const [{ data: itinerary }] = await Promise.all([
+        generateItinerary(trip.id),
         progressPromise,
       ]);
-      console.log("Trip created:", trip);
-      navigate(routesPaths.itinerary);
+
+      navigate(routesPaths.itinerary, { state: { trip, itinerary } });
     } catch {
       setSubmitError("Something went wrong. Please try again.");
     } finally {

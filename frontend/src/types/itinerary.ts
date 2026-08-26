@@ -36,3 +36,36 @@ export type TripRequest = {
   other_interest: string | null;
   budget: number;
 };
+
+export type GeneratedActivity = {
+  id: number;
+  itinerary_day_id: number;
+  name: string;
+  description?: string | null;
+  location_name?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  estimated_cost?: string | null;
+  category?: string | null;
+  activity_order: number;
+};
+
+export type GeneratedItineraryDay = {
+  id: number;
+  itinerary_id: number;
+  day_number: number;
+  date: string;
+  title?: string | null;
+  summary?: string | null;
+  activities: GeneratedActivity[];
+};
+
+export type GeneratedItinerary = {
+  id: number;
+  trip_id: number;
+  version: number;
+  generated_by?: string | null;
+  days: GeneratedItineraryDay[];
+};

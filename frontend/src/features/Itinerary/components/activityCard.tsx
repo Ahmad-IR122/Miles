@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, IconButton, Stack, TextField, Typography } from "@mui/material";
+import { mergeClasses } from "@griffel/react";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -7,7 +8,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import PaidIcon from "@mui/icons-material/Paid";
 import PlaceIcon from "@mui/icons-material/Place";
 import SaveIcon from "@mui/icons-material/Save";
 import TrainIcon from "@mui/icons-material/Train";
@@ -32,6 +33,59 @@ type ActivityCardProps = {
   regenerateDisabled?: boolean;
 };
 
+const formatCost = (cost?: string) => {
+  if (!cost) return "";
+  const trimmed = cost.trim();
+  if (trimmed === "" || /^free$/i.test(trimmed)) return trimmed;
+  return /[$€£¥]/.test(trimmed) ? trimmed : `$${trimmed}`;
+};
+
+// Fallback for when the adapter couldn't supply a real end time: derive one
+// from the already-rendered start time + duration labels so the range still
+// shows up regardless of which data path fed this card.
+const TIME_LABEL_PATTERN = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+const DURATION_PATTERN = /(?:(\d+)\s*hr)?\s*(?:(\d+)\s*min)?/i;
+
+const parseTimeLabel = (label: string): number | undefined => {
+  const match = TIME_LABEL_PATTERN.exec(label.trim());
+  if (!match) return undefined;
+  const [, hourStr, minuteStr, meridiem] = match;
+  const hour = Number(hourStr) % 12;
+  return (
+    (meridiem.toUpperCase() === "PM" ? hour + 12 : hour) * 60 +
+    Number(minuteStr)
+  );
+};
+
+const parseDurationLabel = (label: string): number => {
+  const match = DURATION_PATTERN.exec(label.trim());
+  const hours = match?.[1] ? Number(match[1]) : 0;
+  const minutes = match?.[2] ? Number(match[2]) : 0;
+  return hours * 60 + minutes;
+};
+
+const formatMinutesAsTime = (totalMinutes: number): string => {
+  const MINUTES_PER_DAY = 24 * 60;
+  const wrapped =
+    ((totalMinutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+  const hour24 = Math.floor(wrapped / 60);
+  const minute = wrapped % 60;
+  const suffix = hour24 < 12 ? "AM" : "PM";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return `${String(hour12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}`;
+};
+
+const deriveEndTime = (
+  startLabel: string,
+  durationLabel: string,
+): string | undefined => {
+  const startMinutes = parseTimeLabel(startLabel);
+  if (startMinutes === undefined) return undefined;
+  const durationMinutes = parseDurationLabel(durationLabel);
+  if (durationMinutes <= 0) return undefined;
+  return formatMinutesAsTime(startMinutes + durationMinutes);
+};
+
 const normalizeActivity = (
   activity: Activity,
   activityIndex: number,
@@ -43,6 +97,7 @@ const normalizeActivity = (
       title: activity,
       category: "activity",
       time: "",
+      endTime: "",
       duration: `Day ${dayNumber}`,
       description: "",
       location: destination,
@@ -57,11 +112,12 @@ const normalizeActivity = (
     category:
       activity.category ?? ["culture", "food", "dining"][activityIndex % 3],
     time: activity.time ?? "",
+    endTime: activity.endTime ?? "",
     duration: activity.duration ?? "",
     description: activity.description ?? "",
     location: activity.location ?? destination,
     transport: activity.transport ?? "",
-    cost: activity.cost ?? "",
+    cost: formatCost(activity.cost),
     weather: activity.weather ?? "",
   };
 };
@@ -100,6 +156,13 @@ export const ActivityCard = ({
                 ? classes.categoryGreen
                 : "";
 
+  const resolvedEndTime =
+    normalized.endTime || deriveEndTime(normalized.time, normalized.duration);
+  const timeLabel =
+    normalized.time && resolvedEndTime
+      ? `${normalized.time} - ${resolvedEndTime}`
+      : [normalized.time, normalized.duration].filter(Boolean).join(" · ");
+
   const [isEditing, setIsEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(normalized.title);
   const [draftDescription, setDraftDescription] = useState(
@@ -129,14 +192,12 @@ export const ActivityCard = ({
     <Box className={classes.activityCard}>
       <Box className={classes.activityContent}>
         <Box className={classes.activityMeta}>
-          <Box className={`${classes.category} ${categoryClass}`}>
+          <Box className={mergeClasses(classes.category, categoryClass)}>
             {normalized.category}
           </Box>
-          {(normalized.time || normalized.duration) && (
+          {timeLabel && (
             <Typography className={classes.activityTime}>
-              {[normalized.time, normalized.duration]
-                .filter(Boolean)
-                .join(" · ")}
+              {timeLabel}
             </Typography>
           )}
         </Box>
@@ -194,7 +255,7 @@ export const ActivityCard = ({
           )}
           {normalized.cost && (
             <span className={classes.detailItem}>
-              <LocalFireDepartmentIcon className={classes.costIcon} />
+              <PaidIcon className={classes.costIcon} />
               {normalized.cost}
             </span>
           )}

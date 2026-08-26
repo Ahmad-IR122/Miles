@@ -11,17 +11,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { DaySelector } from "../components/daySelector";
 import { EmptyItineraryMessage } from "../components/emptyItineraryMessage";
 import { ItineraryHeader } from "../components/itineraryHeader";
-import { ItinerarySectionHeader } from "../components/itinerarySectionHeader";
 import { Timeline } from "../components/timeline";
-import { TripSummarySidebar } from "../components/tripSummarySidebar";
 import { useItinerary } from "../hooks/useItinerary";
 import { useItineraryStyles } from "../styles/itinerary.styles";
-import { formatDateRange, formatDayDate } from "../utils/dateUtils";
+import { formatDateRange } from "../utils/dateUtils";
 
 const Itinerary = () => {
   const classes = useItineraryStyles();
@@ -46,15 +49,23 @@ const Itinerary = () => {
   const days = useMemo(() => trip?.days ?? [], [trip?.days]);
   const activeDay = days[selectedDay] ?? days[0];
   const dateRange = formatDateRange(trip?.startDate, trip?.endDate);
+  const daysCount = days.length;
+
+  const facts = [
+    dateRange ? { label: "Dates", value: dateRange } : null,
+    daysCount
+      ? {
+        label: "Duration",
+        value: `${daysCount} day${daysCount === 1 ? "" : "s"}`,
+      }
+      : null,
+    trip?.travelers ? { label: "Travelers", value: `${trip.travelers}` } : null,
+    trip?.budget ? { label: "Budget", value: trip.budget } : null,
+  ].filter((fact): fact is { label: string; value: string } => fact !== null);
 
   // Regeneration is driven by ids that only come from the backend, so the
-  // controls stay hidden when the page is showing fixture data.
+  // controls stay disabled when the page is showing fixture data.
   const canRegenerate = !!trip?.id;
-  const tripRegenerating = isRegenerating("trip", trip?.id ?? "");
-  const dayRegenerating = isRegenerating(
-    "day",
-    activeDay?.id ?? String(activeDay?.day ?? ""),
-  );
 
   const isActivityRegenerating = (activityIndex: number) => {
     const activity = activeDay?.activities?.[activityIndex];
@@ -79,25 +90,68 @@ const Itinerary = () => {
   return (
     <Box className={classes.page}>
       <Container className={classes.shell}>
-        <Box
-          className={mergeClasses(
-            classes.layout,
-            !trip && classes.noSummaryLayout,
-          )}
-        >
+        <Box className={mergeClasses(classes.layout, classes.noSummaryLayout)}>
           <Box className={classes.mainContent}>
-            <ItineraryHeader
-              budget={trip?.budget}
-              dateRange={dateRange}
-              daysCount={days.length}
-              destination={trip?.destination}
-              isRegenerating={tripRegenerating}
-              onRegeneratePlan={
-                canRegenerate ? () => setConfirmRegeneratePlan(true) : undefined
-              }
-              regenerateDisabled={regenerateBusy}
-              travelers={trip?.travelers}
-            />
+            <ItineraryHeader destination={trip?.destination} />
+
+            {trip && (
+              <>
+                {facts.length > 0 && (
+                  <Box className={classes.factsRow}>
+                    {facts.map((fact) => (
+                      <Box className={classes.factCell} key={fact.label}>
+                        <span className={classes.factLabel}>{fact.label}</span>
+                        <span className={classes.factValue}>{fact.value}</span>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+
+                <DaySelector
+                  days={days}
+                  selectedDay={selectedDay}
+                  setSelectedDay={setSelectedDay}
+                  startDate={trip.startDate}
+                />
+
+                <Box className={classes.dayActionsRow}>
+                  <Tooltip title="Add activity">
+                    <span>
+                      <IconButton
+                        aria-label="Add activity"
+                        className={classes.dayActionButton}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Regenerate this day">
+                    <span>
+                      <IconButton
+                        aria-label="Regenerate this day"
+                        className={classes.dayActionButton}
+                        disabled={!canRegenerate || regenerateBusy}
+                        onClick={() => regenerateSingleDay(selectedDay)}
+                      >
+                        <AutoAwesomeIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Regenerate whole trip">
+                    <span>
+                      <IconButton
+                        aria-label="Regenerate whole trip"
+                        className={classes.dayActionButton}
+                        disabled={!canRegenerate || regenerateBusy}
+                        onClick={() => setConfirmRegeneratePlan(true)}
+                      >
+                        <RestartAltIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Box>
+              </>
+            )}
 
             {!trip && (
               <EmptyItineraryMessage
@@ -110,47 +164,25 @@ const Itinerary = () => {
 
             {trip && (
               <>
-                <DaySelector
-                  days={days}
-                  selectedDay={selectedDay}
-                  setSelectedDay={setSelectedDay}
-                  startDate={trip.startDate}
-                />
-
                 {activeDay ? (
-                  <>
-                    <ItinerarySectionHeader
-                      dateLabel={formatDayDate(trip.startDate, selectedDay)}
-                      dayNumber={activeDay.day}
-                      isRegenerating={dayRegenerating}
-                      onRegenerateDay={
-                        canRegenerate
-                          ? () => regenerateSingleDay(selectedDay)
-                          : undefined
-                      }
-                      regenerateDisabled={regenerateBusy}
-                    />
-                    <Timeline
-                      day={activeDay}
-                      dayIndex={selectedDay}
-                      destination={trip.destination}
-                      isActivityRegenerating={isActivityRegenerating}
-                      onDeleteActivity={deleteActivity}
-                      onRegenerateActivity={
-                        canRegenerate ? regenerateSingleActivity : undefined
-                      }
-                      onUpdateActivity={updateActivity}
-                      regenerateDisabled={regenerateBusy}
-                    />
-                  </>
+                  <Timeline
+                    day={activeDay}
+                    dayIndex={selectedDay}
+                    destination={trip.destination}
+                    isActivityRegenerating={isActivityRegenerating}
+                    onDeleteActivity={deleteActivity}
+                    onRegenerateActivity={
+                      canRegenerate ? regenerateSingleActivity : undefined
+                    }
+                    onUpdateActivity={updateActivity}
+                    regenerateDisabled={regenerateBusy}
+                  />
                 ) : (
                   <EmptyItineraryMessage message="This itinerary does not include any days yet. Add trip days to display activities here." />
                 )}
               </>
             )}
           </Box>
-
-          {trip && <TripSummarySidebar trip={trip} />}
         </Box>
       </Container>
 
