@@ -34,6 +34,7 @@ import {
   progressRingCircumference,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
+import type { RecommendationPreferences } from "../../features/recommendations/types/types";
 type Destination = {
   destination_id: string;
   city: string;
@@ -62,6 +63,7 @@ const budgetAmounts: Record<BudgetLevel, number> = {
   MID: 2000,
   HIGH: 3000,
 };
+const latestRecommendationPreferencesKey = "latestRecommendationPreferences";
 type FieldErrors = {
   originCountry: string;
   originCity: string;
@@ -354,6 +356,21 @@ const TripPlanningForm = () => {
         createTripPromise,
         progressPromise,
       ]);
+      if (budget && startDate) {
+        const interests = selectedInterests
+          .filter((interest) => interest !== "Other")
+          .concat(otherInterest.trim() ? [otherInterest.trim()] : []);
+        const recommendationPreferences: RecommendationPreferences = {
+          interests,
+          budgetLevel: budget,
+          travelMonth: startDate.month() + 1,
+          style: selectedInterests[0]?.toLowerCase() ?? "balanced",
+        };
+        window.sessionStorage.setItem(
+          latestRecommendationPreferencesKey,
+          JSON.stringify(recommendationPreferences),
+        );
+      }
       console.log("Trip created:", trip);
       navigate(routesPaths.itinerary);
     } catch {
