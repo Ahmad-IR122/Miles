@@ -578,6 +578,27 @@ export const useItineraryStyles = makeStyles({
       paddingLeft: "42px",
     },
   },
+  // Dims the timeline in place (rather than swapping in a full-page loader)
+  // while a day/trip regenerate or an add-activity call is in flight, so the
+  // user keeps their scroll position and can see what's about to change.
+  timelineOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: layout.gap.sm,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 85%, transparent)`,
+    borderRadius: layout.radius.lg,
+    zIndex: 3,
+  },
+  timelineOverlaySpinner: { color: semanticColors.interactive },
+  timelineOverlayText: {
+    fontSize: typography.fontSize.size4,
+    fontWeight: typography.fontWeight.bold,
+    color: itinerary.textSecondary,
+  },
   connector: {
     position: "absolute",
     left: "4px",
@@ -847,7 +868,6 @@ export const useItineraryStyles = makeStyles({
     },
   },
   editIcon: { color: itinerary.peach, fontSize: typography.fontSize.size7 },
-  calendarIcon: { color: itinerary.pink, fontSize: typography.fontSize.size7 },
   deleteIcon: {
     color: itinerary.textDisabled,
     fontSize: typography.fontSize.size7,

@@ -4,7 +4,6 @@ import { mergeClasses } from "@griffel/react";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -309,13 +308,6 @@ export const ActivityCard = ({
                 <AutoAwesomeIcon className={classes.regenerateIcon} />
               </IconButton>
             )}
-            <IconButton
-              aria-label="Schedule activity"
-              className={classes.iconButton}
-              size="small"
-            >
-              <CalendarMonthIcon className={classes.calendarIcon} />
-            </IconButton>
             <IconButton
               aria-label="Delete activity"
               className={classes.iconButton}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { api } from "../../../api/api";
 import {
+  addActivity,
   regenerateActivity,
   regenerateDay,
   regenerateTrip,
@@ -11,9 +12,9 @@ import type { GeneratedItinerary } from "../../../types/itinerary";
 import type { Trip as ApiTrip } from "../../../types/trip";
 import type { Activity, Trip } from "../types/itinerary.types";
 import {
+  adaptGeneratedDays,
   adaptGeneratedItinerary,
   adaptItineraries,
-  adaptItinerary,
 } from "../utils/adaptItinerary";
 
 const itineraryLoadError =
@@ -60,10 +61,20 @@ export const useItinerary = () => {
   }, []);
 
   const regenerate = useRegenerate((updated) => {
-    const adapted = adaptItinerary(updated);
-    setItineraryData((prev) =>
-      prev.map((trip) => (trip.id === adapted.id ? adapted : trip)),
-    );
+    setItineraryData((prev) => {
+      if (prev.length === 0) {
+        return prev;
+      }
+      const [first, ...rest] = prev;
+      return [
+        {
+          ...first,
+          id: String(updated.id),
+          days: adaptGeneratedDays(updated.days),
+        },
+        ...rest,
+      ];
+    });
   });
 
   const trip = itineraries[0];
@@ -73,7 +84,9 @@ export const useItinerary = () => {
       return;
     }
     const tripId = trip.id;
-    regenerate.run({ scope: "trip", id: tripId }, () => regenerateTrip(tripId));
+    regenerate.run({ scope: "trip", id: tripId }, () =>
+      regenerateTrip(Number(tripId)),
+    );
   };
 
   const regenerateSingleDay = (dayIndex: number) => {
@@ -83,7 +96,7 @@ export const useItinerary = () => {
     }
     const tripId = trip.id;
     regenerate.run({ scope: "day", id: day.id ?? String(day.day) }, () =>
-      regenerateDay(tripId, day.day),
+      regenerateDay(Number(tripId), day.day),
     );
   };
 
@@ -100,7 +113,18 @@ export const useItinerary = () => {
     }
     const tripId = trip.id;
     regenerate.run({ scope: "activity", id: activityId }, () =>
-      regenerateActivity(tripId, day.day, activityId),
+      regenerateActivity(Number(tripId), day.day, Number(activityId)),
+    );
+  };
+
+  const addActivityToDay = (dayIndex: number) => {
+    const day = trip?.days?.[dayIndex];
+    if (!trip?.id || !day) {
+      return;
+    }
+    const tripId = trip.id;
+    regenerate.run({ scope: "add", id: day.id ?? String(day.day) }, () =>
+      addActivity(Number(tripId), day.day, { name: "New Activity" }),
     );
   };
 
@@ -168,6 +192,7 @@ export const useItinerary = () => {
   };
 
   return {
+    addActivityToDay,
     clearRegenerateError: regenerate.clearError,
     deleteActivity,
     errorMessage,

@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -9,7 +7,7 @@ from app.core.security import get_current_user
 from app.db import get_db
 from app.models import User
 from app.schemas import (
-    Itinerary,
+    ActivityCreate,
     ItineraryCreate,
     ItineraryDetailResponse,
     ItineraryResponse,
@@ -18,6 +16,7 @@ from app.schemas import (
 from app.services import itinerary_service
 from app.services.itinerary_service import (
     NotFound,
+    add_activity,
     generate_itinerary_for_trip,
     regenerate_activity,
     regenerate_day,
@@ -73,37 +72,64 @@ def create_generated_itinerary(
     )
 
 
-@router.post("/{itinerary_id}/regenerate", response_model=Itinerary)
+@router.post(
+    "/{itinerary_id}/regenerate", response_model=ItineraryDetailResponse
+)
 def regenerate_full(
-    itinerary_id: UUID,
+    itinerary_id: int,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return _guard(lambda: regenerate_trip(itinerary_id, current_user.id))
+    return _guard(lambda: regenerate_trip(db, itinerary_id, current_user.id))
 
 
-@router.post("/{itinerary_id}/days/{day_number}/regenerate", response_model=Itinerary)
+@router.post(
+    "/{itinerary_id}/days/{day_number}/regenerate",
+    response_model=ItineraryDetailResponse,
+)
 def regenerate_single_day(
-    itinerary_id: UUID,
+    itinerary_id: int,
     day_number: int,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return _guard(lambda: regenerate_day(itinerary_id, day_number, current_user.id))
+    return _guard(
+        lambda: regenerate_day(db, itinerary_id, day_number, current_user.id)
+    )
 
 
 @router.post(
     "/{itinerary_id}/days/{day_number}/activities/{activity_id}/regenerate",
-    response_model=Itinerary,
+    response_model=ItineraryDetailResponse,
 )
 def regenerate_single_activity(
-    itinerary_id: UUID,
+    itinerary_id: int,
     day_number: int,
-    activity_id: UUID,
+    activity_id: int,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     return _guard(
         lambda: regenerate_activity(
-            itinerary_id, day_number, activity_id, current_user.id
+            db, itinerary_id, day_number, activity_id, current_user.id
         )
+    )
+
+
+@router.post(
+    "/{itinerary_id}/days/{day_number}/activities",
+    response_model=ItineraryDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_day_activity(
+    itinerary_id: int,
+    day_number: int,
+    payload: ActivityCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return _guard(
+        lambda: add_activity(db, itinerary_id, day_number, current_user.id, payload)
     )
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { mergeClasses } from "@griffel/react";
 
 import ApartmentIcon from "@mui/icons-material/Apartment";
@@ -15,6 +15,11 @@ import type { Activity, Day } from "../types/itinerary.types";
 import { ActivityCard } from "./activityCard";
 
 type TimelineProps = {
+  /** Shown as a dimmed overlay + spinner over the whole timeline while true
+   * (day/trip regenerate, add-activity) — not used for single-activity
+   * regenerate, which already has its own inline "Regenerating..." state. */
+  busy?: boolean;
+  busyLabel?: string;
   day: Day;
   dayIndex: number;
   destination?: string;
@@ -66,6 +71,8 @@ const MarkerIcon = ({
 };
 
 export const Timeline = ({
+  busy = false,
+  busyLabel = "Updating your itinerary...",
   day,
   dayIndex,
   destination,
@@ -178,6 +185,12 @@ export const Timeline = ({
 
   return (
     <Box className={classes.timeline} ref={timelineRef}>
+      {busy && (
+        <Box aria-live="polite" className={classes.timelineOverlay}>
+          <CircularProgress className={classes.timelineOverlaySpinner} />
+          <Box className={classes.timelineOverlayText}>{busyLabel}</Box>
+        </Box>
+      )}
       <Box
         className={classes.connector}
         style={
