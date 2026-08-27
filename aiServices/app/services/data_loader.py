@@ -2,25 +2,22 @@ import os
 from io import BytesIO
 
 import pandas as pd
+from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 
 
 load_dotenv()
 
-CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER")
+print(f"ACCOUNT_URL: {ACCOUNT_URL}")
+print(f"CONTAINER_NAME: {CONTAINER_NAME}")
+credential = DefaultAzureCredential()
 
-
-if not CONNECTION_STRING:
-    raise ValueError("AZURE_STORAGE_CONNECTION_STRING is missing")
-
-if not CONTAINER_NAME:
-    raise ValueError("AZURE_STORAGE_CONTAINER is missing")
-
-
-blob_service_client = BlobServiceClient.from_connection_string(
-    CONNECTION_STRING
+blob_service_client = BlobServiceClient(
+    account_url=ACCOUNT_URL,
+    credential=credential,
 )
 
 
@@ -49,8 +46,7 @@ def load_recommendation_data():
     )
 
     return destinations, activities, restaurants
-
-
+  
 def main():
     destinations, activities, restaurants = load_recommendation_data()
 
