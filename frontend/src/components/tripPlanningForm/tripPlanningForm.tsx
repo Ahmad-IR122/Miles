@@ -28,12 +28,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
 import dayjs, { type Dayjs } from "dayjs";
-import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
 import type { Trip } from "../../types/trip";
-import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../../common/AppButton/appButton";
 import { semanticColors } from "../../common/theme/colors";
 import destinations from "../../data/destinations.json";
@@ -157,7 +155,6 @@ const createBookedDay = (existingTrips: Trip[]) => {
 };
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [budget, setBudget] = useState<BudgetLevel | "">("");
   // Origin
@@ -422,7 +419,6 @@ const TripPlanningForm = () => {
           JSON.stringify(recommendationPreferences),
         );
       }
-      navigate(routesPaths.itinerary);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
     } finally {
