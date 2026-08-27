@@ -4,7 +4,6 @@ import { mergeClasses } from "@griffel/react";
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
   Dialog,
   DialogActions,
@@ -18,6 +17,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { DaySelector } from "../components/daySelector";
 import { EmptyItineraryMessage } from "../components/emptyItineraryMessage";
 import { ItineraryHeader } from "../components/itineraryHeader";
@@ -80,10 +80,10 @@ const Itinerary = () => {
 
   if (loading) {
     return (
-      <Box className={classes.loading}>
-        <CircularProgress />
-        <Box className={classes.loadingMessage}>Loading itinerary...</Box>
-      </Box>
+      <LoadingScreen
+        ariaLabel="Itinerary loading progress"
+        title="Loading itinerary..."
+      />
     );
   }
 

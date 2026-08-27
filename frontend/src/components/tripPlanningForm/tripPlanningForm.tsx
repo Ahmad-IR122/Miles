@@ -9,9 +9,8 @@ import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { LoadingSprite } from "../loadingSprite/loadingSprite";
+import { LoadingScreen } from "../loadingScreen/loadingScreen";
 import CheckIcon from "@mui/icons-material/Check";
-import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
@@ -39,8 +38,6 @@ import { semanticColors } from "../../common/theme/colors";
 import destinations from "../../data/destinations.json";
 import {
   getFieldSx,
-  progressRing,
-  progressRingCircumference,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
 type Destination = {
@@ -94,6 +91,9 @@ const emptyFieldErrors: FieldErrors = {
 const tripDetailsRequiredMessage =
   "Please fill the required fields before moving on.";
 const maxTripDays = 31;
+// Matches the loading screen's own simulated-progress pacing (previously
+// driven by a 20-step, 180ms interval here) so the screen doesn't flash by.
+const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
 const steps = [
   { num: 1, label: "Trip Details" },
@@ -195,7 +195,6 @@ const TripPlanningForm = () => {
   // Loading & errors
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [submitError, setSubmitError] = useState("");
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
   useEffect(() => {
@@ -382,7 +381,6 @@ const TripPlanningForm = () => {
     }
     setIsSubmitting(true);
     setGenerating(true);
-    setProgress(0);
     try {
       const { data: trip } = await createTrip({
         destination: `${destCity?.city}, ${destCountry?.country}`,
@@ -391,22 +389,14 @@ const TripPlanningForm = () => {
         budget: budget ? budgetAmounts[budget] : 0,
         travelers_count: adults + children,
       });
-      const progressPromise = new Promise<void>((resolve) => {
-        const interval = window.setInterval(() => {
-          setProgress((current) => {
-            if (current >= 100) {
-              window.clearInterval(interval);
-              resolve();
-              return 100;
-            }
-            return Math.min(100, current + 5);
-          });
-        }, 180);
-      });
-
+      // Keeps the loading screen up for a pleasant minimum duration instead
+      // of flashing it if the request resolves almost instantly.
+      const minimumDisplayPromise = new Promise<void>((resolve) =>
+        window.setTimeout(resolve, minimumGeneratingDisplayMs),
+      );
       const [{ data: itinerary }] = await Promise.all([
         generateItinerary(trip.id),
-        progressPromise,
+        minimumDisplayPromise,
       ]);
 
       navigate(routesPaths.itinerary, { state: { trip, itinerary } });
@@ -419,91 +409,17 @@ const TripPlanningForm = () => {
   };
   if (generating) {
     return (
-      <div className={mergeClasses(styles.page, styles.generatingPage)}>
-        <div
-          className={styles.progressRing}
-          role="progressbar"
-          aria-label="Itinerary generation progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress)}
-        >
-          <svg
-            className={styles.progressRingSvg}
-            viewBox={`0 0 ${progressRing.size} ${progressRing.size}`}
-            aria-hidden="true"
-          >
-            <defs>
-              {/* Top-to-bottom, so the sweep runs coral -> pink in the
-                  direction it travels. */}
-              <linearGradient
-                id="loadingProgressGradient"
-                x1="0.5"
-                y1="0"
-                x2="0.5"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  className={styles.progressRingGradientStart}
-                />
-                <stop
-                  offset="100%"
-                  className={styles.progressRingGradientEnd}
-                />
-              </linearGradient>
-            </defs>
-            <circle
-              className={styles.progressRingTrack}
-              cx={progressRing.size / 2}
-              cy={progressRing.size / 2}
-              r={progressRing.radius}
-            />
-            <circle
-              className={styles.progressRingFill}
-              cx={progressRing.size / 2}
-              cy={progressRing.size / 2}
-              r={progressRing.radius}
-              strokeDasharray={progressRingCircumference}
-              strokeDashoffset={
-                progressRingCircumference * (1 - progress / 100)
-              }
-            />
-          </svg>
-          <div className={styles.generatingIcon} aria-hidden="true">
-            <LoadingSprite />
-          </div>
-          <FlightTakeoffIcon
-            className={styles.progressPlane}
-            style={{
-              // Walk to the point on the ring, then face along the tangent.
-              transform: `translate(-50%, -50%) rotate(${(progress / 100) * 360}deg) translateY(-${progressRing.planeRadius}px) rotate(35deg)`,
-            }}
-          />
-        </div>
-        <div className={styles.centered}>
-          <Typography component="h1" className={styles.generatingTitle}>
-            Creating your personalized journey...
-          </Typography>
-          <Typography component="p" className={styles.generatingText}>
-            Exploring {destCity?.city || "your destination"} and arranging a
-            trip around your interests.
-          </Typography>
-        </div>
-        <Typography
-          component="p"
-          className={styles.progressStatus}
-          aria-live="polite"
-        >
-          {progress < 30
-            ? "Discovering local highlights..."
-            : progress < 60
-              ? "Matching activities to your interests..."
-              : progress < 85
-                ? "Organizing your days..."
-                : "Adding the finishing touches..."}
-        </Typography>
-      </div>
+      <LoadingScreen
+        ariaLabel="Itinerary generation progress"
+        statusMessages={[
+          "Discovering local highlights...",
+          "Matching activities to your interests...",
+          "Organizing your days...",
+          "Adding the finishing touches...",
+        ]}
+        subtitle={`Exploring ${destCity?.city || "your destination"} and arranging a trip around your interests.`}
+        title="Creating your personalized journey..."
+      />
     );
   }
   return (

@@ -68,26 +68,6 @@ export const useSavedTripsStyles = makeStyles({
     whiteSpace: "nowrap",
   },
 
-  loading: {
-    minHeight: "50vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: layout.gap.md,
-  },
-  loadingSprite: {
-    width: "120px",
-    height: "120px",
-    objectFit: "contain",
-  },
-
-  loadingMessage: {
-    color: semanticColors.textSecondary,
-    fontSize: typography.fontSize.size4,
-    fontWeight: typography.fontWeight.medium,
-  },
-
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
