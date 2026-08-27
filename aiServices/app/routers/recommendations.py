@@ -22,6 +22,10 @@ router = APIRouter(
     "",
     response_model=RecommendationResponse,
 )
+@router.post(
+    "/",
+    response_model=RecommendationResponse,
+)
 def get_recommendations(
     request: RecommendationRequest,
 ):
