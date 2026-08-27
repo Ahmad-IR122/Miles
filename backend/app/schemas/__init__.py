@@ -19,6 +19,11 @@ from .itinerary import (
     ItineraryResponse,
     ItineraryUpdate,
 )
+from .recommendation import (
+    RecommendationItem,
+    RecommendationRequest,
+    RecommendationResponse,
+)
 from .trip import (
     MAX_TRIP_DAYS,
     TripCreate,
@@ -51,6 +56,9 @@ __all__ = [
     "MAX_TRIP_DAYS",
     "MessageCreate",
     "MessageResponse",
+    "RecommendationItem",
+    "RecommendationRequest",
+    "RecommendationResponse",
     "TripCreate",
     "TripRequest",
     "TripRequestResponse",

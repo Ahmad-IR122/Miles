@@ -21,3 +21,10 @@ export type RecommendationPlace = {
   tags: string[];
   saved: boolean;
 };
+
+export type RecommendationPreferences = {
+  interests: string[];
+  budgetLevel: "LOW" | "MID" | "HIGH";
+  travelMonth: number;
+  style: string;
+};

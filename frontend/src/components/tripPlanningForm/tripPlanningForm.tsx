@@ -10,6 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { LoadingScreen } from "../loadingScreen/loadingScreen";
+import { useNavigate } from "react-router-dom";
 import CheckIcon from "@mui/icons-material/Check";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -27,12 +28,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
 import dayjs, { type Dayjs } from "dayjs";
-import { useNavigate } from "react-router-dom";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
 import type { Trip } from "../../types/trip";
-import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../../common/AppButton/appButton";
 import { semanticColors } from "../../common/theme/colors";
 import destinations from "../../data/destinations.json";
@@ -40,6 +39,7 @@ import {
   getFieldSx,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
+import { routesPaths } from "../../routes/routesPaths";
 type Destination = {
   destination_id: string;
   city: string;
