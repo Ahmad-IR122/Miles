@@ -9,7 +9,6 @@ from app.models.recommendation import (
 )
 from app.services.recommendation_service import recommend_destinations
 
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(

@@ -3,6 +3,7 @@ import re
 
 import numpy as np
 import pandas as pd
+
 from app.services.data_loader import load_recommendation_data
 
 INTEREST_COLUMNS = [

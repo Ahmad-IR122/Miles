@@ -2,18 +2,19 @@ import os
 from io import BytesIO
 
 import pandas as pd
-from azure.identity import DefaultAzureCredential
+from azure.identity import AzureCliCredential
 from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
 ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER")
+
 print(f"ACCOUNT_URL: {ACCOUNT_URL}")
 print(f"CONTAINER_NAME: {CONTAINER_NAME}")
-credential = DefaultAzureCredential()
+
+credential = AzureCliCredential()
 
 blob_service_client = BlobServiceClient(
     account_url=ACCOUNT_URL,
@@ -46,7 +47,8 @@ def load_recommendation_data():
     )
 
     return destinations, activities, restaurants
-  
+
+
 def main():
     destinations, activities, restaurants = load_recommendation_data()
 
