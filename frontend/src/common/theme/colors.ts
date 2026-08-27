@@ -115,6 +115,7 @@ export const warm = {
   bgSurface: "var(--warm-bg-surface)",
   bgSurfaceBlur: "var(--warm-bg-surface-blur)", // sticky headers/footers over blur
   bgTint: "var(--warm-bg-tint)",
+  bgAccentBand: "var(--warm-bg-accent-band)",
   bgDisabled: "var(--warm-bg-disabled)",
   border: "var(--warm-border)",
   borderCoralBright: "var(--warm-border-coral-bright)",
