@@ -18,20 +18,6 @@ export const useItineraryStyles = makeStyles({
     backgroundColor: warm.bgPage,
     fontFamily: typography.fontFamily.ui,
   },
-  loading: {
-    minHeight: "70vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: layout.gap.md,
-  },
-  loadingMessage: {
-    color: itinerary.textSecondary,
-    fontSize: typography.fontSize.size4,
-    lineHeight: "20px",
-    fontWeight: typography.fontWeight.bold,
-  },
   shell: {
     maxWidth: "none",
     ...shorthands.padding("0"),

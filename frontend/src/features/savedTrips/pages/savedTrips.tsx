@@ -1,7 +1,7 @@
 import SavedTripsEmptyState from "../components/savedTripsEmptyState";
 import SavedTripsHeader from "../components/savedTripsHeader";
 import TripCard from "../components/tripCard";
-import { LoadingSprite } from "../../../components/loadingSprite/loadingSprite";
+import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { useSavedTrips } from "../hooks/useSavedTrips";
 import { useSavedTripsStyles } from "../styles/savedTrips.styles";
 
@@ -12,15 +12,10 @@ const SavedTrips = () => {
 
   if (loading) {
     return (
-      <div className={styles.page}>
-        <div className={styles.loading}>
-          <LoadingSprite className={styles.loadingSprite} />
-
-          <div className={styles.loadingMessage}>
-            Loading your saved trips...
-          </div>
-        </div>
-      </div>
+      <LoadingScreen
+        ariaLabel="Saved trips loading progress"
+        title="Loading your saved trips..."
+      />
     );
   }
 
