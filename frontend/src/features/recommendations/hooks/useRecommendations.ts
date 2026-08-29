@@ -1,19 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   getRecommendations,
+  getRestaurantRecommendations,
   type RecommendationApiItem,
   type RecommendationRequestPayload,
+  type RecommendationResponse,
+  type RestaurantRecommendationApiItem,
+  type RestaurantRecommendationRequestPayload,
+  type RestaurantRecommendationResponse,
 } from "../../../api/recommendations";
 import placeholderImage from "../../../assets/image.svg";
+import destinations from "../../../data/destinations.json";
 import type {
+  BudgetFilterLabel,
   PriceLevel,
+  RecommendationCategoryFilter,
   RecommendationPlace,
   RecommendationPreferences,
 } from "../types/types";
 
 const latestRecommendationPreferencesKey = "latestRecommendationPreferences";
 const defaultRecommendationLimit = 5;
+const recommendationRequests = new Map<
+  string,
+  Promise<RecommendationResponse>
+>();
+const restaurantRecommendationRequests = new Map<
+  string,
+  Promise<RestaurantRecommendationResponse>
+>();
 const mockRecommendationPayload: RecommendationRequestPayload = {
   interests: ["Adventure", "Nature", "Food"],
   budget_level: "high",
@@ -29,6 +45,15 @@ const apiBudgetMap: Record<
   LOW: "low",
   MID: "mid",
   HIGH: "high",
+};
+
+const filterBudgetMap: Partial<
+  Record<BudgetFilterLabel, "low" | "mid" | "high">
+> = {
+  "Low Budget": "low",
+  "Mid-range": "mid",
+  Upscale: "high",
+  Luxury: "high",
 };
 
 const recommendationBudgetLabels: Record<
@@ -53,7 +78,9 @@ const isRecommendationPreferences = (
       preferences.budgetLevel === "MID" ||
       preferences.budgetLevel === "HIGH") &&
     typeof preferences.travelMonth === "number" &&
-    typeof preferences.style === "string"
+    typeof preferences.style === "string" &&
+    (preferences.destinationId === undefined ||
+      typeof preferences.destinationId === "string")
   );
 };
 
@@ -87,6 +114,58 @@ const getBrowseRecommendationsPayload = (): RecommendationRequestPayload => ({
   ...mockRecommendationPayload,
 });
 
+const getCachedRecommendations = (payload: RecommendationRequestPayload) => {
+  const requestKey = JSON.stringify(payload);
+  const cachedRequest = recommendationRequests.get(requestKey);
+
+  if (cachedRequest) {
+    return cachedRequest;
+  }
+
+  const request = getRecommendations(payload)
+    .then(({ data }) => data)
+    .catch((error) => {
+      recommendationRequests.delete(requestKey);
+      throw error;
+    });
+  recommendationRequests.set(requestKey, request);
+  return request;
+};
+
+const getCachedRestaurantRecommendations = (
+  payload: RestaurantRecommendationRequestPayload,
+) => {
+  const requestKey = JSON.stringify(payload);
+  const cachedRequest = restaurantRecommendationRequests.get(requestKey);
+
+  if (cachedRequest) {
+    return cachedRequest;
+  }
+
+  const request = getRestaurantRecommendations(payload)
+    .then(({ data }) => data)
+    .catch((error) => {
+      restaurantRecommendationRequests.delete(requestKey);
+      throw error;
+    });
+  restaurantRecommendationRequests.set(requestKey, request);
+  return request;
+};
+
+const getDestinationLabel = (destinationId: string) => {
+  const destination = destinations.find(
+    (item) => item.destination_id === destinationId,
+  );
+
+  return destination
+    ? `${destination.city}, ${destination.country}`
+    : destinationId;
+};
+
+const getDestinationRegion = (destinationId: string) =>
+  destinations.find((item) => item.destination_id === destinationId)?.region ??
+  "Selected destination";
+
 const getRecommendationCategory = (
   item: RecommendationApiItem,
 ): RecommendationPlace["category"] => {
@@ -109,6 +188,8 @@ const toRecommendationPlace = (
   };
 
   return {
+    id: item.destination_id,
+    destinationId: item.destination_id,
     title: `${item.city}, ${item.country}`,
     category: getRecommendationCategory(item),
     rating: Math.round(item.final_score * 10) / 10,
@@ -123,8 +204,45 @@ const toRecommendationPlace = (
   };
 };
 
-export const useRecommendations = (locationState: unknown) => {
-  const [places, setPlaces] = useState<RecommendationPlace[]>([]);
+const toRestaurantPlace = (
+  item: RestaurantRecommendationApiItem,
+): RecommendationPlace => {
+  const normalizedBudget = item.budget_level.toLowerCase();
+  const budgetLabel = recommendationBudgetLabels[normalizedBudget] ?? {
+    price: item.budget_level,
+    priceLevel: "$$" as const,
+  };
+
+  return {
+    id: item.restaurant_id,
+    destinationId: item.destination_id,
+    title: item.name,
+    category: "Restaurants",
+    rating: Math.round(item.rating * 10) / 10,
+    reviews: Math.round(item.review_count),
+    price: `Avg. $${Math.round(item.average_price)}`,
+    priceLevel: budgetLabel.priceLevel,
+    location: getDestinationLabel(item.destination_id),
+    desc: `${item.cuisines} restaurant in ${getDestinationRegion(
+      item.destination_id,
+    )}.`,
+    img: placeholderImage,
+    tags: [item.cuisines, budgetLabel.price],
+    saved: false,
+  };
+};
+
+export const useRecommendations = (
+  locationState: unknown,
+  activeCategory: RecommendationCategoryFilter,
+  activeBudget: BudgetFilterLabel,
+) => {
+  const [destinationPlaces, setDestinationPlaces] = useState<
+    RecommendationPlace[]
+  >([]);
+  const [restaurantPlaces, setRestaurantPlaces] = useState<
+    RecommendationPlace[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -146,17 +264,18 @@ export const useRecommendations = (locationState: unknown) => {
           setErrorMessage("");
         }
 
-        return getRecommendations(payload);
+        return getCachedRecommendations(payload);
       })
-      .then(({ data }) => {
+      .then((data) => {
         if (isMounted) {
-          setPlaces(data.recommendations.map(toRecommendationPlace));
+          const nextPlaces = data.recommendations.map(toRecommendationPlace);
+          setDestinationPlaces(nextPlaces);
         }
       })
       .catch(() => {
         if (isMounted) {
           setErrorMessage("Unable to load recommendations. Please try again.");
-          setPlaces([]);
+          setDestinationPlaces([]);
         }
       })
       .finally(() => {
@@ -169,6 +288,70 @@ export const useRecommendations = (locationState: unknown) => {
       isMounted = false;
     };
   }, [locationState]);
+
+  useEffect(() => {
+    if (activeCategory !== "Restaurants") {
+      return;
+    }
+
+    const locationPreferences = isRecommendationPreferences(locationState)
+      ? locationState
+      : null;
+    const preferences = locationPreferences ?? readStoredPreferences();
+    const destinationId =
+      preferences?.destinationId ?? destinationPlaces[0]?.destinationId;
+
+    if (!destinationId) {
+      return;
+    }
+
+    const budgetLevel =
+      filterBudgetMap[activeBudget] ??
+      (preferences ? apiBudgetMap[preferences.budgetLevel] : "mid");
+    let isMounted = true;
+
+    void Promise.resolve()
+      .then(() => {
+        if (isMounted) {
+          setIsLoading(true);
+          setErrorMessage("");
+        }
+
+        return getCachedRestaurantRecommendations({
+          destination_id: destinationId,
+          budget_level: budgetLevel,
+          limit: defaultRecommendationLimit,
+        });
+      })
+      .then((data) => {
+        if (isMounted) {
+          setRestaurantPlaces(data.recommendations.map(toRestaurantPlace));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setErrorMessage(
+            "Unable to load restaurant recommendations. Please try again.",
+          );
+          setRestaurantPlaces([]);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeBudget, activeCategory, destinationPlaces, locationState]);
+
+  const places = useMemo(
+    () =>
+      activeCategory === "Restaurants" ? restaurantPlaces : destinationPlaces,
+    [activeCategory, destinationPlaces, restaurantPlaces],
+  );
 
   return { places, isLoading, errorMessage };
 };

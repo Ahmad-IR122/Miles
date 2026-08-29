@@ -48,6 +48,8 @@ const Recommendations = () => {
     useState<BudgetFilterLabel>("Any Budget");
   const { places, isLoading, errorMessage } = useRecommendations(
     location.state,
+    activeCategory,
+    activeBudget,
   );
 
   const filteredPlaces = useMemo(
@@ -98,7 +100,7 @@ const Recommendations = () => {
         {!isLoading && !errorMessage && (
           <div className={styles.grid}>
             {filteredPlaces.map((place) => (
-              <RecommendationCard key={place.title} place={place} />
+              <RecommendationCard key={place.id} place={place} />
             ))}
           </div>
         )}
