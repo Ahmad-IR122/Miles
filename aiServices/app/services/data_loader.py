@@ -11,8 +11,6 @@ load_dotenv()
 ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER")
 
-print(f"ACCOUNT_URL: {ACCOUNT_URL}")
-print(f"CONTAINER_NAME: {CONTAINER_NAME}")
 
 credential = AzureCliCredential()
 
@@ -49,13 +47,3 @@ def load_recommendation_data():
     return destinations, activities, restaurants
 
 
-def main():
-    destinations, activities, restaurants = load_recommendation_data()
-
-    print("Destinations:", destinations.shape)
-    print("Activities:", activities.shape)
-    print("Restaurants:", restaurants.shape)
-
-
-if __name__ == "__main__":
-    main()

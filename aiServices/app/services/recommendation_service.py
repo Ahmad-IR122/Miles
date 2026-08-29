@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from app.services.data_loader import load_recommendation_data
+from data_loader import load_recommendation_data
 
 INTEREST_COLUMNS = [
     "adventure",
@@ -29,6 +29,16 @@ BUDGET_WEIGHT = 0.20
 SEASON_WEIGHT = 0.15
 STYLE_WEIGHT = 0.05
 
+def is_supported_dietary_option(value) -> bool:
+    if pd.isna(value):
+        return False
+
+    return normalize_text(value) in {
+        "y",
+        "yes",
+        "true",
+        "1",
+    }
 
 def normalize_text(text: str) -> str:
     """
@@ -212,8 +222,154 @@ def build_recommendation_profiles(
     ].copy()
 
     profiles = profiles.merge(interest_counts, on="destination_id", how="left")
-    profiles.fillna(0, inplace=True)  # Fill NaN values with 0 for interest counts
+    profiles.fillna(0, inplace=True)
     return profiles
+
+
+
+def calculate_adjusted_rating_scores(
+    restaurants: pd.DataFrame,
+) -> pd.DataFrame:
+    restaurants = restaurants.copy()
+
+    restaurants["rating"] = pd.to_numeric(
+        restaurants["rating"],
+        errors="coerce",
+    ).fillna(0)
+
+    restaurants["review_count"] = pd.to_numeric(
+        restaurants["review_count"],
+        errors="coerce",
+    ).fillna(0)
+
+    average_rating = restaurants["rating"].mean()
+    minimum_reviews = restaurants["review_count"].median()
+
+    restaurants["adjusted_rating"] = (
+        restaurants["review_count"] / (restaurants["review_count"] + minimum_reviews)
+    ) * restaurants["rating"] + (
+        minimum_reviews / (restaurants["review_count"] + minimum_reviews)
+    ) * average_rating
+
+    restaurants["adjusted_rating_score"] = restaurants["adjusted_rating"] / 5
+
+    return restaurants
+
+
+def recommend_restaurants(
+    restaurants: pd.DataFrame,
+    destination_id: str,
+    user_budget: str,
+    user_cuisines: list[str],
+    limit: int = 5,
+) -> list[dict]:
+
+    restaurants = calculate_adjusted_rating_scores(
+        restaurants
+    )
+
+    destination_restaurants = restaurants[
+        restaurants["destination_id"] == destination_id
+    ].copy()
+
+    if destination_restaurants.empty:
+        return []
+
+    destination_restaurants["budget_score_match"] = (
+        destination_restaurants["budget_level"].apply(
+            lambda restaurant_budget: calculate_budget_score(
+                user_budget,
+                restaurant_budget,
+            )
+        )
+    )
+
+    destination_restaurants["cuisine_score_match"] = (
+        destination_restaurants["cuisines"].apply(
+            lambda restaurant_cuisines: calculate_cuisine_score(
+                user_cuisines,
+                restaurant_cuisines,
+            )
+        )
+    )
+
+    destination_restaurants["restaurant_score"] = (
+        destination_restaurants["adjusted_rating_score"] * 0.45
+        + destination_restaurants["budget_score_match"] * 0.25
+        + destination_restaurants["cuisine_score_match"] * 0.30
+    )
+
+    destination_restaurants["restaurant_score"] = (
+        destination_restaurants["restaurant_score"].round(4)
+    )
+
+    destination_restaurants["adjusted_rating"] = (
+        destination_restaurants["adjusted_rating"].round(2)
+    )
+
+    destination_restaurants["adjusted_rating_score"] = (
+        destination_restaurants[
+            "adjusted_rating_score"
+        ].round(4)
+    )
+
+    results = destination_restaurants.sort_values(
+        by="restaurant_score",
+        ascending=False,
+    )
+
+    recommendations = results[
+        [
+            "restaurant_id",
+            "destination_id",
+            "name",
+            "cuisines",
+            "budget_level",
+            "average_price",
+            "rating",
+            "review_count",
+            "adjusted_rating",
+            "budget_score_match",
+            "cuisine_score_match",
+            "restaurant_score",
+        ]
+    ].head(limit)
+
+    return recommendations.to_dict(
+        orient="records"
+    )
+
+def calculate_cuisine_score(
+    user_cuisines: list[str],
+    restaurant_cuisines,
+) -> float:
+    if not user_cuisines or pd.isna(restaurant_cuisines):
+        return 0.0
+
+    user_cuisine_set = {
+        normalize_text(cuisine)
+        for cuisine in user_cuisines
+        if normalize_text(cuisine)
+    }
+
+    restaurant_cuisine_set = {
+        normalize_text(cuisine)
+        for cuisine in str(restaurant_cuisines).split(",")
+        if normalize_text(cuisine)
+    }
+
+    if not user_cuisine_set:
+        return 0.0
+
+    matches = user_cuisine_set.intersection(
+        restaurant_cuisine_set
+    )
+
+    return round(
+        len(matches) / len(user_cuisine_set),
+        4,
+    )
+
 
 
 def calculate_cosine_similarity(user_profile: dict, destination: pd.Series) -> float:
@@ -310,7 +466,7 @@ def calculate_season_score(travel_month: int, season_months) -> float:
         # Handle values like:
         # "[6, 7, 8]"
         if travel_month is None or pd.isna(season_months):
-          return 0.0
+            return 0.0
         if isinstance(season_months, str):
             season_months = ast.literal_eval(season_months)
 
@@ -460,3 +616,52 @@ def recommend_destinations(
     ].head(limit)
 
     return recommendations.to_dict(orient="records")
+
+
+def main():
+    destinations, activities, restaurants = (
+        load_recommendation_data()
+    )
+
+    destination_id = "dest_016"
+    user_budget = "mid"
+
+    user_cuisines = [
+        "Italian",
+        "Mediterranean",
+    ]
+
+    recommendations = recommend_restaurants(
+        restaurants=restaurants,
+        destination_id=destination_id,
+        user_budget=user_budget,
+        user_cuisines=user_cuisines,
+        limit=5,
+    )
+
+    recommendations_df = pd.DataFrame(
+        recommendations
+    )
+
+    print("\nTop Restaurant Recommendations:")
+
+    print(
+        recommendations_df[
+            [
+                "restaurant_id",
+                "name",
+                "cuisines",
+                "budget_level",
+                "rating",
+                "review_count",
+                "adjusted_rating",
+                "budget_score_match",
+                "cuisine_score_match",
+                "restaurant_score",
+            ]
+        ].to_string(index=False)
+    )
+
+
+if __name__ == "__main__":
+    main()
