@@ -32,6 +32,10 @@ router = APIRouter(
     "",
     response_model=RecommendationResponse,
 )
+@router.post(
+    "/",
+    response_model=RecommendationResponse,
+)
 def get_recommendations(
     request: RecommendationRequest,
 ):
@@ -61,31 +65,26 @@ def get_recommendations(
         ) from error
 
     except ResourceNotFoundError as error:
-        logger.exception(
-            "Recommendation data file was not found."
-        )
+        logger.exception("Recommendation data file was not found.")
         raise HTTPException(
             status_code=503,
             detail="Recommendation data is unavailable.",
         ) from error
 
     except HttpResponseError as error:
-        logger.exception(
-            "Failed to access recommendation data source."
-        )
+        logger.exception("Failed to access recommendation data source.")
         raise HTTPException(
             status_code=503,
             detail="Recommendation service is temporarily unavailable.",
         ) from error
 
     except Exception as error:
-        logger.exception(
-            "Unexpected recommendation service error."
-        )
+        logger.exception("Unexpected recommendation service error.")
         raise HTTPException(
             status_code=500,
             detail="An unexpected error occurred.",
         ) from error
+
 
 @router.post(
     "/restaurants",
@@ -107,48 +106,34 @@ def get_restaurant_recommendations(
                 detail="No restaurants found for the selected destination.",
             )
 
-        return {
-            "recommendations": recommendations,
-        }
+        return {"recommendations": recommendations}
 
     except HTTPException:
         raise
 
     except ResourceNotFoundError as error:
-        logger.exception(
-            "Restaurant recommendation data was not found."
-        )
-
+        logger.exception("Restaurant recommendation data was not found.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Restaurant recommendation data is unavailable.",
         ) from error
 
     except ClientAuthenticationError as error:
-        logger.exception(
-            "Azure authentication failed while loading restaurant data."
-        )
-
+        logger.exception("Azure authentication failed while loading restaurant data.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Restaurant recommendation service is unavailable.",
         ) from error
 
     except ServiceRequestError as error:
-        logger.exception(
-            "Failed to connect to restaurant data source."
-        )
-
+        logger.exception("Failed to connect to restaurant data source.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to connect to restaurant data source.",
         ) from error
 
     except HttpResponseError as error:
-        logger.exception(
-            "Azure returned an error while loading restaurant data."
-        )
-
+        logger.exception("Azure returned an error while loading restaurant data.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Restaurant recommendation data is temporarily unavailable.",
@@ -158,10 +143,7 @@ def get_restaurant_recommendations(
         pd.errors.EmptyDataError,
         pd.errors.ParserError,
     ) as error:
-        logger.exception(
-            "Restaurant dataset is empty or invalid."
-        )
-
+        logger.exception("Restaurant dataset is empty or invalid.")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Restaurant recommendation data is invalid.",
@@ -172,20 +154,14 @@ def get_restaurant_recommendations(
         TypeError,
         ValueError,
     ) as error:
-        logger.exception(
-            "Failed to process restaurant recommendation data."
-        )
-
+        logger.exception("Failed to process restaurant recommendation data.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process restaurant recommendation data.",
         ) from error
 
     except Exception as error:
-        logger.exception(
-            "Unexpected restaurant recommendation error."
-        )
-
+        logger.exception("Unexpected restaurant recommendation error.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred.",

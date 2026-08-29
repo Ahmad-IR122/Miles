@@ -111,21 +111,18 @@ export const adaptItineraries = (payload: unknown[]): Trip[] =>
   );
 
 /**
- * Adapts the response from POST /itinerary (the real, DB-backed generation
- * endpoint) plus the Trip it was generated for. Deliberately omits `id` on
- * the returned Trip/Day/Activity: the regenerate controls target the old
- * in-memory itinerary flow and don't understand these database ids yet, so
- * leaving them off keeps those buttons hidden instead of showing controls
- * that would fail.
+ * Adapts the `days` array from the real, DB-backed itinerary endpoints
+ * (generate/regenerate/add-activity all return this same shape). Ids are
+ * carried through as strings so the regenerate/add-activity controls can
+ * target the right day/activity.
  */
-export const adaptGeneratedItinerary = (
-  trip: ApiTrip,
-  itinerary: GeneratedItinerary,
-): Trip => {
-  const days: Day[] = itinerary.days.map((day) => ({
+export const adaptGeneratedDays = (days: GeneratedItinerary["days"]): Day[] =>
+  days.map((day) => ({
+    id: String(day.id),
     day: day.day_number,
     date: day.date,
     activities: day.activities.map<Activity>((activity) => ({
+      id: String(activity.id),
       title: activity.name,
       time: activity.start_time ? formatTime(activity.start_time) : undefined,
       endTime: activity.end_time ? formatTime(activity.end_time) : undefined,
@@ -139,12 +136,19 @@ export const adaptGeneratedItinerary = (
     })),
   }));
 
-  return {
-    destination: trip.destination,
-    startDate: trip.start_date,
-    endDate: trip.end_date,
-    travelers: trip.travelers_count,
-    budget: trip.budget !== null ? String(trip.budget) : undefined,
-    days,
-  };
-};
+/**
+ * Adapts the response from POST /itinerary (the real, DB-backed generation
+ * endpoint) plus the Trip it was generated for.
+ */
+export const adaptGeneratedItinerary = (
+  trip: ApiTrip,
+  itinerary: GeneratedItinerary,
+): Trip => ({
+  id: String(itinerary.id),
+  destination: trip.destination,
+  startDate: trip.start_date,
+  endDate: trip.end_date,
+  travelers: trip.travelers_count,
+  budget: trip.budget !== null ? String(trip.budget) : undefined,
+  days: adaptGeneratedDays(itinerary.days),
+});

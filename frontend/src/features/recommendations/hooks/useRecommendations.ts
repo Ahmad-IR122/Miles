@@ -268,8 +268,7 @@ export const useRecommendations = (
       })
       .then((data) => {
         if (isMounted) {
-          const nextPlaces = data.recommendations.map(toRecommendationPlace);
-          setDestinationPlaces(nextPlaces);
+          setDestinationPlaces(data.recommendations.map(toRecommendationPlace));
         }
       })
       .catch(() => {

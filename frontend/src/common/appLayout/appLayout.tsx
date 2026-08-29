@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
+import ChatWidget from "../chatWidget/chatWidget";
 import TopNav from "../topNav/topNav";
 import { useAppLayoutStyles } from "./appLayout.styles";
 import Footer from "../footer/footer";
@@ -52,6 +53,7 @@ const AppLayout = () => {
         <Outlet />
         {showFooter ? <Footer /> : null}
       </div>
+      {showNav ? <ChatWidget /> : null}
     </div>
   );
 };

@@ -9,38 +9,11 @@ import Popover from "@mui/material/Popover";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
-import dayjs, { type Dayjs } from "dayjs";
 import { getTrips } from "../../../api/trip";
 import { routesPaths } from "../../../routes/routesPaths";
 import type { Trip } from "../../../types/trip";
 import { useAccountMenuStyles } from "./accountMenu.styles";
-const getDatesInRange = (start: Dayjs, end: Dayjs): Dayjs[] => {
-  const dates: Dayjs[] = [];
-  let current = start;
-  while (!current.isAfter(end, "day")) {
-    dates.push(current);
-    current = current.add(1, "day");
-  }
-  return dates;
-};
-const createMarkedDay = (markedDates: Dayjs[]) => {
-  const MarkedDay = (props: PickerDayProps) => {
-    const styles = useAccountMenuStyles();
-    const { day, ...other } = props;
-    const isMarked = markedDates.some((markedDate) =>
-      markedDate.isSame(day, "day"),
-    );
-    return (
-      <PickerDay
-        {...other}
-        day={day}
-        className={isMarked ? styles.markedDay : undefined}
-      />
-    );
-  };
-  return MarkedDay;
-};
+import { buildTripDays, createTripDay } from "./tripDays/tripDays";
 const AccountMenu = () => {
   const styles = useAccountMenuStyles();
   const { user } = useUser();
@@ -56,14 +29,8 @@ const AccountMenu = () => {
         // Non-fatal: calendar just won't show marked days.
       });
   }, [open]);
-  const markedDates = useMemo(
-    () =>
-      trips.flatMap((trip) =>
-        getDatesInRange(dayjs(trip.start_date), dayjs(trip.end_date)),
-      ),
-    [trips],
-  );
-  const MarkedDay = useMemo(() => createMarkedDay(markedDates), [markedDates]);
+  const tripDays = useMemo(() => buildTripDays(trips), [trips]);
+  const TripDay = useMemo(() => createTripDay(tripDays), [tripDays]);
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -122,9 +89,14 @@ const AccountMenu = () => {
         <div className={styles.divider} />
         <div className={styles.calendarSection}>
           <span className={styles.calendarHeading}>Your trips</span>
-          <div className={styles.calendarWrapper}>
+          <div className={styles.calendarPanel}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateCalendar value={null} readOnly slots={{ day: MarkedDay }} />
+              <DateCalendar
+                value={null}
+                readOnly
+                className={styles.calendar}
+                slots={{ day: TripDay }}
+              />
             </LocalizationProvider>
           </div>
         </div>

@@ -136,6 +136,13 @@
   );
   --warm-bg-tint: light-dark(#fff1eb, #2a211c);
   --warm-bg-disabled: light-dark(#e8cbc1, #3a2e27);
+  /* Continuous band drawn behind a run of trip days in the account calendar.
+     Rose-tinted rather than neutral so it reads as the same accent family as
+     the gradient endpoints capping each run. */
+  --warm-bg-accent-band: light-dark(
+    rgba(244, 63, 122, 0.12),
+    rgba(246, 81, 137, 0.22)
+  );
   --warm-border: light-dark(#f3ded4, #3a2e27);
   --warm-border-coral-bright: light-dark(
     rgba(255, 107, 107, 0.3),

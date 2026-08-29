@@ -1,18 +1,20 @@
 import { useState } from "react";
 import type { AxiosResponse } from "axios";
-import type { Itinerary } from "../types/itinerary";
+import type { GeneratedItinerary } from "../types/itinerary";
 
-export type RegenerateScope = "trip" | "day" | "activity";
+export type RegenerateScope = "trip" | "day" | "activity" | "add";
 
 type Target = { scope: RegenerateScope; id: string } | null;
 
-export const useRegenerate = (onSuccess: (itinerary: Itinerary) => void) => {
+export const useRegenerate = (
+  onSuccess: (itinerary: GeneratedItinerary) => void,
+) => {
   const [target, setTarget] = useState<Target>(null);
   const [error, setError] = useState("");
 
   const run = async (
     next: NonNullable<Target>,
-    call: () => Promise<AxiosResponse<Itinerary>>,
+    call: () => Promise<AxiosResponse<GeneratedItinerary>>,
   ) => {
     if (target) return;
     setTarget(next);
@@ -21,7 +23,11 @@ export const useRegenerate = (onSuccess: (itinerary: Itinerary) => void) => {
       const response = await call();
       onSuccess(response.data);
     } catch {
-      setError("Couldn't regenerate. Please try again.");
+      setError(
+        next.scope === "add"
+          ? "Couldn't add the activity. Please try again."
+          : "Couldn't regenerate. Please try again.",
+      );
     } finally {
       setTarget(null);
     }

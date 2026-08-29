@@ -14,19 +14,31 @@ export const generateItinerary = (tripId: number) =>
 export const getTripRequest = (requestId: string) =>
   api.get<TripRequest>(`/trip-requests/${requestId}`);
 
-export const regenerateTrip = (itineraryId: string) =>
-  api.post<Itinerary>(`/itinerary/${itineraryId}/regenerate`);
+export const regenerateTrip = (itineraryId: number) =>
+  api.post<GeneratedItinerary>(`/itinerary/${itineraryId}/regenerate`);
 
-export const regenerateDay = (itineraryId: string, dayNumber: number) =>
-  api.post<Itinerary>(`/itinerary/${itineraryId}/days/${dayNumber}/regenerate`);
+export const regenerateDay = (itineraryId: number, dayNumber: number) =>
+  api.post<GeneratedItinerary>(
+    `/itinerary/${itineraryId}/days/${dayNumber}/regenerate`,
+  );
 
 export const regenerateActivity = (
-  itineraryId: string,
+  itineraryId: number,
   dayNumber: number,
-  activityId: string,
+  activityId: number,
 ) =>
-  api.post<Itinerary>(
+  api.post<GeneratedItinerary>(
     `/itinerary/${itineraryId}/days/${dayNumber}/activities/${activityId}/regenerate`,
+  );
+
+export const addActivity = (
+  itineraryId: number,
+  dayNumber: number,
+  activity: { name: string },
+) =>
+  api.post<GeneratedItinerary>(
+    `/itinerary/${itineraryId}/days/${dayNumber}/activities`,
+    activity,
   );
 
 export const updateInterests = (

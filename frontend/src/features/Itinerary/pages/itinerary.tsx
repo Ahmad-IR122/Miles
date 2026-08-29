@@ -29,6 +29,7 @@ import { formatDateRange } from "../utils/dateUtils";
 const Itinerary = () => {
   const classes = useItineraryStyles();
   const {
+    addActivityToDay,
     clearRegenerateError,
     deleteActivity,
     errorMessage,
@@ -72,6 +73,20 @@ const Itinerary = () => {
     const activityId = typeof activity === "string" ? undefined : activity?.id;
     return activityId ? isRegenerating("activity", activityId) : false;
   };
+
+  // Day/trip regenerate and add-activity all replace the whole visible
+  // timeline, so they share one dimmed overlay instead of each activity
+  // card showing its own spinner.
+  const dayTargetId = activeDay?.id ?? String(activeDay?.day ?? "");
+  const dayRegenerating = isRegenerating("day", dayTargetId);
+  const tripRegenerating = isRegenerating("trip", trip?.id ?? "");
+  const addingActivity = isRegenerating("add", dayTargetId);
+  const timelineBusy = dayRegenerating || tripRegenerating || addingActivity;
+  const timelineBusyLabel = tripRegenerating
+    ? "Regenerating your whole trip..."
+    : dayRegenerating
+      ? "Regenerating this day..."
+      : "Adding your activity...";
 
   const acceptRegeneratePlan = () => {
     setConfirmRegeneratePlan(false);
@@ -120,6 +135,8 @@ const Itinerary = () => {
                       <IconButton
                         aria-label="Add activity"
                         className={classes.dayActionButton}
+                        disabled={!canRegenerate || regenerateBusy}
+                        onClick={() => addActivityToDay(selectedDay)}
                       >
                         <AddIcon />
                       </IconButton>
@@ -166,6 +183,8 @@ const Itinerary = () => {
               <>
                 {activeDay ? (
                   <Timeline
+                    busy={timelineBusy}
+                    busyLabel={timelineBusyLabel}
                     day={activeDay}
                     dayIndex={selectedDay}
                     destination={trip.destination}
