@@ -5,6 +5,7 @@ import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 
 import { formatDateRange } from "../../Itinerary/utils/dateUtils";
+import { formatTripDestinations } from "../../../types/trip";
 import { useSavedTripsStyles } from "../styles/savedTrips.styles";
 import type { SavedTrip } from "../types/savedTrips.types";
 import { tripStatusLabels } from "../utils/tripStatus";
@@ -51,7 +52,7 @@ const TripCard = ({ trip }: TripCardProps) => {
 
       <div className={styles.cardBody}>
         <h3 className={styles.destination}>
-          {trip.destination ?? "Untitled trip"}
+          {formatTripDestinations(trip.destinations) || "Untitled trip"}
         </h3>
 
         {dateRange && <p className={styles.dateRange}>{dateRange}</p>}

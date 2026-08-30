@@ -2,7 +2,10 @@ import type {
   GeneratedItinerary,
   Itinerary as ApiItinerary,
 } from "../../../types/itinerary";
-import type { Trip as ApiTrip } from "../../../types/trip";
+import {
+  formatTripDestinations,
+  type Trip as ApiTrip,
+} from "../../../types/trip";
 import type { Activity, Day, Trip } from "../types/itinerary.types";
 
 /**
@@ -145,7 +148,7 @@ export const adaptGeneratedItinerary = (
   itinerary: GeneratedItinerary,
 ): Trip => ({
   id: String(itinerary.id),
-  destination: trip.destination,
+  destination: formatTripDestinations(trip.destinations),
   startDate: trip.start_date,
   endDate: trip.end_date,
   travelers: trip.travelers_count,

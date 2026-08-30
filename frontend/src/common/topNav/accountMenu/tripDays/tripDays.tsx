@@ -1,6 +1,6 @@
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers";
 import dayjs, { type Dayjs } from "dayjs";
-import type { Trip } from "../../../../types/trip";
+import { formatTripDestinations, type Trip } from "../../../../types/trip";
 
 const DAY_KEY = "YYYY-MM-DD";
 
@@ -30,8 +30,9 @@ export const buildTripDays = (trips: Trip[]): Map<string, TripDayMark> => {
       };
       mark.start = mark.start || day.isSame(start, "day");
       mark.end = mark.end || day.isSame(end, "day");
-      if (!mark.destinations.includes(trip.destination)) {
-        mark.destinations.push(trip.destination);
+      const destinations = formatTripDestinations(trip.destinations);
+      if (destinations && !mark.destinations.includes(destinations)) {
+        mark.destinations.push(destinations);
       }
       tripDays.set(key, mark);
       day = day.add(1, "day");

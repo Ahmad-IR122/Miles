@@ -1,15 +1,26 @@
 export type TripCreatePayload = {
-  destination: string;
+  destinations: TripDestination[];
   start_date: string;
   end_date: string;
   budget: number;
   travelers_count: number;
 };
 
+export type TripDestination = {
+  country: string;
+  city?: string;
+  days: number;
+};
+
+export const formatTripDestinations = (destinations: TripDestination[] = []) =>
+  destinations
+    .map(({ city, country }) => (city ? `${city}, ${country}` : country))
+    .join(" • ");
+
 export type Trip = {
   id: number;
   user_id: number;
-  destination: string;
+  destinations: TripDestination[];
   start_date: string;
   end_date: string;
   budget: number | null;

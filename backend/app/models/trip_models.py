@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -29,8 +29,8 @@ class Trip(Base):
         index=True,
     )
 
-    destination: Mapped[str] = mapped_column(
-        String(150),
+    destinations: Mapped[list[dict]] = mapped_column(
+        JSON,
         nullable=False,
     )
 
