@@ -90,10 +90,16 @@ def build_itinerary_prompt(
         else "general sightseeing"
     )
 
+    destinations_str = "; ".join(
+        f"{destination['city'] + ', ' if destination.get('city') else ''}"
+        f"{destination['country']} ({destination['days']} days)"
+        for destination in preferences.destinations
+    )
+
     return f"""You are a professional travel itinerary planner. Create a detailed, realistic, and engaging day-by-day itinerary.
 
 TRIP DETAILS:
-- Destination: {preferences.destination}
+- Destinations and allocated days: {destinations_str}
 - Start Date: {preferences.start_date}
 - End Date: {preferences.end_date}
 - Number of Days: {num_days}
@@ -170,7 +176,7 @@ CRITICAL REQUIREMENTS:
 - Each day: 3-5 activities (mix of attractions, meals, experiences)
 - Dates match trip dates ({preferences.start_date} to {preferences.end_date})
 - Times in chronological order, no overlaps
-- All locations are real places in {preferences.destination}
+- All locations are real places in the selected destinations: {destinations_str}
 - Return ONLY JSON, nothing else"""
 
 

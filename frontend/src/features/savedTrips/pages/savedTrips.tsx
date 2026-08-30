@@ -29,7 +29,13 @@ const SavedTrips = () => {
         ) : (
           <div className={styles.grid}>
             {trips.map((trip) => (
-              <TripCard key={trip.id ?? trip.destination} trip={trip} />
+              <TripCard
+                key={
+                  trip.id ??
+                  trip.destinations.map(({ country }) => country).join("-")
+                }
+                trip={trip}
+              />
             ))}
           </div>
         )}

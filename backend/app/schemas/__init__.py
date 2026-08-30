@@ -27,6 +27,7 @@ from .recommendation import (
 from .trip import (
     MAX_TRIP_DAYS,
     TripCreate,
+    TripDestination,
     TripRequest,
     TripRequestResponse,
     TripRequestUpdate,
@@ -60,6 +61,7 @@ __all__ = [
     "RecommendationRequest",
     "RecommendationResponse",
     "TripCreate",
+    "TripDestination",
     "TripRequest",
     "TripRequestResponse",
     "TripRequestUpdate",

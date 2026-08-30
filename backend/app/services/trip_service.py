@@ -45,6 +45,12 @@ def _check_dates(start_date, end_date) -> None:
         raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
 
 
+def _check_destination_days(destinations, start_date, end_date) -> None:
+    trip_length = (end_date - start_date).days + 1
+    if sum(destination["days"] for destination in destinations) != trip_length:
+        raise ValueError("destination days must equal the trip length")
+
+
 def get_overlapping_trip(
     db: Session,
     user_id: int,
@@ -83,9 +89,7 @@ def list_trips(db: Session, user_id: int) -> list[Trip]:
 def get_trip(db: Session, trip_id: int, user_id: int) -> Trip | None:
     """Return the trip only if it exists and belongs to user_id."""
     return (
-        db.query(Trip)
-        .filter(Trip.id == trip_id, Trip.user_id == user_id)
-        .one_or_none()
+        db.query(Trip).filter(Trip.id == trip_id, Trip.user_id == user_id).one_or_none()
     )
 
 
@@ -100,6 +104,9 @@ def update_trip(
     new_start = changes.get("start_date", trip.start_date)
     new_end = changes.get("end_date", trip.end_date)
     _check_dates(new_start, new_end)
+    _check_destination_days(
+        changes.get("destinations", trip.destinations), new_start, new_end
+    )
 
     overlapping = get_overlapping_trip(
         db, user_id, new_start, new_end, exclude_trip_id=trip_id
