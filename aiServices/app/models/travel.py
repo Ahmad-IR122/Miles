@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class TravelPreferences(BaseModel):
-    destination: str
+    destinations: list[dict]
     start_date: str
     end_date: str
     interests: list[str]

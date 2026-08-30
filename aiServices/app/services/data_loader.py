@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from io import BytesIO
 
 import pandas as pd
@@ -21,8 +22,8 @@ blob_service_client = BlobServiceClient(
 
 
 def load_csv(blob_name: str) -> pd.DataFrame:
-    blob_client = blob_service_client.get_blob_client(
-        container=CONTAINER_NAME,
+    blob_client = _get_blob_service_client().get_blob_client(
+        container=_get_container_name(),
         blob=blob_name,
     )
 
