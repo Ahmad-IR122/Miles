@@ -1,8 +1,15 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react";
 import { mergeClasses } from "@griffel/react";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.svg";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
@@ -21,11 +28,26 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
   const styles = useTopNavStyles();
   const { isSignedIn } = useAuth();
   const { scrollDirection } = useScrollDirection();
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const isHomePage = location.pathname === routesPaths.home;
   const isAuthPage =
     location.pathname === routesPaths.signIn ||
     location.pathname === routesPaths.signUp;
   const showAuthHeader = isAuthPage && isSignedIn !== true;
+  const mobileNavItems = [
+    ...navItems,
+    {
+      label: "Plan Trip",
+      path: routesPaths.planTrip,
+      icon: <AutoAwesomeIcon aria-hidden="true" />,
+    },
+  ];
+  const isMobileMenuOpen = Boolean(menuAnchor);
+  const closeMobileMenu = () => setMenuAnchor(null);
+  const navigateFromMenu = (path: string) => {
+    closeMobileMenu();
+    navigate(path);
+  };
   if (isHomePage && isSignedIn !== true) {
     return null;
   }
@@ -64,7 +86,7 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
           <SignedOut>{brand}</SignedOut>
           <SignedIn>
             <div className={styles.navLinks} aria-label="Primary navigation">
-              {navItems.map((item) => {
+              {mobileNavItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Button
@@ -82,24 +104,45 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
                   </Button>
                 );
               })}
-              <Button
-                className={mergeClasses(
-                  styles.navItem,
-                  location.pathname === routesPaths.planTrip &&
-                    styles.navItemActive,
-                )}
-                onClick={() => navigate(routesPaths.planTrip)}
-                type="button"
-                startIcon={<AutoAwesomeIcon aria-hidden="true" />}
-                aria-current={
-                  location.pathname === routesPaths.planTrip
-                    ? "page"
-                    : undefined
-                }
-              >
-                Plan Trip
-              </Button>
             </div>
+            <IconButton
+              className={styles.menuButton}
+              type="button"
+              aria-label="Open navigation menu"
+              aria-controls={isMobileMenuOpen ? "mobile-nav-menu" : undefined}
+              aria-haspopup="menu"
+              aria-expanded={isMobileMenuOpen ? "true" : undefined}
+              onClick={(event) => setMenuAnchor(event.currentTarget)}
+            >
+              <MenuRoundedIcon aria-hidden="true" />
+            </IconButton>
+            <Menu
+              id="mobile-nav-menu"
+              anchorEl={menuAnchor}
+              open={isMobileMenuOpen}
+              onClose={closeMobileMenu}
+              classes={{ paper: styles.mobileMenuPaper }}
+            >
+              {mobileNavItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <MenuItem
+                    key={item.path}
+                    className={mergeClasses(
+                      styles.mobileMenuItem,
+                      isActive && styles.mobileMenuItemActive,
+                    )}
+                    onClick={() => navigateFromMenu(item.path)}
+                    selected={isActive}
+                  >
+                    <ListItemIcon className={styles.mobileMenuIcon}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText>{item.label}</ListItemText>
+                  </MenuItem>
+                );
+              })}
+            </Menu>
           </SignedIn>
           <SignedOut>
             <div className={styles.signedOutSpacer} />

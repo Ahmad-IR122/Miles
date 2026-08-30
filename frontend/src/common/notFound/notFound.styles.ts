@@ -15,6 +15,7 @@ export const useNotFoundStyles = makeStyles({
     display: "grid",
     placeItems: "center",
     padding: "clamp(48px, 8vh, 84px) clamp(16px, 4vw, 32px)",
+    overflowX: "hidden",
     background:
       "radial-gradient(circle at 26% 28%, var(--not-found-glow), transparent 34%), radial-gradient(circle at 82% 72%, var(--color-bg-accent), transparent 30%), var(--not-found-bg)",
   },
@@ -36,6 +37,7 @@ export const useNotFoundStyles = makeStyles({
   illustration: {
     position: "relative",
     minHeight: "330px",
+    overflow: "hidden",
     filter: "drop-shadow(0 28px 44px rgba(0, 0, 0, 0.08))",
 
     "@media (max-width: 760px)": {

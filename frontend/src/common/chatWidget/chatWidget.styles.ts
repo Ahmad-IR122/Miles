@@ -89,6 +89,7 @@ export const useChatWidgetStyles = makeStyles({
     bottom: layout.spacing[6],
     width: `${PANEL_WIDTH}px`,
     maxWidth: "calc(100vw - 32px)",
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
     ...shorthands.borderRadius(layout.radius["2xl"]),
@@ -122,6 +123,18 @@ export const useChatWidgetStyles = makeStyles({
       left: layout.spacing[3],
       width: "auto",
       maxWidth: "none",
+      maxHeight: "calc(100dvh - 24px)",
+    },
+
+    "@media (max-width: 430px)": {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      width: "100%",
+      height: "100dvh",
+      maxHeight: "100dvh",
+      borderRadius: 0,
     },
   },
 
@@ -131,8 +144,13 @@ export const useChatWidgetStyles = makeStyles({
     justifyContent: "space-between",
     ...shorthands.gap(layout.gap.sm),
     padding: `${layout.spacing[4]} ${layout.spacing[5]}`,
+    boxSizing: "border-box",
     backgroundImage: warmGradients.primary,
     flexShrink: 0,
+
+    "@media (max-width: 430px)": {
+      padding: `${layout.spacing[3]} ${layout.spacing[4]}`,
+    },
   },
 
   headerTitleRow: {
@@ -191,24 +209,40 @@ export const useChatWidgetStyles = makeStyles({
     justifyContent: "center",
     ...shorthands.gap(layout.gap.sm),
     padding: layout.padding.xl,
+    boxSizing: "border-box",
     textAlign: "center",
     overflowY: "auto",
     backgroundColor: warm.bgPage,
+    minHeight: 0,
+
+    "@media (max-width: 430px)": {
+      padding: layout.padding.lg,
+    },
   },
 
   messageList: {
     flex: 1,
+    minHeight: 0,
     display: "flex",
     flexDirection: "column",
     ...shorthands.gap(layout.gap.sm),
     padding: layout.padding.md,
+    boxSizing: "border-box",
     overflowY: "auto",
     backgroundColor: warm.bgPage,
+
+    "@media (max-width: 430px)": {
+      padding: layout.padding.sm,
+    },
   },
 
   messageRow: {
     display: "flex",
     maxWidth: "80%",
+
+    "@media (max-width: 430px)": {
+      maxWidth: "88%",
+    },
   },
 
   messageRowUser: {
@@ -325,6 +359,7 @@ export const useChatWidgetStyles = makeStyles({
     alignItems: "flex-end",
     ...shorthands.gap(layout.gap.xs),
     padding: layout.spacing[4],
+    boxSizing: "border-box",
     ...shorthands.borderTop(
       layout.borderWidth.hairline,
       "solid",
@@ -332,10 +367,16 @@ export const useChatWidgetStyles = makeStyles({
     ),
     backgroundColor: warm.bgSurface,
     flexShrink: 0,
+    minWidth: 0,
+
+    "@media (max-width: 430px)": {
+      padding: `${layout.spacing[3]} ${layout.spacing[3]} calc(${layout.spacing[3]} + env(safe-area-inset-bottom))`,
+    },
   },
 
   inputField: {
     flex: 1,
+    minWidth: 0,
 
     "& .MuiOutlinedInput-root": {
       ...shorthands.borderRadius(layout.radius.lg),

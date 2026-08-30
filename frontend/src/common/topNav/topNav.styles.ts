@@ -18,6 +18,7 @@ export const useTopNavStyles = makeStyles({
     display: "flex",
     justifyContent: "center",
     padding: `0 ${layout.padding.xl}`,
+    boxSizing: "border-box",
     pointerEvents: "none",
     backgroundColor: "transparent",
     transition: `transform ${layout.duration.normal} cubic-bezier(0.4, 0, 0.2, 1)`,
@@ -33,6 +34,11 @@ export const useTopNavStyles = makeStyles({
     "@media (max-width: 760px)": {
       top: layout.spacing[3],
       padding: `0 ${layout.padding.sm}`,
+    },
+
+    "@media (max-width: 430px)": {
+      top: layout.spacing[2],
+      padding: `0 ${layout.padding.xs}`,
     },
   },
 
@@ -55,10 +61,12 @@ export const useTopNavStyles = makeStyles({
     position: "relative",
     width: "100%",
     maxWidth: "1180px",
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.xl,
     pointerEvents: "none",
+    minWidth: 0,
 
     "@media (max-width: 980px)": {
       columnGap: layout.gap.md,
@@ -69,9 +77,11 @@ export const useTopNavStyles = makeStyles({
   nav: {
     width: "auto",
     minWidth: 0,
+    maxWidth: "100%",
     flex: 1,
     minHeight: "60px",
     padding: `${layout.padding.sm} ${layout.padding.lg}`,
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.lg,
@@ -139,8 +149,15 @@ export const useTopNavStyles = makeStyles({
       width: "auto",
       flex: 1,
       minHeight: "auto",
-      padding: `${layout.spacing[1]} ${layout.padding.xs}`,
+      padding: `${layout.spacing[1]} ${layout.spacing[1.5]}`,
       columnGap: layout.gap.xs,
+    },
+
+    "@media (max-width: 430px)": {
+      flex: "0 1 auto",
+      maxWidth: "100%",
+      padding: layout.spacing[1],
+      columnGap: layout.spacing[1.5],
     },
   },
 
@@ -149,7 +166,7 @@ export const useTopNavStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
-    minWidth: "max-content",
+    minWidth: 0,
     flexShrink: 0,
     pointerEvents: "auto",
   },
@@ -158,7 +175,7 @@ export const useTopNavStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
-    minWidth: "max-content",
+    minWidth: 0,
     padding: 0,
     backgroundColor: "transparent",
     cursor: "pointer",
@@ -183,6 +200,11 @@ export const useTopNavStyles = makeStyles({
     justifyContent: "center",
     flexShrink: 0,
     backgroundColor: warm.bgTint,
+
+    "@media (max-width: 430px)": {
+      width: layout.controlSize.xl,
+      height: layout.controlSize.xl,
+    },
   },
 
   logo: {
@@ -198,6 +220,11 @@ export const useTopNavStyles = makeStyles({
     fontSize: typography.fontSize.size9,
     lineHeight: 1,
     display: "block",
+    whiteSpace: "nowrap",
+
+    "@media (max-width: 380px)": {
+      display: "none",
+    },
   },
 
   // Nav items in center - flex auto
@@ -214,15 +241,88 @@ export const useTopNavStyles = makeStyles({
     },
 
     "@media (max-width: 760px)": {
-      order: 3,
-      width: "100%",
-      justifyContent: "flex-start",
-      overflowX: "auto",
-      paddingBottom: layout.spacing[1],
-      scrollbarWidth: "none",
-      "&::-webkit-scrollbar": {
-        display: "none",
+      display: "none",
+    },
+  },
+
+  menuButton: {
+    "&.MuiIconButton-root": {
+      display: "none",
+      width: layout.controlSize.xl,
+      height: layout.controlSize.xl,
+      minWidth: layout.controlSize.xl,
+      color: warm.textPrimary,
+      backgroundColor: warm.bgTint,
+      borderRadius: layout.radius.full,
+      flexShrink: 0,
+    },
+    "&.MuiIconButton-root:hover": {
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
+    },
+    "&.MuiIconButton-root:focus-visible": {
+      outlineColor: warm.coralBright,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+    },
+
+    "@media (max-width: 760px)": {
+      "&.MuiIconButton-root": {
+        display: "inline-flex",
+        width: layout.controlSize.xs,
+        height: layout.controlSize.xs,
+        minWidth: layout.controlSize.xs,
       },
+    },
+  },
+
+  mobileMenuPaper: {
+    backgroundColor: warm.bgSurface,
+    color: warm.textPrimary,
+    borderRadius: layout.radius.lg,
+    boxShadow: warmShadows.md,
+    ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
+    boxSizing: "border-box",
+    minWidth: "210px",
+    maxWidth: "calc(100vw - 32px)",
+    marginTop: layout.spacing[2],
+  },
+
+  mobileMenuItem: {
+    "&.MuiMenuItem-root": {
+      minHeight: "44px",
+      columnGap: layout.gap.sm,
+      color: warm.textPrimary,
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    "&.MuiMenuItem-root:hover": {
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
+    },
+    "&.MuiMenuItem-root.Mui-selected": {
+      color: warm.rose,
+      backgroundColor: warm.bgTint,
+    },
+    "&.MuiMenuItem-root.Mui-selected:hover": {
+      backgroundColor: warm.bgTint,
+    },
+  },
+
+  mobileMenuItemActive: {
+    "&.MuiMenuItem-root": {
+      color: warm.rose,
+    },
+  },
+
+  mobileMenuIcon: {
+    "&.MuiListItemIcon-root": {
+      minWidth: layout.spacing[8],
+      color: "inherit",
+    },
+    "&.MuiListItemIcon-root > svg": {
+      fontSize: typography.fontSize.size8,
     },
   },
 
@@ -312,8 +412,16 @@ export const useTopNavStyles = makeStyles({
     alignItems: "center",
     justifyContent: "flex-end",
     columnGap: layout.gap.md,
-    minWidth: "max-content",
+    minWidth: 0,
     flexShrink: 0,
+
+    "@media (max-width: 760px)": {
+      columnGap: layout.gap.xs,
+    },
+
+    "@media (max-width: 380px)": {
+      columnGap: layout.gap.xs,
+    },
   },
 
   signedOutSpacer: {
@@ -325,6 +433,10 @@ export const useTopNavStyles = makeStyles({
     height: "32px",
     backgroundColor: warm.border,
     opacity: 0.5,
+
+    "@media (max-width: 430px)": {
+      height: layout.spacing[6],
+    },
   },
 
   profileSection: {

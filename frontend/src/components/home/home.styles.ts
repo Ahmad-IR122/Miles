@@ -91,10 +91,13 @@ export const useHomeStyles = makeStyles({
 
     width: "calc(100% - 64px)",
     maxWidth: "1180px",
+    boxSizing: "border-box",
 
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: layout.gap.sm,
+    minWidth: 0,
 
     "@media (max-width: 760px)": {
       top: layout.spacing[4],
@@ -106,6 +109,8 @@ export const useHomeStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
+    minWidth: 0,
+    maxWidth: "100%",
   },
 
   logoFrame: {
@@ -139,6 +144,10 @@ export const useHomeStyles = makeStyles({
     fontSize: typography.fontSize.size9,
 
     color: warm.textPrimary,
+
+    "@media (max-width: 380px)": {
+      display: "none",
+    },
   },
 
   signInArea: {
@@ -146,6 +155,7 @@ export const useHomeStyles = makeStyles({
     alignItems: "center",
 
     columnGap: layout.gap.md,
+    flexShrink: 0,
   },
 
   signInText: {
@@ -197,6 +207,13 @@ export const useHomeStyles = makeStyles({
       paddingLeft: layout.padding.md,
       paddingRight: layout.padding.md,
       paddingBottom: layout.padding.xl,
+    },
+
+    "@media (max-width: 430px)": {
+      rowGap: layout.gap.lg,
+      paddingTop: "104px",
+      paddingLeft: layout.padding.sm,
+      paddingRight: layout.padding.sm,
     },
 
     /*
@@ -292,6 +309,10 @@ export const useHomeStyles = makeStyles({
         fontSize: typography.fontSize.size5,
         lineHeight: typography.lineHeight.normal,
       },
+
+      "@media (max-width: 430px)": {
+        maxWidth: "100%",
+      },
     },
   },
 
@@ -305,6 +326,10 @@ export const useHomeStyles = makeStyles({
     rowGap: layout.gap.sm,
 
     marginTop: layout.spacing[9],
+
+    "@media (max-width: 430px)": {
+      marginTop: layout.spacing[7],
+    },
   },
 
   mainButton: {
@@ -330,6 +355,7 @@ export const useHomeStyles = makeStyles({
 
     width: "100%",
     maxWidth: "500px",
+    boxSizing: "border-box",
 
     /*
      * Adapts to the viewport instead of forcing 560px.
@@ -353,6 +379,11 @@ export const useHomeStyles = makeStyles({
 
     "@media (max-width: 620px)": {
       height: "360px",
+    },
+
+    "@media (max-width: 430px)": {
+      height: "min(330px, 86vw)",
+      maxWidth: "min(360px, 100%)",
     },
 
     "@media (max-height: 700px) and (min-width: 961px)": {
@@ -421,6 +452,7 @@ export const useHomeStyles = makeStyles({
 
     width: "78%",
     height: "78%",
+    boxSizing: "border-box",
 
     overflow: "hidden",
 
@@ -458,6 +490,8 @@ export const useHomeStyles = makeStyles({
     zIndex: 3,
 
     width: "225px",
+    maxWidth: "100%",
+    boxSizing: "border-box",
 
     padding: layout.padding.lg,
 
@@ -481,6 +515,12 @@ export const useHomeStyles = makeStyles({
 
       left: "2%",
       bottom: "6%",
+    },
+
+    "@media (max-width: 430px)": {
+      width: "min(176px, 58vw)",
+      padding: layout.padding.sm,
+      bottom: "5%",
     },
   },
 

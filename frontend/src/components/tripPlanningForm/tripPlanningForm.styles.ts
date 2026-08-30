@@ -73,6 +73,8 @@ export const useTripPlanningFormStyles = makeStyles({
     minHeight: "100dvh",
   },
   content: {
+    width: "100%",
+    boxSizing: "border-box",
     padding: `${layout.navHeight + 60}px ${layout.padding.lg} ${layout.padding["2xl"]}`,
     maxWidth: "760px",
     margin: "0 auto",
@@ -113,14 +115,16 @@ export const useTripPlanningFormStyles = makeStyles({
   steps: {
     display: "flex",
     alignItems: "center",
+    minWidth: 0,
     marginBottom: layout.gap.xl,
   },
-  stepItem: { display: "flex", alignItems: "center" },
+  stepItem: { display: "flex", alignItems: "center", minWidth: 0 },
   stepItemGrowing: { flexGrow: 1 },
   stepIdentity: {
     display: "flex",
     alignItems: "center",
     columnGap: layout.gap.sm,
+    minWidth: 0,
   },
   stepCircle: {
     width: layout.controlSize.sm,
@@ -420,15 +424,17 @@ export const useTripPlanningFormStyles = makeStyles({
     alignItems: "center",
     justifyContent: "space-between",
     gap: layout.gap.md,
+    flexWrap: "wrap",
     marginBottom: layout.gap.sm,
   },
   destinationRow: {
     display: "grid",
-    gridTemplateColumns: "28px minmax(0, 1fr) minmax(0, 1fr) 96px 32px",
+    gridTemplateColumns:
+      "28px minmax(0, 1fr) minmax(0, 1fr) minmax(72px, 96px) 32px",
     alignItems: "start",
     gap: layout.gap.sm,
     [`@media ${bp.tablet}`]: {
-      gridTemplateColumns: "28px minmax(0, 1fr) 96px 32px",
+      gridTemplateColumns: "28px minmax(0, 1fr) minmax(72px, 96px) 32px",
       "& > :nth-child(2)": { gridColumn: "2 / 5" },
       "& > :nth-child(3)": { gridColumn: "2 / 3" },
       "& > :nth-child(4)": { gridColumn: "3 / 4" },
@@ -549,6 +555,7 @@ export const useTripPlanningFormStyles = makeStyles({
     fontSize: typography.fontSize.size4,
     color: semanticColors.textPrimary,
     fontWeight: typography.fontWeight.bold,
+    overflowWrap: "anywhere",
   },
   error: {
     color: semanticColors.textError,

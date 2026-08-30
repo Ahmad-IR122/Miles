@@ -19,6 +19,8 @@ export const useSavedTripsStyles = makeStyles({
   },
 
   content: {
+    width: "100%",
+    boxSizing: "border-box",
     maxWidth: "1240px",
     marginLeft: "auto",
     marginRight: "auto",
@@ -38,6 +40,7 @@ export const useSavedTripsStyles = makeStyles({
     alignItems: "flex-start",
     gap: layout.gap.md,
     flexWrap: "wrap",
+    minWidth: 0,
   },
 
   title: {
@@ -70,7 +73,7 @@ export const useSavedTripsStyles = makeStyles({
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))",
     gap: layout.gap.md,
   },
 
@@ -196,6 +199,7 @@ export const useSavedTripsStyles = makeStyles({
     margin: 0,
     ...typographyPresets.h3,
     color: semanticColors.textPrimary,
+    overflowWrap: "anywhere",
   },
 
   dateRange: {
@@ -237,6 +241,8 @@ export const useSavedTripsStyles = makeStyles({
     fontWeight: typography.fontWeight.semibold,
     opacity: 0.55,
     cursor: "not-allowed",
+    gap: layout.gap.sm,
+    minWidth: 0,
   },
 
   cardFooterArrow: {
@@ -256,6 +262,9 @@ export const useSavedTripsStyles = makeStyles({
       semanticColors.borderDefault,
     ),
     ...shorthands.borderRadius(layout.radius.xl),
+    "@media (max-width: 520px)": {
+      ...shorthands.padding(layout.spacing[10], layout.padding.md),
+    },
   },
 
   emptyIcon: {
