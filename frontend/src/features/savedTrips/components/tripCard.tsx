@@ -1,6 +1,7 @@
 import { mergeClasses } from "@griffel/react";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 
@@ -38,6 +39,14 @@ const TripCard = ({ trip }: TripCardProps) => {
   return (
     <div className={styles.card}>
       <div className={styles.banner}>
+        <button
+          type="button"
+          className={styles.deleteButton}
+          aria-label="Delete trip"
+        >
+          <DeleteOutlineRoundedIcon className={styles.deleteIcon} />
+        </button>
+
         <FlightTakeoffRoundedIcon className={styles.bannerIcon} />
 
         <span

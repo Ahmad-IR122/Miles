@@ -120,6 +120,43 @@ export const useSavedTripsStyles = makeStyles({
     opacity: 0.9,
   },
 
+  deleteButton: {
+    position: "absolute",
+    top: layout.spacing[3],
+    left: layout.spacing[3],
+    width: "34px",
+    height: "34px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shorthands.padding("0"),
+    ...shorthands.border("0"),
+    ...shorthands.borderRadius(layout.radius.full),
+    backgroundColor: "#ef233c",
+    color: colors.white,
+    cursor: "pointer",
+    boxShadow: "0 8px 18px rgba(129, 23, 35, 0.24)",
+    transitionProperty: "background-color, transform, box-shadow",
+    transitionDuration: layout.duration.normal,
+
+    ":hover": {
+      backgroundColor: "#d90429",
+      transform: "translateY(-1px)",
+      boxShadow: "0 10px 22px rgba(129, 23, 35, 0.28)",
+    },
+
+    ":focus-visible": {
+      outlineColor: colors.white,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+    },
+  },
+
+  deleteIcon: {
+    fontSize: "20px",
+  },
+
   statusPill: {
     position: "absolute",
     top: layout.spacing[3],
