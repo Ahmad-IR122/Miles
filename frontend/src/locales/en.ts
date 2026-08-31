@@ -60,6 +60,22 @@ const en = {
         destinationCityPlaceholder: "e.g. Paris",
         startDate: "Start Date",
         endDate: "End Date",
+        destinations: "Destinations",
+        addDestination: "Add",
+        country: "Country",
+        city: "City",
+        days: "Days",
+        countryPlaceholder: "e.g. Oman",
+        cityPlaceholder: "e.g. Muscat",
+        removeDestination: "Remove destination {{number}}",
+        travelDates: "Travel Dates",
+        bookedDayTooltip: "This day is already booked in another trip",
+        daysPlanned_one: "day planned",
+        daysPlanned_other: "days planned",
+        daysLeft_one: "{{count}} left",
+        daysLeft_other: "{{count}} left",
+        daysOver_one: "{{count}} over",
+        daysOver_other: "{{count}} over",
       },
       travelers: {
         adults: "Adults",
@@ -83,6 +99,8 @@ const en = {
         totalUsd: "Total Budget (USD)",
         amountPlaceholder: "e.g. 2000",
         currencySymbol: "$",
+        range: "Budget Range",
+        value: "{{amount}}$",
       },
       interests: {
         title: "Interests",
@@ -106,6 +124,12 @@ const en = {
         },
         otherLabel: "Tell us your interest",
         otherPlaceholder: "e.g. Photography or local markets",
+        selectAll: "Select all that apply",
+        chooseMinimum_one: "Choose at least {{count}} to personalize your trip",
+        chooseMinimum_other:
+          "Choose at least {{count}} to personalize your trip",
+        selectedCount_one: "{{count}} interest selected",
+        selectedCount_other: "{{count}} interests selected",
         selectionNotice_one:
           "{{count}} interest selected — AI will tailor your itinerary around this preference.",
         selectionNotice_other:
@@ -122,11 +146,19 @@ const en = {
         balanced: "Balanced",
         notAvailable: "—",
         dateRange: "{{startDate}} → {{endDate}}",
+        dateFormat: "YYYY-MM-DD",
         travelerCount_one: "{{count}} person",
         travelerCount_other: "{{count}} people",
         budgetValue: "${{amount}}",
         interestCount_one: "{{count}} selected",
         interestCount_other: "{{count}} selected",
+        destinations: "Destinations",
+        stay: "Stay",
+        destinationDays_one: "{{count}} day",
+        destinationDays_other: "{{count}} days",
+        daysAllocated_one: "{{allocated}} / {{duration}} day allocated",
+        daysAllocated_other: "{{allocated}} / {{duration}} days allocated",
+        budgetRange: "{{minimum}}$ - {{maximum}}$",
       },
       generating: {
         title: "Creating your personalized journey...",
@@ -137,6 +169,9 @@ const en = {
         matching: "Matching activities to your interests...",
         organizing: "Organizing your days...",
         finishing: "Adding the finishing touches...",
+        selectedDestinations:
+          "Exploring your selected destinations and arranging a trip around your interests.",
+        progressLabel: "Itinerary generation progress",
       },
       validation: {
         origin: "Please select an origin.",
@@ -145,6 +180,28 @@ const en = {
         budget: "Please enter a valid budget greater than 0.",
         interests: "Please select at least one interest.",
         submitError: "Something went wrong. Please try again.",
+        requiredFields: "Please fill the required fields before moving on.",
+        originCountry: "Please select an origin country.",
+        destinationRequired: "Please add at least one destination.",
+        destinationDetails:
+          "Each destination must have a country and a positive number of stay days.",
+        originDestinationConflict:
+          "A destination cannot use the same city as the origin city.",
+        startDate: "Please select a start date.",
+        endDate: "Please select an end date.",
+        endDateBeforeStart: "End date cannot be before start date.",
+        maxTripDays: "Trip duration cannot exceed {{count}} days.",
+        allocatedDaysOver:
+          "Allocated days ({{allocated}}) exceed the trip duration ({{duration}} days).",
+        daysUnassigned_one:
+          "{{count}} day still needs to be assigned to destinations.",
+        daysUnassigned_other:
+          "{{count}} days still need to be assigned to destinations.",
+        dateOverlap:
+          "Those dates overlap a trip you already have planned. Pick a different date range.",
+        minimumInterests_one: "Please select at least {{count}} interest.",
+        minimumInterests_other: "Please select at least {{count}} interests.",
+        required: "Required",
       },
       submit: "Generate Itinerary",
       continue: "Continue",

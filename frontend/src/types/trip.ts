@@ -2,7 +2,8 @@ export type TripCreatePayload = {
   destinations: TripDestination[];
   start_date: string;
   end_date: string;
-  budget: number;
+  budget_min: number;
+  budget_max: number;
   travelers_count: number;
 };
 

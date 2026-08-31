@@ -10,6 +10,7 @@ import {
   typography,
   typographyPresets,
 } from "../../common/theme/typography";
+
 export const fieldSx = {
   "& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root": {
     borderRadius: layout.radius.md,
@@ -99,7 +100,7 @@ export const useTripPlanningFormStyles = makeStyles({
     WebkitBackgroundClip: "text",
     backgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    color: "transparent",
+    color: colors.transparent,
   },
   subtitle: {
     fontSize: typography.fontSize.size5,
@@ -139,7 +140,7 @@ export const useTripPlanningFormStyles = makeStyles({
   },
   stepCircleReached: {
     backgroundImage: gradients.primary,
-    color: semanticColors.bgPrimary,
+    color: semanticColors.textOnAccent,
   },
   stepCircleCurrent: { boxShadow: semanticColors.shadowInteractive },
   stepLabel: {
@@ -155,7 +156,7 @@ export const useTripPlanningFormStyles = makeStyles({
   },
   connector: {
     flexGrow: 1,
-    height: "2px",
+    height: layout.borderWidth.thick,
     margin: `0 ${layout.gap.md}`,
     backgroundColor: semanticColors.borderDefault,
     transitionProperty: "background",
@@ -233,7 +234,7 @@ export const useTripPlanningFormStyles = makeStyles({
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
       outlineWidth: layout.borderWidth.thick,
-      outlineOffset: "2px",
+      outlineOffset: layout.borderWidth.thick,
     },
   },
   count: {
@@ -247,74 +248,66 @@ export const useTripPlanningFormStyles = makeStyles({
     ...typographyPresets.caption,
     color: semanticColors.textTertiary,
   },
-  budgetOptions: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "nowrap",
-    justifyContent: "space-between",
-    gap: layout.gap.xl,
+  budgetSliderWrapper: {
     width: "100%",
-    [`@media ${bp.mobile}`]: {
-      flexDirection: "column",
-      flexWrap: "wrap",
-      gap: layout.gap.sm,
-    },
+    maxWidth: "440px",
+    margin: "0 auto",
+    padding: `${layout.gap.xl} ${layout.gap.sm} ${layout.gap.sm}`,
+    boxSizing: "border-box",
   },
-  budgetOption: {
-    flexGrow: 1,
-    flexBasis: "0",
-    minWidth: "0",
-    margin: "0",
-    padding: `${layout.gap.sm} ${layout.gap.md}`,
-    borderRadius: layout.radius.md,
-    ...shorthands.border(layout.borderWidth.thin, "solid", "transparent"),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: semanticColors.textSecondary,
-    cursor: "pointer",
-    transitionProperty: "border-color, background-color, color",
-    transitionDuration: layout.duration.normal,
-    "& .MuiRadio-root": {
-      color: semanticColors.textDisabled,
-      padding: layout.gap.sm,
-    },
-    "& .MuiRadio-root.Mui-focusVisible": {
-      outlineColor: semanticColors.interactive,
-      outlineStyle: "solid",
-      outlineWidth: layout.borderWidth.thick,
-      outlineOffset: "2px",
+  budgetSlider: {
+    color: semanticColors.interactive,
+    padding: `${layout.spacing[5]} 0`,
+    "& .MuiSlider-track": {
+      height: layout.spacing[4],
+      backgroundImage: gradients.primary,
+      border: "none",
       borderRadius: layout.radius.full,
     },
-    "& .MuiFormControlLabel-label": {
-      fontSize: typography.fontSize.size4,
-      fontWeight: typography.fontWeight.medium,
+    "& .MuiSlider-rail": {
+      height: layout.spacing[4],
+      backgroundColor: semanticColors.borderDefault,
+      opacity: 1,
+      borderRadius: layout.radius.full,
     },
-    [`@media ${bp.mobile}`]: {
-      justifyContent: "flex-start",
-      width: "100%",
+    "& .MuiSlider-thumb": {
+      width: layout.controlSize.xs,
+      height: layout.controlSize.xs,
+      backgroundColor: semanticColors.bgPrimary,
+      ...shorthands.border(
+        layout.borderWidth.thick,
+        "solid",
+        semanticColors.interactive,
+      ),
+      boxShadow: semanticColors.shadowStrong,
+      "&::before": { display: "none" },
+      "&:hover, &.Mui-focusVisible, &.Mui-active": {
+        boxShadow: semanticColors.shadowStrong,
+      },
     },
-  },
-  budgetOptionSelected: {
-    color: semanticColors.interactive,
-    backgroundColor: semanticColors.bgInteractiveSubtle,
-    borderRadius: layout.radius.md,
-    ...shorthands.border(
-      layout.borderWidth.thin,
-      "solid",
-      semanticColors.interactive,
-    ),
-    "& .MuiRadio-root.Mui-checked": {
-      color: semanticColors.interactive,
-    },
-    "& .MuiFormControlLabel-label": {
-      color: semanticColors.interactive,
+    "& .MuiSlider-valueLabel": {
+      backgroundImage: gradients.primary,
+      color: semanticColors.textOnAccent,
+      fontSize: typography.fontSize.size3,
       fontWeight: typography.fontWeight.bold,
+      borderRadius: layout.radius.full,
+      padding: `${layout.spacing[1]} ${layout.gap.md}`,
+      transformOrigin: "bottom center",
+      "&::before": { display: "none" },
+      "&.MuiSlider-valueLabelOpen": {
+        transform: "translateY(-100%) scale(1)",
+      },
     },
   },
-  currency: {
-    color: semanticColors.textSecondary,
-    marginRight: layout.gap.sm,
+  budgetRangeSummary: {
+    display: "flex",
+    justifyContent: "space-between",
+    maxWidth: "440px",
+    margin: `${layout.gap.sm} auto 0`,
+  },
+  budgetRangeSummaryLabel: {
+    ...typographyPresets.caption,
+    color: semanticColors.textTertiary,
   },
   interestHeader: { marginBottom: layout.gap.lg },
   interestHeaderRow: {
@@ -349,7 +342,7 @@ export const useTripPlanningFormStyles = makeStyles({
     transitionDuration: layout.duration.normal,
   },
   interestCounterComplete: {
-    color: semanticColors.bgPrimary,
+    color: semanticColors.textOnAccent,
     backgroundImage: gradients.primary,
   },
   interestText: {
@@ -384,13 +377,13 @@ export const useTripPlanningFormStyles = makeStyles({
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
       outlineWidth: layout.borderWidth.thick,
-      outlineOffset: "2px",
+      outlineOffset: layout.borderWidth.thick,
     },
   },
   chipActive: {
     ...shorthands.borderColor(semanticColors.interactive),
     backgroundImage: gradients.primary,
-    color: semanticColors.bgPrimary,
+    color: semanticColors.textOnAccent,
     fontWeight: typography.fontWeight.bold,
     boxShadow: semanticColors.shadowInteractive,
     "& .MuiChip-label": { padding: `${layout.gap.sm} ${layout.gap.md}` },
@@ -398,15 +391,6 @@ export const useTripPlanningFormStyles = makeStyles({
       ...shorthands.borderColor(semanticColors.interactive),
       backgroundImage: gradients.primary,
       opacity: 0.92,
-    },
-  },
-  completedChoice: {
-    ...shorthands.borderColor("rgba(16, 185, 129, 0.6)"),
-    ":hover": {
-      ...shorthands.borderColor("rgba(16, 185, 129, 0.75)"),
-    },
-    ":focus-visible": {
-      outlineColor: "rgba(16, 185, 129, 0.8)",
     },
   },
   otherField: { marginTop: layout.gap.md },
@@ -452,21 +436,21 @@ export const useTripPlanningFormStyles = makeStyles({
     ),
   },
   destinationNumber: {
-    width: "28px",
-    height: "28px",
+    width: layout.spacing[7],
+    height: layout.spacing[7],
     borderRadius: layout.radius.full,
     backgroundImage: gradients.primary,
-    color: semanticColors.bgPrimary,
+    color: semanticColors.textOnAccent,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: typography.fontSize.size2,
     fontWeight: typography.fontWeight.bold,
-    marginTop: "8px",
+    marginTop: layout.spacing[2],
   },
   destinationInput: {
     "& .MuiOutlinedInput-root": {
-      minHeight: "42px",
+      minHeight: layout.controlSize.xl,
     },
     "& .MuiInputLabel-root": {
       fontSize: typography.fontSize.size3,
@@ -479,7 +463,7 @@ export const useTripPlanningFormStyles = makeStyles({
   destinationRemoveButton: {
     width: layout.controlSize.sm,
     height: layout.controlSize.sm,
-    marginTop: "4px",
+    marginTop: layout.spacing[1],
     color: semanticColors.textTertiary,
     ":hover": {
       color: semanticColors.textError,
@@ -494,7 +478,7 @@ export const useTripPlanningFormStyles = makeStyles({
     marginTop: layout.gap.sm,
     padding: `${layout.spacing[1]} ${layout.gap.sm}`,
     borderRadius: layout.radius.md,
-    backgroundColor: "transparent",
+    backgroundColor: colors.transparent,
   },
   daysSummaryItem: {
     margin: 0,
