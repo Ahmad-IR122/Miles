@@ -5,6 +5,7 @@ import {
   useState,
   type SyntheticEvent,
 } from "react";
+import axios from "axios";
 import { mergeClasses } from "@griffel/react";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -95,6 +96,22 @@ const emptyFieldErrors: FieldErrors = {
 };
 const tripDetailsRequiredMessage =
   "Please fill the required fields before moving on.";
+const aiServiceUnavailableMessage =
+  "We couldn't generate your itinerary right now — the AI service is temporarily unavailable. Your trip details are saved, so just click Generate Itinerary to try again.";
+const tripDatesConflictMessage =
+  "Those dates overlap a trip you already have planned. Pick a different date range.";
+const networkUnreachableMessage =
+  "We couldn't reach the server. Please check your connection and try again.";
+const genericGenerationErrorMessage = "Something went wrong. Please try again.";
+const getGenerationErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    if (status === 502) return aiServiceUnavailableMessage;
+    if (status === 409) return tripDatesConflictMessage;
+    if (!error.response) return networkUnreachableMessage;
+  }
+  return genericGenerationErrorMessage;
+};
 const maxTripDays = 31;
 const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
@@ -226,6 +243,10 @@ const TripPlanningForm = () => {
   const [generating, setGenerating] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
+  // Set when a trip was created but itinerary generation then failed, so a
+  // retry can reuse it instead of re-creating it (which would 409 on the
+  // same dates). Cleared whenever the details change or generation succeeds.
+  const [pendingTrip, setPendingTrip] = useState<Trip | null>(null);
   useEffect(() => {
     getTrips()
       .then(({ data }) => setExistingTrips(data))
@@ -563,17 +584,32 @@ const TripPlanningForm = () => {
         budget: budget ? budgetAmounts[budget] : 0,
         travelers_count: adults + children,
       };
-
-      const { data: trip } = await createTrip(tripPayload);
-
+      // If a previous attempt already created this exact trip and only
+      // failed at the generation step, reuse it instead of re-creating it —
+      // otherwise a retry after a failed generation hits a 409 conflict on
+      // the same dates. If the details changed since then, create fresh.
+      const canReusePendingTrip =
+        pendingTrip !== null &&
+        JSON.stringify(pendingTrip.destinations) ===
+          JSON.stringify(tripPayload.destinations) &&
+        pendingTrip.start_date === tripPayload.start_date &&
+        pendingTrip.end_date === tripPayload.end_date;
+      const trip =
+        pendingTrip && canReusePendingTrip
+          ? pendingTrip
+          : (await createTrip(tripPayload)).data;
+      if (!canReusePendingTrip) {
+        setPendingTrip(trip);
+      }
       const [{ data: itinerary }] = await Promise.all([
         generateItinerary(trip.id),
         minimumDisplayPromise,
       ]);
 
+      setPendingTrip(null);
       navigate(routesPaths.itinerary, { state: { trip, itinerary } });
-    } catch {
-      setSubmitError("Something went wrong. Please try again.");
+    } catch (error) {
+      setSubmitError(getGenerationErrorMessage(error));
     } finally {
       setGenerating(false);
       setIsSubmitting(false);
