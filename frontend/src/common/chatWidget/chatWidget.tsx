@@ -4,6 +4,8 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { useParams } from "react-router-dom";
 
 import { mergeClasses } from "@griffel/react";
 import { Box, IconButton, TextField, Typography } from "@mui/material";
@@ -13,6 +15,7 @@ import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
 import logo from "../../assets/logo.svg";
 import { useChatWidgetStyles } from "./chatWidget.styles";
+import { sendChatMessage } from "./chatApi";
 
 type ChatMessage = {
   id: string;
@@ -24,10 +27,13 @@ const ERROR_MESSAGE = "Sorry, something went wrong. Please try again later.";
 
 const ChatWidget = () => {
   const styles = useChatWidgetStyles();
+  const { getToken } = useAuth();
+  const { tripId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | undefined>();
   const messageListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,7 +51,7 @@ const ChatWidget = () => {
     });
   }, [messages, isLoading]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = message.trim();
     if (!text || isLoading) return;
 
@@ -58,15 +64,31 @@ const ChatWidget = () => {
     setMessage("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      const notice: ChatMessage = {
-        id: `${Date.now()}-system`,
-        role: "system",
-        text: ERROR_MESSAGE,
-      };
-      setMessages((prev) => [...prev, notice]);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
+
+      const data = await sendChatMessage(
+        token,
+        text,
+        conversationId,
+        tripId ? Number(tripId) : undefined,
+      );
+
+      setConversationId(data.conversation_id);
+      setMessages((prev) => [
+        ...prev,
+        { id: `${Date.now()}-system`, role: "system", text: data.reply },
+      ]);
+    } catch (err) {
+      console.error("Milo chat error:", err);
+      setMessages((prev) => [
+        ...prev,
+        { id: `${Date.now()}-system`, role: "system", text: ERROR_MESSAGE },
+      ]);
+    } finally {
       setIsLoading(false);
-    }, 900);
+    }
   };
 
   const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {

@@ -19,10 +19,11 @@ from app.prompts import (
 client = get_client()
 
 
-def _call_model(prompt: str) -> str:
+def _call_model(prompt: str, max_output_tokens: int = 8000) -> str:
     response = client.responses.create(
         model=settings.AZURE_OPENAI_DEPLOYMENT,
         input=prompt,
+        max_output_tokens=max_output_tokens,
     )
 
     output_text = response.output_text.strip()
