@@ -13,6 +13,8 @@ import { tripStatusLabels } from "../utils/tripStatus";
 
 type TripCardProps = {
   trip: SavedTrip;
+  isDeleting?: boolean;
+  onDelete: (tripId: number) => void;
 };
 
 const statusClassMap = {
@@ -30,7 +32,7 @@ const getTripDays = (startDate: string, endDate: string) => {
   return Math.max(1, Math.ceil(difference / (1000 * 60 * 60 * 24)));
 };
 
-const TripCard = ({ trip }: TripCardProps) => {
+const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
   const styles = useSavedTripsStyles();
 
   const dateRange = formatDateRange(trip.start_date, trip.end_date);
@@ -42,7 +44,9 @@ const TripCard = ({ trip }: TripCardProps) => {
         <button
           type="button"
           className={styles.deleteButton}
-          aria-label="Delete trip"
+          aria-label={`Delete ${formatTripDestinations(trip.destinations) || "trip"}`}
+          disabled={isDeleting}
+          onClick={() => onDelete(trip.id)}
         >
           <DeleteOutlineRoundedIcon className={styles.deleteIcon} />
         </button>

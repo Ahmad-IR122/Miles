@@ -154,6 +154,12 @@ export const useSavedTripsStyles = makeStyles({
       outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
     },
+
+    ":disabled": {
+      cursor: "progress",
+      opacity: 0.7,
+      transform: "none",
+    },
   },
 
   deleteIcon: {
