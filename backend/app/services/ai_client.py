@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from decimal import Decimal
 
 import httpx
 
@@ -6,6 +7,17 @@ from app.core import settings
 from app.schemas import Activity, DayPlan, TripRequestResponse
 
 TIME_FORMATS = ("%H:%M", "%H:%M:%S", "%I:%M %p")
+
+
+def map_budget_level(budget: Decimal | float | int | None) -> str | None:
+    """Map a numeric trip budget to the dataset's supported budget levels."""
+    if budget is None:
+        return None
+    if budget <= 400:
+        return "low"
+    if budget <= 1000:
+        return "mid"
+    return "high"
 
 
 def post(path: str, payload: dict) -> dict:
@@ -93,4 +105,5 @@ def preferences_from_trip(trip, interest_names: list[str]) -> dict:
         "end_date": str(trip.end_date),
         "interests": interest_names,
         "budget": str(trip.budget) if trip.budget is not None else "",
+        "budget_level": map_budget_level(trip.budget),
     }

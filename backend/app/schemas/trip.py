@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 MAX_TRIP_DAYS = 31
 
@@ -86,7 +86,11 @@ class TripCreate(BaseModel):
     destinations: list[TripDestination] = Field(..., min_length=1)
     start_date: date
     end_date: date
-    budget: Decimal | None = Field(default=None, gt=0)
+    budget: Decimal | None = Field(
+        default=None,
+        gt=0,
+        validation_alias=AliasChoices("budget", "budget_max"),
+    ) 
     currency: str = Field(default="USD", min_length=1, max_length=10)
     travelers_count: int = Field(default=1, ge=1)
     trip_status: str = Field(default="planning", min_length=1, max_length=30)
