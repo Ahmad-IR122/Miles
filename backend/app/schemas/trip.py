@@ -4,6 +4,7 @@ from decimal import Decimal
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 MAX_TRIP_DAYS = 31
+MAX_TRAVELERS = 10
 
 
 class TripRequest(BaseModel):
@@ -11,8 +12,8 @@ class TripRequest(BaseModel):
     destination: str = Field(..., min_length=1, max_length=100)
     start_date: date
     end_date: date
-    adults: int = Field(..., ge=1)
-    children: int = Field(0, ge=0)
+    adults: int = Field(..., ge=1, le=MAX_TRAVELERS)
+    children: int = Field(0, ge=0, le=MAX_TRAVELERS - 1)
     interests: list[str] = Field(default_factory=list, max_length=3)
     other_interest: str | None = Field(default=None, max_length=100)
     budget: float = Field(..., gt=0)
@@ -31,6 +32,12 @@ class TripRequest(BaseModel):
         trip_length = (self.end_date - self.start_date).days + 1
         if trip_length > MAX_TRIP_DAYS:
             raise ValueError(f"trip length cannot exceed {MAX_TRIP_DAYS} days")
+        return self
+
+    @model_validator(mode="after")
+    def check_travelers(self):
+        if self.adults + self.children > MAX_TRAVELERS:
+            raise ValueError(f"travelers cannot exceed {MAX_TRAVELERS}")
         return self
 
     @model_validator(mode="after")
@@ -92,7 +99,7 @@ class TripCreate(BaseModel):
         validation_alias=AliasChoices("budget", "budget_max"),
     ) 
     currency: str = Field(default="USD", min_length=1, max_length=10)
-    travelers_count: int = Field(default=1, ge=1)
+    travelers_count: int = Field(default=1, ge=1, le=MAX_TRAVELERS)
     trip_status: str = Field(default="planning", min_length=1, max_length=30)
 
     @field_validator("currency", "trip_status")
@@ -123,7 +130,7 @@ class TripUpdate(BaseModel):
     end_date: date | None = None
     budget: Decimal | None = Field(default=None, gt=0)
     currency: str | None = Field(default=None, min_length=1, max_length=10)
-    travelers_count: int | None = Field(default=None, ge=1)
+    travelers_count: int | None = Field(default=None, ge=1, le=MAX_TRAVELERS)
     trip_status: str | None = Field(default=None, min_length=1, max_length=30)
 
     @field_validator("currency", "trip_status")

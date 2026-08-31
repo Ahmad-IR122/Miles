@@ -89,6 +89,7 @@ const en = {
         noChildren: "No children",
         childCount_one: "{{count}} child",
         childCount_other: "{{count}} children",
+        totalSummary: "{{total}} of {{max}} travelers",
       },
       budget: {
         title: "Travelers & Budget",
@@ -191,6 +192,8 @@ const en = {
         endDate: "Please select an end date.",
         endDateBeforeStart: "End date cannot be before start date.",
         maxTripDays: "Trip duration cannot exceed {{count}} days.",
+        maxTravelers:
+          "A trip can include at most {{count}} travelers, with at least one adult.",
         allocatedDaysOver:
           "Allocated days ({{allocated}}) exceed the trip duration ({{duration}} days).",
         daysUnassigned_one:

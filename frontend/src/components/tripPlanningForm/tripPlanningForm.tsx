@@ -74,6 +74,7 @@ type FieldErrors = {
   destinations: string;
   startDate: string;
   endDate: string;
+  travelers: string;
   budget: string;
   interests: string;
 };
@@ -84,6 +85,7 @@ const emptyFieldErrors: FieldErrors = {
   destinations: "",
   startDate: "",
   endDate: "",
+  travelers: "",
   budget: "",
   interests: "",
 };
@@ -105,6 +107,8 @@ const getGenerationErrorKey = (error: unknown): string => {
 const maxTripDays = 31;
 const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
+const minAdults = 1;
+const maxTravelers = 10;
 
 const getUniqueCountries = (): CountryOption[] => {
   const countryMap = new Map<string, CountryOption>();
@@ -254,8 +258,13 @@ const TripPlanningForm = () => {
     tripDuration > 0 &&
     allocatedDays === tripDuration;
 
+  const totalTravelers = adults + children;
+
+  const isTravelerCountValid =
+    adults >= minAdults && children >= 0 && totalTravelers <= maxTravelers;
+
   const isTravelersBudgetComplete =
-    adults >= 1 && children >= 0 && budgetMax > budgetSliderMin;
+    isTravelerCountValid && budgetMax > budgetSliderMin;
 
   const isInterestsComplete = selectedInterests.length >= minInterests;
 
@@ -647,12 +656,18 @@ const TripPlanningForm = () => {
     }
 
     if (step === 2) {
+      nextErrors.travelers = isTravelerCountValid
+        ? ""
+        : t("tripPlanningForm.validation.maxTravelers", {
+            count: maxTravelers,
+          });
+
       nextErrors.budget =
-        adults >= 1 && children >= 0 && budgetMax > budgetSliderMin
+        budgetMax > budgetSliderMin
           ? ""
           : t("tripPlanningForm.validation.budget");
 
-      isValid = !nextErrors.budget;
+      isValid = !nextErrors.travelers && !nextErrors.budget;
     }
 
     if (step === 3) {
@@ -1281,6 +1296,17 @@ const TripPlanningForm = () => {
                     {t("tripPlanningForm.budget.travelers")}
                   </Typography>
 
+                  <Typography
+                    component="p"
+                    className={styles.hint}
+                    sx={{ mb: 1.5 }}
+                  >
+                    {t("tripPlanningForm.travelers.totalSummary", {
+                      total: totalTravelers,
+                      max: maxTravelers,
+                    })}
+                  </Typography>
+
                   <div>
                     <Typography
                       component="p"
@@ -1293,13 +1319,14 @@ const TripPlanningForm = () => {
                     <div className={styles.counterRow}>
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() =>
-                          setAdults((value) => Math.max(1, value - 1))
-                        }
+                        onClick={() => {
+                          setAdults((value) => Math.max(minAdults, value - 1));
+                          clearFieldError("travelers");
+                        }}
                         aria-label={t(
                           "tripPlanningForm.travelers.decreaseAdults",
                         )}
-                        disabled={adults === 1}
+                        disabled={adults === minAdults}
                       >
                         <RemoveIcon />
                       </IconButton>
@@ -1310,10 +1337,15 @@ const TripPlanningForm = () => {
 
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() => setAdults((value) => value + 1)}
+                        onClick={() =>
+                          setAdults((value) =>
+                            value + children < maxTravelers ? value + 1 : value,
+                          )
+                        }
                         aria-label={t(
                           "tripPlanningForm.travelers.increaseAdults",
                         )}
+                        disabled={totalTravelers >= maxTravelers}
                       >
                         <AddIcon />
                       </IconButton>
@@ -1338,9 +1370,10 @@ const TripPlanningForm = () => {
                     <div className={styles.counterRow}>
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() =>
-                          setChildren((value) => Math.max(0, value - 1))
-                        }
+                        onClick={() => {
+                          setChildren((value) => Math.max(0, value - 1));
+                          clearFieldError("travelers");
+                        }}
                         aria-label={t(
                           "tripPlanningForm.travelers.decreaseChildren",
                         )}
@@ -1355,10 +1388,15 @@ const TripPlanningForm = () => {
 
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() => setChildren((value) => value + 1)}
+                        onClick={() =>
+                          setChildren((value) =>
+                            adults + value < maxTravelers ? value + 1 : value,
+                          )
+                        }
                         aria-label={t(
                           "tripPlanningForm.travelers.increaseChildren",
                         )}
+                        disabled={totalTravelers >= maxTravelers}
                       >
                         <AddIcon />
                       </IconButton>
@@ -1372,6 +1410,16 @@ const TripPlanningForm = () => {
                       </Typography>
                     </div>
                   </div>
+
+                  {fieldErrors.travelers && (
+                    <Typography
+                      component="p"
+                      role="alert"
+                      className={styles.fieldError}
+                    >
+                      {fieldErrors.travelers}
+                    </Typography>
+                  )}
                 </div>
 
                 <Divider sx={{ my: 1.5 }} />
