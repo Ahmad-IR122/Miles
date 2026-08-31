@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -7,6 +9,7 @@ class TravelPreferences(BaseModel):
     end_date: str
     interests: list[str]
     budget: str
+    budget_level: Literal["low", "mid", "high"] | None = None
 
 
 class TravelDataItem(BaseModel):
