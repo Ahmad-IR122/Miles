@@ -1,6 +1,6 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { gradients, semanticColors, warm, warmShadows } from "../theme/colors";
+import { warm, warmShadows } from "../theme/colors";
 import { layout, typographyPresets } from "../theme/typography";
 
 export const useFooterStyles = makeStyles({
@@ -24,9 +24,9 @@ export const useFooterStyles = makeStyles({
     overflow: "hidden",
     width: "100%",
     maxWidth: "1180px",
-    minHeight: "300px",
+    minHeight: "auto",
     margin: "0 auto",
-    padding: `${layout.padding["2xl"]} ${layout.padding["2xl"]} ${layout.padding.lg}`,
+    padding: `${layout.padding.xl} ${layout.padding["2xl"]} ${layout.padding.lg}`,
     background:
       "linear-gradient(180deg, var(--warm-bg-surface-blur) 0%, var(--footer-shell-end) 100%)",
     borderRadius: "22px 22px 0 0",
@@ -53,57 +53,20 @@ export const useFooterStyles = makeStyles({
   content: {
     position: "relative",
     zIndex: 1,
-    display: "grid",
-    gridTemplateColumns: "1.35fr 0.78fr 0.78fr 1.45fr",
-    columnGap: layout.gap["2xl"],
-    rowGap: layout.gap.xl,
-    alignItems: "start",
-
-    "@media (max-width: 980px)": {
-      gridTemplateColumns: "minmax(0, 1.15fr) minmax(180px, 0.85fr)",
-      columnGap: layout.gap.xl,
-    },
-
-    "@media (max-width: 760px)": {
-      gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-      columnGap: layout.gap.lg,
-      rowGap: layout.gap.lg,
-    },
-
-    "@media (max-width: 620px)": {
-      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-      rowGap: layout.gap.md,
-    },
-
-    "@media (max-width: 420px)": {
-      gridTemplateColumns: "1fr",
-    },
+    display: "flex",
+    justifyContent: "flex-start",
   },
 
   brandSection: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "flex-start",
     rowGap: layout.gap.lg,
-    maxWidth: "275px",
-
-    "@media (max-width: 980px)": {
-      maxWidth: "none",
-    },
-
-    "@media (max-width: 760px)": {
-      gridColumnStart: 1,
-      gridColumnEnd: 3,
-    },
+    maxWidth: "560px",
+    textAlign: "left",
 
     "@media (max-width: 620px)": {
-      gridColumnStart: 1,
-      gridColumnEnd: 3,
       rowGap: layout.gap.md,
-    },
-
-    "@media (max-width: 420px)": {
-      gridColumnStart: "auto",
-      gridColumnEnd: "auto",
     },
   },
 
@@ -169,256 +132,8 @@ export const useFooterStyles = makeStyles({
     color: warm.textSecondary,
     lineHeight: 1.8,
 
-    "@media (max-width: 760px)": {
-      maxWidth: "520px",
-    },
-
     "@media (max-width: 420px)": {
       lineHeight: 1.65,
-    },
-  },
-
-  socialLinks: {
-    display: "flex",
-    alignItems: "center",
-    columnGap: layout.gap.sm,
-    flexWrap: "wrap",
-    rowGap: layout.gap.xs,
-
-    "@media (max-width: 420px)": {
-      columnGap: layout.gap.xs,
-    },
-  },
-
-  socialButton: {
-    width: "38px",
-    height: "38px",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: warm.coralBright,
-    backgroundColor: warm.bgSurface,
-    borderRadius: layout.radius.full,
-    boxShadow: warmShadows.xs,
-    cursor: "pointer",
-    ...shorthands.border("1px", "solid", warm.border),
-    transitionProperty: "background-color, color, transform, box-shadow",
-    transitionDuration: "0.16s",
-    transitionTimingFunction: "ease",
-
-    "& svg": {
-      fontSize: "18px",
-    },
-
-    ":hover": {
-      color: warm.rose,
-      backgroundColor: warm.bgTint,
-      transform: "translateY(-2px)",
-      boxShadow: warmShadows.roseSoft,
-    },
-
-    ":focus-visible": {
-      outlineColor: warm.coral,
-      outlineStyle: "solid",
-      outlineWidth: "2px",
-      outlineOffset: "3px",
-    },
-
-    "@media (max-width: 420px)": {
-      width: "36px",
-      height: "36px",
-    },
-  },
-
-  navSection: {
-    display: "flex",
-    flexDirection: "column",
-    rowGap: layout.gap.md,
-
-    "@media (max-width: 620px)": {
-      rowGap: layout.gap.sm,
-    },
-  },
-
-  sectionTitle: {
-    ...typographyPresets.h3,
-    margin: 0,
-    color: warm.textPrimary,
-    fontSize: "15px",
-
-    "@media (max-width: 620px)": {
-      fontSize: "14px",
-    },
-  },
-
-  links: {
-    display: "flex",
-    flexDirection: "column",
-    rowGap: layout.gap.sm,
-
-    "@media (max-width: 620px)": {
-      rowGap: layout.gap.xs,
-    },
-  },
-
-  link: {
-    ...typographyPresets.body,
-    width: "fit-content",
-    minHeight: "24px",
-    display: "inline-flex",
-    alignItems: "center",
-    color: warm.textSecondary,
-    textDecorationLine: "none",
-    borderRadius: layout.radius.full,
-    transitionProperty: "color, transform",
-    transitionDuration: "0.16s",
-    transitionTimingFunction: "ease",
-
-    ":hover": {
-      color: warm.rose,
-      transform: "translateX(2px)",
-    },
-
-    ":focus-visible": {
-      outlineColor: warm.coral,
-      outlineStyle: "solid",
-      outlineWidth: "2px",
-      outlineOffset: "3px",
-    },
-
-    "@media (max-width: 620px)": {
-      minHeight: "30px",
-    },
-  },
-
-  newsletterSection: {
-    display: "flex",
-    flexDirection: "column",
-    rowGap: layout.gap.md,
-    maxWidth: "320px",
-
-    "@media (max-width: 980px)": {
-      gridColumnStart: 1,
-      gridColumnEnd: 3,
-      maxWidth: "none",
-    },
-
-    "@media (max-width: 620px)": {
-      gridColumnStart: 1,
-      gridColumnEnd: 3,
-      rowGap: layout.gap.sm,
-    },
-
-    "@media (max-width: 420px)": {
-      gridColumnStart: "auto",
-      gridColumnEnd: "auto",
-    },
-  },
-
-  newsletterText: {
-    ...typographyPresets.body,
-    margin: 0,
-    color: warm.textSecondary,
-    lineHeight: 1.65,
-
-    "@media (max-width: 620px)": {
-      lineHeight: 1.55,
-    },
-  },
-
-  newsletterForm: {
-    display: "flex",
-    alignItems: "center",
-    columnGap: layout.gap.xs,
-    width: "100%",
-    maxWidth: "320px",
-    padding: "4px",
-    backgroundColor: warm.bgSurface,
-    borderRadius: layout.radius.md,
-    boxShadow: warmShadows.sm,
-    ...shorthands.border("1px", "solid", warm.border),
-    transitionProperty: "box-shadow, outline-color",
-    transitionDuration: "0.16s",
-    transitionTimingFunction: "ease",
-
-    ":focus-within": {
-      outlineColor: warm.borderCoralBright,
-      outlineStyle: "solid",
-      outlineWidth: "2px",
-      outlineOffset: "2px",
-      boxShadow: warmShadows.roseSoft,
-    },
-
-    "@media (max-width: 980px)": {
-      maxWidth: "420px",
-    },
-
-    "@media (max-width: 420px)": {
-      maxWidth: "none",
-    },
-  },
-
-  emailInput: {
-    flex: 1,
-    minWidth: 0,
-    height: "44px",
-    padding: `0 ${layout.padding.md}`,
-    color: warm.textPrimary,
-    backgroundColor: "transparent",
-    borderRadius: layout.radius.sm,
-    ...shorthands.border("0"),
-    fontSize: "14px",
-
-    "::placeholder": {
-      color: warm.textTertiary,
-    },
-
-    ":focus": {
-      outlineStyle: "none",
-    },
-
-    "@media (max-width: 420px)": {
-      height: "42px",
-      padding: `0 ${layout.padding.sm}`,
-    },
-  },
-
-  submitButton: {
-    width: "52px",
-    height: "44px",
-    flexShrink: 0,
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: semanticColors.textOnAccent,
-    backgroundImage: gradients.primary,
-    borderRadius: layout.radius.sm,
-    cursor: "pointer",
-    boxShadow: warmShadows.rose,
-    ...shorthands.border("0"),
-    transitionProperty: "transform, box-shadow",
-    transitionDuration: "0.16s",
-    transitionTimingFunction: "ease",
-
-    "& svg": {
-      fontSize: "22px",
-    },
-
-    ":hover": {
-      transform: "translateY(-1px)",
-      boxShadow: warmShadows.roseHover,
-    },
-
-    ":focus-visible": {
-      outlineColor: warm.coralBright,
-      outlineStyle: "solid",
-      outlineWidth: "2px",
-      outlineOffset: "2px",
-    },
-
-    "@media (max-width: 420px)": {
-      width: "48px",
-      height: "42px",
     },
   },
 
@@ -426,7 +141,7 @@ export const useFooterStyles = makeStyles({
     ...typographyPresets.caption,
     position: "relative",
     zIndex: 1,
-    margin: `${layout.spacing[10]} 0 0`,
+    margin: `${layout.spacing[6]} 0 0`,
     paddingTop: layout.spacing[3],
     color: warm.textTertiary,
     ...shorthands.borderTop("1px", "solid", "var(--footer-divider)"),
