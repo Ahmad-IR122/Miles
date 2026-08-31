@@ -9,6 +9,8 @@ export type BudgetFilterLabel =
 export type PriceLevel = "$" | "$$" | "$$$" | "$$$$";
 
 export type RecommendationPlace = {
+  id: string;
+  destinationId: string;
   title: string;
   category: RecommendationCategory;
   rating: number;
@@ -27,4 +29,5 @@ export type RecommendationPreferences = {
   budgetLevel: "LOW" | "MID" | "HIGH";
   travelMonth: number;
   style: string;
+  destinationId?: string;
 };

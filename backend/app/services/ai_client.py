@@ -10,7 +10,9 @@ TIME_FORMATS = ("%H:%M", "%H:%M:%S", "%I:%M %p")
 
 def post(path: str, payload: dict) -> dict:
     with httpx.Client(timeout=settings.AI_SERVICE_TIMEOUT) as client:
-        response = client.post(f"{settings.AI_SERVICE_URL}{path}", json=payload)
+        base_url = settings.AI_SERVICE_URL.rstrip("/")
+        normalized_path = path if path.startswith("/") else f"/{path}"
+        response = client.post(f"{base_url}{normalized_path}", json=payload)
         response.raise_for_status()
         return response.json()
 
