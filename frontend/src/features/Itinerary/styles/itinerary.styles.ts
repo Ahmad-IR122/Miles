@@ -25,7 +25,7 @@ export const useItineraryStyles = makeStyles({
   layout: {
     display: "grid",
     gridTemplateAreas: "'main summary'",
-    gridTemplateColumns: "minmax(720px, 1fr) 304px",
+    gridTemplateColumns: "minmax(0, 1fr) 304px",
     minHeight: "100vh",
     "@media (max-width: 980px)": {
       gridTemplateAreas: "'summary' 'main'",
@@ -56,6 +56,7 @@ export const useItineraryStyles = makeStyles({
   },
   summarySidebar: {
     gridArea: "summary",
+    minWidth: 0,
     minHeight: "100vh",
     background: itineraryGradients.sidebar,
     backdropFilter: "blur(18px)",
@@ -99,6 +100,7 @@ export const useItineraryStyles = makeStyles({
   },
   summaryCard: {
     position: "relative",
+    minWidth: 0,
     minHeight: "128px",
     backgroundColor: itinerary.surfaceCard,
     ...shorthands.border(
@@ -129,6 +131,7 @@ export const useItineraryStyles = makeStyles({
     lineHeight: "30px",
     fontWeight: 900,
     marginTop: layout.spacing[4.5],
+    overflowWrap: "anywhere",
   },
   summaryLabel: {
     color: itinerary.pink,
@@ -236,6 +239,7 @@ export const useItineraryStyles = makeStyles({
     boxShadow: itineraryShadows.sectionBar,
     ...shorthands.padding(layout.padding.sm, layout.padding.lg),
     marginBottom: layout.spacing[8],
+    minWidth: 0,
   },
   header: {
     display: "flex",
@@ -252,6 +256,7 @@ export const useItineraryStyles = makeStyles({
     alignItems: "center",
     gap: layout.gap.sm,
     flexWrap: "wrap",
+    minWidth: 0,
   },
   planeIcon: {
     color: warm.coralBright,
@@ -269,6 +274,7 @@ export const useItineraryStyles = makeStyles({
       lineHeight: 1,
       letterSpacing: typography.letterSpacing.tight,
       textTransform: "uppercase",
+      overflowWrap: "anywhere",
       "@media (max-width: 560px)": {
         fontSize: typography.displaySize.lg,
       },
@@ -283,6 +289,7 @@ export const useItineraryStyles = makeStyles({
       fontSize: typography.displaySize.md,
       fontWeight: typography.fontWeight.normal,
       lineHeight: 1.15,
+      overflowWrap: "anywhere",
       "@media (max-width: 560px)": {
         fontSize: typography.displaySize.sm,
       },
@@ -303,7 +310,7 @@ export const useItineraryStyles = makeStyles({
   },
   factsRow: {
     display: "flex",
-    width: "fit-content",
+    maxWidth: "100%",
     flexWrap: "wrap",
     gap: layout.gap.lg,
     paddingBottom: layout.spacing[4],
@@ -414,6 +421,7 @@ export const useItineraryStyles = makeStyles({
     display: "flex",
     justifyContent: "flex-end",
     gap: layout.gap.sm,
+    flexWrap: "wrap",
     marginTop: layout.spacing[1.5],
     marginBottom: layout.spacing[8],
   },
@@ -542,6 +550,7 @@ export const useItineraryStyles = makeStyles({
     fontSize: typography.fontSize.size8,
     lineHeight: "24px",
     fontWeight: 900,
+    overflowWrap: "anywhere",
   },
   sectionActions: {
     display: "flex",
@@ -805,6 +814,7 @@ export const useItineraryStyles = makeStyles({
       lineHeight: "27px",
       fontWeight: typography.fontWeight.semibold,
       marginBottom: layout.spacing[3],
+      overflowWrap: "anywhere",
     },
   },
   activityDescription: {
@@ -831,7 +841,7 @@ export const useItineraryStyles = makeStyles({
     display: "inline-flex",
     alignItems: "center",
     gap: layout.spacing[1.5],
-    whiteSpace: "nowrap",
+    minWidth: 0,
   },
   detailIcon: { color: itinerary.pink, fontSize: typography.fontSize.size5 },
   trainIcon: { color: itinerary.peach, fontSize: typography.fontSize.size5 },

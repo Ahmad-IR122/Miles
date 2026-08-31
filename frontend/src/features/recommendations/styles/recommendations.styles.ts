@@ -17,6 +17,8 @@ export const useRecommendationsStyles = makeStyles({
     minHeight: "100dvh",
   },
   content: {
+    width: "100%",
+    boxSizing: "border-box",
     maxWidth: "1240px",
     marginLeft: "auto",
     marginRight: "auto",
@@ -34,6 +36,7 @@ export const useRecommendationsStyles = makeStyles({
     alignItems: "flex-start",
     gap: layout.gap.md,
     flexWrap: "wrap",
+    minWidth: 0,
   },
   title: {
     margin: 0,
@@ -73,11 +76,13 @@ export const useRecommendationsStyles = makeStyles({
     gap: layout.gap.md,
     flexWrap: "wrap",
     boxShadow: semanticColors.shadowStrong,
+    minWidth: 0,
   },
   categoryTabs: {
     display: "flex",
     gap: layout.gap.xs,
     flexWrap: "wrap",
+    minWidth: 0,
   },
   categoryTab: {
     ...shorthands.padding(layout.spacing[2], "14px"),
@@ -109,9 +114,13 @@ export const useRecommendationsStyles = makeStyles({
     width: "1px",
     height: layout.spacing[7],
     backgroundColor: semanticColors.borderDefault,
+    "@media (max-width: 560px)": {
+      display: "none",
+    },
   },
   budgetSelect: {
     width: "170px",
+    maxWidth: "100%",
     height: layout.controlSize.lg,
     ...shorthands.borderRadius(layout.radius.md),
     ...shorthands.border(
@@ -168,7 +177,7 @@ export const useRecommendationsStyles = makeStyles({
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))",
     gap: layout.gap.md,
   },
   card: {
@@ -255,6 +264,8 @@ export const useRecommendationsStyles = makeStyles({
     ...typographyPresets.h3,
     color: semanticColors.textPrimary,
     flex: 1,
+    minWidth: 0,
+    overflowWrap: "anywhere",
   },
   ratingMeta: {
     display: "flex",
@@ -279,6 +290,7 @@ export const useRecommendationsStyles = makeStyles({
     display: "flex",
     gap: layout.spacing[1.5],
     alignItems: "center",
+    flexWrap: "wrap",
     marginBottom: layout.spacing[2.5],
   },
   location: {
@@ -286,7 +298,6 @@ export const useRecommendationsStyles = makeStyles({
     color: semanticColors.textTertiary,
   },
   price: {
-    marginLeft: "auto",
     fontSize: typography.fontSize.size2,
     color: colors.success,
     fontWeight: typography.fontWeight.semibold,
@@ -314,9 +325,11 @@ export const useRecommendationsStyles = makeStyles({
   actions: {
     display: "flex",
     gap: layout.gap.xs,
+    flexWrap: "wrap",
   },
   actionButton: {
     flex: 1,
+    minWidth: "120px",
     height: layout.controlSize.md,
     ...shorthands.borderRadius(layout.radius.sm),
     fontSize: typography.fontSize.size2,
