@@ -118,7 +118,11 @@ export const useTripPlanningFormStyles = makeStyles({
     minWidth: 0,
     marginBottom: layout.gap.xl,
   },
-  stepItem: { display: "flex", alignItems: "center", minWidth: 0 },
+  stepItem: {
+    display: "flex",
+    alignItems: "center",
+    minWidth: 0,
+  },
   stepItemGrowing: { flexGrow: 1 },
   stepIdentity: {
     display: "flex",
