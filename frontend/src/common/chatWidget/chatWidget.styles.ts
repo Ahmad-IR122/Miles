@@ -1,10 +1,5 @@
 import { makeStyles, shorthands } from "@griffel/react";
-import {
-  semanticColors,
-  warm,
-  warmGradients,
-  warmShadows,
-} from "../theme/colors";
+import { semanticColors, warm, warmShadows } from "../theme/colors";
 import { layout, typography, typographyPresets } from "../theme/typography";
 
 const PANEL_WIDTH = 400;
@@ -21,7 +16,7 @@ export const useChatWidgetStyles = makeStyles({
     justifyContent: "center",
     ...shorthands.borderRadius(layout.radius.pill),
     ...shorthands.border("none"),
-    backgroundImage: warmGradients.primary,
+    backgroundColor: warm.chat,
     color: semanticColors.textOnAccent,
     boxShadow: warmShadows.rose,
     cursor: "pointer",
@@ -33,7 +28,7 @@ export const useChatWidgetStyles = makeStyles({
     "&:hover": {
       transform: "translateY(-2px) scale(1.04)",
       boxShadow: warmShadows.roseHover,
-      backgroundImage: warmGradients.primaryHover,
+      backgroundColor: warm.chatHover,
     },
 
     "&:focus-visible": {
@@ -145,7 +140,7 @@ export const useChatWidgetStyles = makeStyles({
     ...shorthands.gap(layout.gap.sm),
     padding: `${layout.spacing[4]} ${layout.spacing[5]}`,
     boxSizing: "border-box",
-    backgroundImage: warmGradients.primary,
+    backgroundColor: warm.chat,
     flexShrink: 0,
 
     "@media (max-width: 430px)": {
@@ -262,7 +257,7 @@ export const useChatWidgetStyles = makeStyles({
   },
 
   messageBubbleUser: {
-    backgroundImage: warmGradients.primary,
+    backgroundColor: warm.chat,
     color: semanticColors.textOnAccent,
     ...shorthands.borderRadius(
       layout.radius.lg,
@@ -390,11 +385,11 @@ export const useChatWidgetStyles = makeStyles({
     height: layout.controlSize.xl,
     flexShrink: 0,
     ...shorthands.borderRadius(layout.radius.pill),
-    backgroundImage: warmGradients.primary,
+    backgroundColor: warm.chat,
     color: semanticColors.textOnAccent,
 
     "&:hover": {
-      backgroundImage: warmGradients.primaryHover,
+      backgroundColor: warm.chatHover,
     },
 
     "&.Mui-disabled": {

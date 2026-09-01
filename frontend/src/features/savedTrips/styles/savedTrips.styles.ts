@@ -15,6 +15,11 @@ export const useSavedTripsStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
     backgroundColor: warm.bgPage,
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
     minHeight: "100dvh",
   },
 
@@ -135,21 +140,26 @@ export const useSavedTripsStyles = makeStyles({
     ...shorthands.padding("0"),
     ...shorthands.border("0"),
     ...shorthands.borderRadius(layout.radius.full),
-    backgroundColor: "#ef233c",
-    color: colors.white,
+    backgroundColor: warm.gold,
+    // Fixed dark plum rather than a themed text token: warm.gold is the same
+    // flat hex in both light and dark mode, and semanticColors.textPrimary
+    // flips to a light cream in dark mode — which would be unreadable on
+    // this light gold fill. This matches what light mode's own text color
+    // already is, so it reads correctly regardless of app theme.
+    color: "#432d32",
     cursor: "pointer",
-    boxShadow: "0 8px 18px rgba(129, 23, 35, 0.24)",
+    boxShadow: `0 8px 18px color-mix(in srgb, ${warm.gold} 45%, transparent)`,
     transitionProperty: "background-color, transform, box-shadow",
     transitionDuration: layout.duration.normal,
 
     ":hover": {
-      backgroundColor: "#d90429",
+      backgroundColor: `color-mix(in srgb, ${warm.gold} 82%, black)`,
       transform: "translateY(-1px)",
-      boxShadow: "0 10px 22px rgba(129, 23, 35, 0.28)",
+      boxShadow: `0 10px 22px color-mix(in srgb, ${warm.gold} 55%, transparent)`,
     },
 
     ":focus-visible": {
-      outlineColor: colors.white,
+      outlineColor: "#432d32",
       outlineStyle: "solid",
       outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
@@ -245,10 +255,22 @@ export const useSavedTripsStyles = makeStyles({
     color: semanticColors.interactive,
     fontSize: typography.fontSize.size3,
     fontWeight: typography.fontWeight.semibold,
-    opacity: 0.55,
-    cursor: "not-allowed",
     gap: layout.gap.sm,
     minWidth: 0,
+    textDecoration: "none",
+    cursor: "pointer",
+    ":hover": {
+      textDecoration: "underline",
+      gap: layout.gap.md,
+    },
+
+    ":focus-visible": {
+      outlineColor: semanticColors.interactive,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+      borderRadius: layout.radius.sm,
+    },
   },
 
   cardFooterArrow: {

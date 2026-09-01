@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { mergeClasses } from "@griffel/react";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import { Link } from "react-router-dom";
 
+import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { formatDateRange } from "../../Itinerary/utils/dateUtils";
 import { formatTripDestinations } from "../../../types/trip";
 import { useSavedTripsStyles } from "../styles/savedTrips.styles";
 import type { SavedTrip } from "../types/savedTrips.types";
 import { tripStatusLabels } from "../utils/tripStatus";
+import { buildItineraryDetailPath } from "../../../routes/routesPaths";
 
 type TripCardProps = {
   trip: SavedTrip;
@@ -34,9 +38,16 @@ const getTripDays = (startDate: string, endDate: string) => {
 
 const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
   const styles = useSavedTripsStyles();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const dateRange = formatDateRange(trip.start_date, trip.end_date);
   const daysCount = getTripDays(trip.start_date, trip.end_date);
+  const tripLabel = formatTripDestinations(trip.destinations) || "trip";
+
+  const handleConfirmDelete = () => {
+    setConfirmOpen(false);
+    onDelete(trip.id);
+  };
 
   return (
     <div className={styles.card}>
@@ -44,9 +55,9 @@ const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
         <button
           type="button"
           className={styles.deleteButton}
-          aria-label={`Delete ${formatTripDestinations(trip.destinations) || "trip"}`}
+          aria-label={`Delete ${tripLabel}`}
           disabled={isDeleting}
-          onClick={() => onDelete(trip.id)}
+          onClick={() => setConfirmOpen(true)}
         >
           <DeleteOutlineRoundedIcon className={styles.deleteIcon} />
         </button>
@@ -83,15 +94,28 @@ const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
           </span>
         </div>
 
-        <div className={styles.cardFooter}>
+        <Link
+          to={buildItineraryDetailPath(trip.id)}
+          className={styles.cardFooter}
+        >
           <span>View full itinerary</span>
 
           <ArrowForwardRoundedIcon
             fontSize="small"
             className={styles.cardFooterArrow}
           />
-        </div>
+        </Link>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this trip?"
+        description={`This action cannot be undone. "${tripLabel}" will be permanently removed.`}
+        confirmLabel="Delete trip"
+        isConfirming={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </div>
   );
 };

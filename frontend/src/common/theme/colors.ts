@@ -110,11 +110,23 @@ export const warm = {
   coralHover: "var(--warm-coral-hover)",
   coralBright: "var(--warm-coral-bright)",
   rose: "var(--warm-rose)",
+  // "Highlight headline / card" role — one flat hex in both themes. Used as a
+  // solid text color (home hero) and as a solid fill (see bgTint below), not
+  // as a gradient endpoint.
+  gold: "var(--warm-gold)",
+
+  // Chat widget only — dark mode gives it a dedicated navy, distinct from
+  // the coral/rose accent used everywhere else. See theme.css.
+  chat: "var(--warm-chat)",
+  chatHover: "var(--warm-chat-hover)",
 
   bgPage: "var(--warm-bg-page)",
   bgSurface: "var(--warm-bg-surface)",
   bgSurfaceBlur: "var(--warm-bg-surface-blur)", // sticky headers/footers over blur
   bgTint: "var(--warm-bg-tint)",
+  // Home page background image only (fades to solid past the fold, not a
+  // repeating tile — see home.styles.ts).
+  bgImage: "var(--warm-bg-image)",
   bgAccentBand: "var(--warm-bg-accent-band)",
   bgDisabled: "var(--warm-bg-disabled)",
   border: "var(--warm-border)",
@@ -149,122 +161,9 @@ export const warmShadows = {
   roseHover: "var(--warm-shadow-rose-hover)",
 } as const;
 
-/**
- * MIGRATION HOLDING PATTERN — not a design system.
- *
- * The itinerary screen carries a third palette: its own coral/pink accents and
- * a warm brown text ramp with no equivalent in `warm` or `semanticColors`.
- * These values are lifted verbatim out of itinerary.styles.ts so that file has
- * no raw literals, and so the duplication is visible in one place.
- *
- * Most of these are used once. That makes them renames, not tokens. The real
- * fix is a design decision on whether itinerary adopts `warm` — at which point
- * this whole block should collapse. Do not add to it.
- *
- * Dark mode was added by giving each of these its own dark counterpart in
- * theme.css rather than folding them into `warm`, so that the itinerary screen
- * stays pixel-identical in light mode. That was a deliberate trade: it doubled
- * this block's cost to maintain and made collapsing it later a larger job.
- * Every token here now has two values to keep consistent instead of one.
- */
-export const itinerary = {
-  // Accents
-  pink: "var(--itin-pink)",
-  peach: "var(--itin-peach)",
-  clay: "var(--itin-clay)",
-
-  // Status
-  check: "var(--itin-check)",
-  markerGreen: "var(--itin-marker-green)",
-  categoryGreenText: "var(--itin-category-green-text)",
-
-  // Brown text ramp, darkest to lightest in light mode. The ramp inverts in
-  // dark — "darkest" becomes the brightest — so the names describe emphasis,
-  // not literal lightness. See theme.css.
-  textDarkest: "var(--itin-text-darkest)",
-  textDark: "var(--itin-text-dark)",
-  textStrong: "var(--itin-text-strong)",
-  textBody: "var(--itin-text-body)",
-  textMuted: "var(--itin-text-muted)",
-  textSubtle: "var(--itin-text-subtle)",
-  textFaint: "var(--itin-text-faint)",
-  textSecondary: "var(--itin-text-secondary)",
-  textTertiary: "var(--itin-text-tertiary)",
-  textDisabled: "var(--itin-text-disabled)",
-
-  // Page gradient stops
-  bgGradientTop: "var(--itin-bg-gradient-top)",
-  bgGradientMid: "var(--itin-bg-gradient-mid)",
-  bgGradientBottom: "var(--itin-bg-gradient-bottom)",
-
-  // Surfaces
-  bgGhost: "var(--itin-bg-ghost)",
-  bgBadge: "var(--itin-bg-badge)",
-  bgHoverPeach: "var(--itin-bg-hover-peach)",
-  bgHoverCream: "var(--itin-bg-hover-cream)",
-  iconOnPrimary: "var(--itin-icon-on-primary)",
-  track: "var(--itin-track)",
-  surfaceRaised: "var(--itin-surface-raised)",
-  surfaceCard: "var(--itin-surface-card)",
-  surfaceCardSoft: "var(--itin-surface-card-soft)",
-  surfaceCardSofter: "var(--itin-surface-card-softer)",
-  surfaceCardSoftest: "var(--itin-surface-card-softest)",
-  surfaceTranslucent: "var(--itin-surface-translucent)",
-
-  // Category chip backgrounds
-  categoryPinkBg: "var(--itin-category-pink-bg)",
-  categoryGreenBg: "var(--itin-category-green-bg)",
-  categoryAmberBg: "var(--itin-category-amber-bg)",
-  categoryRedBg: "var(--itin-category-red-bg)",
-
-  // Timeline marker borders
-  markerBorderGreen: "var(--itin-marker-border-green)",
-  markerBorderPeach: "var(--itin-marker-border-peach)",
-  markerBorderPink: "var(--itin-marker-border-pink)",
-  markerBorderCoral: "var(--itin-marker-border-coral)",
-  markerBorderOrange: "var(--itin-marker-border-orange)",
-  markerBorderClay: "var(--itin-marker-border-clay)",
-
-  // Borders
-  borderCoral: "var(--itin-border-coral)",
-  borderCoralStrong: "var(--itin-border-coral-strong)",
-  borderPeach14: "var(--itin-border-peach-14)",
-  borderPeach16: "var(--itin-border-peach-16)",
-  borderPeach18: "var(--itin-border-peach-18)",
-  borderPeach20: "var(--itin-border-peach-20)",
-  borderPeach22: "var(--itin-border-peach-22)",
-} as const;
-
-export const itineraryGradients = {
-  page: "var(--itin-gradient-page)",
-  sidebar: "var(--itin-gradient-sidebar)",
-  coral: "var(--itin-gradient-coral)",
-  peach: "var(--itin-gradient-peach)",
-  connector: "var(--itin-gradient-connector)",
-  spriteHalo: "var(--itin-gradient-sprite-halo)",
-} as const;
-
-export const itineraryShadows = {
-  sidebar: "var(--itin-shadow-sidebar)",
-  summaryCard: "var(--itin-shadow-summary-card)",
-  dayTab: "var(--itin-shadow-day-tab)",
-  dayTabHover: "var(--itin-shadow-day-tab-hover)",
-  dayTabActive: "var(--itin-shadow-day-tab-active)",
-  sectionBar: "var(--itin-shadow-section-bar)",
-  iconButton: "var(--itin-shadow-icon-button)",
-  export: "var(--itin-shadow-export)",
-  exportHover: "var(--itin-shadow-export-hover)",
-  ghostHover: "var(--itin-shadow-ghost-hover)",
-  modifyTrip: "var(--itin-shadow-modify-trip)",
-  modifyTripHover: "var(--itin-shadow-modify-trip-hover)",
-  primary: "var(--itin-shadow-primary)",
-  primaryHover: "var(--itin-shadow-primary-hover)",
-  outlineHover: "var(--itin-shadow-outline-hover)",
-  emptyState: "var(--itin-shadow-empty-state)",
-  activityCard: "var(--itin-shadow-activity-card)",
-  activityCardHover: "var(--itin-shadow-activity-card-hover)",
-  marker: "var(--itin-shadow-marker)",
-  planeIcon: "var(--itin-shadow-plane-icon)",
-  progressGlow: "var(--itin-shadow-progress-glow)",
-  sprite: "var(--itin-shadow-sprite)",
-} as const;
+// The itinerary screen used to carry a third, separate coral/pink palette
+// here (see git history for `itinerary` / `itineraryGradients` /
+// `itineraryShadows`) instead of using `warm` / `semanticColors` like every
+// other page. It has since been migrated onto the shared tokens above, so
+// that block — and the matching `--itin-*` custom properties in theme.css —
+// has been removed rather than left as unused dead weight.

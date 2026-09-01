@@ -3,6 +3,7 @@ import {
   colors,
   gradients,
   semanticColors,
+  warm,
 } from "../../../common/theme/colors";
 import {
   layout,
@@ -14,6 +15,11 @@ export const useRecommendationsStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
     minHeight: "100dvh",
   },
   content: {

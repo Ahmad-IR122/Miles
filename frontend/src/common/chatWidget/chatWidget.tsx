@@ -13,7 +13,7 @@ import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/newLogo.png";
 import { useChatWidgetStyles } from "./chatWidget.styles";
 import { sendChatMessage } from "./chatApi";
 

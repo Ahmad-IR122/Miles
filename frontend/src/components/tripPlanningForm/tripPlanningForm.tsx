@@ -15,7 +15,6 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { LoadingScreen } from "../loadingScreen/loadingScreen";
 import { useNavigate } from "react-router-dom";
 import CheckIcon from "@mui/icons-material/Check";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
@@ -33,6 +32,8 @@ import dayjs, { type Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
+import { saveTripPreferences } from "../../api/tripPreference";
+import { buildTripPrompt } from "./tripPrompt";
 import type { Trip } from "../../types/trip";
 import AppButton from "../../common/AppButton/appButton";
 import { semanticColors } from "../../common/theme/colors";
@@ -57,20 +58,12 @@ type CountryOption = {
   region: string;
 };
 
-type TripDestination = {
-  country: CountryOption | null;
-  city: Destination | null;
-  days: number | "";
-};
-
 const budgetSliderMin = 0;
 const budgetSliderMax = 5000;
 const budgetSliderStep = 50;
 const defaultBudgetMax = 100;
 
 type FieldErrors = {
-  originCountry: string;
-  originCity: string;
   destinations: string;
   startDate: string;
   endDate: string;
@@ -80,8 +73,6 @@ type FieldErrors = {
 };
 
 const emptyFieldErrors: FieldErrors = {
-  originCountry: "",
-  originCity: "",
   destinations: "",
   startDate: "",
   endDate: "",
@@ -105,6 +96,7 @@ const getGenerationErrorKey = (error: unknown): string => {
 };
 
 const maxTripDays = 31;
+const maxNotesLength = 1000;
 const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
 const minAdults = 1;
@@ -191,19 +183,10 @@ const TripPlanningForm = () => {
 
   const [budgetMax, setBudgetMax] = useState(defaultBudgetMax);
 
-  const [originCountry, setOriginCountry] = useState<CountryOption | null>(
-    null,
-  );
+  const [destinationCountry, setDestinationCountry] =
+    useState<CountryOption | null>(null);
 
-  const [originCity, setOriginCity] = useState<Destination | null>(null);
-
-  const [destinations, setDestinations] = useState<TripDestination[]>([
-    {
-      country: null,
-      city: null,
-      days: "",
-    },
-  ]);
+  const [destinationCities, setDestinationCities] = useState<Destination[]>([]);
 
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -213,6 +196,7 @@ const TripPlanningForm = () => {
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [otherInterest, setOtherInterest] = useState("");
+  const [notes, setNotes] = useState("");
 
   const interestsSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -225,38 +209,26 @@ const TripPlanningForm = () => {
       ? endDate.diff(startDate, "day") + 1
       : 0;
 
-  const allocatedDays = destinations.reduce(
-    (total, destination) =>
-      total + (typeof destination.days === "number" ? destination.days : 0),
-    0,
-  );
+  // Each chosen city is its own stop; the country on its own counts as one
+  // stop when no city has been picked yet.
+  const stops = ((): { country: string; city?: string }[] => {
+    const country = destinationCountry?.country;
 
-  const remainingDays = tripDuration - allocatedDays;
+    if (!country) {
+      return [];
+    }
 
-  const hasValidDestinationDays =
-    destinations.length > 0 &&
-    destinations.every(
-      (destination) =>
-        !!destination.country &&
-        typeof destination.days === "number" &&
-        Number.isInteger(destination.days) &&
-        destination.days > 0,
-    );
+    return destinationCities.length > 0
+      ? destinationCities.map((city) => ({ country, city: city.city }))
+      : [{ country }];
+  })();
 
-  const hasOriginDestinationCityConflict =
-    !!originCity &&
-    destinations.some(
-      (destination) =>
-        destination.city?.destination_id === originCity.destination_id,
-    );
+  // The trip has to be at least one day per stop, otherwise there is no way to
+  // hand every city a day when the payload is built.
+  const hasEnoughDaysForStops = tripDuration >= stops.length;
 
   const isTripDetailsComplete =
-    !!originCountry &&
-    destinations.length > 0 &&
-    hasValidDestinationDays &&
-    !hasOriginDestinationCityConflict &&
-    tripDuration > 0 &&
-    allocatedDays === tripDuration;
+    !!destinationCountry && tripDuration > 0 && hasEnoughDaysForStops;
 
   const totalTravelers = adults + children;
 
@@ -267,6 +239,32 @@ const TripPlanningForm = () => {
     isTravelerCountValid && budgetMax > budgetSliderMin;
 
   const isInterestsComplete = selectedInterests.length >= minInterests;
+
+  // The brief handed on for itinerary generation. Built here so the notes the
+  // traveler typed travel with the structured answers rather than being lost.
+  const tripPrompt = buildTripPrompt({
+    stops: destinationCountry
+      ? [
+          {
+            country: destinationCountry.country,
+            cities: destinationCities.map((city) => city.city),
+          },
+        ]
+      : [],
+    startDate: startDate?.format("YYYY-MM-DD") ?? "",
+    endDate: endDate?.format("YYYY-MM-DD") ?? "",
+    tripDuration,
+    adults,
+    children,
+    budgetMin: budgetSliderMin,
+    budgetMax,
+    interests: selectedInterests.map((interest) =>
+      interest === "Other" && otherInterest.trim()
+        ? otherInterest.trim()
+        : interest,
+    ),
+    notes,
+  });
 
   const completedSteps = [
     isTripDetailsComplete,
@@ -330,8 +328,6 @@ const TripPlanningForm = () => {
   const clearTripDetailsValidationDisplay = () => {
     setFieldErrors((current) => ({
       ...current,
-      originCountry: "",
-      originCity: "",
       destinations: "",
       startDate: "",
       endDate: "",
@@ -345,179 +341,28 @@ const TripPlanningForm = () => {
   const getTripDetailsHelperText = (field: keyof FieldErrors) =>
     submitError === tripDetailsRequiredMessage ? "" : fieldErrors[field];
 
-  const handleOriginCountryChange = (
+  const handleDestinationCountryChange = (
     _event: SyntheticEvent,
     value: CountryOption | null,
   ) => {
     clearTripDetailsValidationDisplay();
 
-    setOriginCountry(value);
-    setOriginCity(null);
+    setDestinationCountry(value);
+    // The old cities belong to the country that was just replaced.
+    setDestinationCities([]);
 
     if (value) {
-      clearFieldError("originCountry");
+      clearFieldError("destinations");
     }
   };
 
-  const updateDestination = (
-    index: number,
-    updates: Partial<TripDestination>,
-  ) => {
-    clearTripDetailsValidationDisplay();
-
-    setDestinations((current) =>
-      current.map((destination, destinationIndex) =>
-        destinationIndex === index
-          ? {
-              ...destination,
-              ...updates,
-            }
-          : destination,
-      ),
-    );
-  };
-
-  const handleDestinationCityChange = (
-    index: number,
-    city: Destination | null,
-  ) => {
-    clearTripDetailsValidationDisplay();
-
-    setDestinations((current) => {
-      const selectedDestination = current[index];
-
-      if (!selectedDestination) {
-        return current;
-      }
-
-      if (!city) {
-        return current.map((destination, destinationIndex) =>
-          destinationIndex === index
-            ? {
-                ...destination,
-                city: null,
-              }
-            : destination,
-        );
-      }
-
-      const matchingIndex = current.findIndex(
-        (destination, destinationIndex) =>
-          destinationIndex !== index &&
-          destination.city?.destination_id === city.destination_id,
-      );
-
-      if (matchingIndex === -1) {
-        return current.map((destination, destinationIndex) =>
-          destinationIndex === index
-            ? {
-                ...destination,
-                city,
-              }
-            : destination,
-        );
-      }
-
-      const matchingDestination = current[matchingIndex];
-
-      const selectedDays =
-        typeof selectedDestination.days === "number"
-          ? selectedDestination.days
-          : 0;
-
-      const matchingDays =
-        typeof matchingDestination.days === "number"
-          ? matchingDestination.days
-          : 0;
-
-      const mergedDays = selectedDays + matchingDays;
-
-      return current.reduce<TripDestination[]>(
-        (destinations, destination, destinationIndex) => {
-          if (destinationIndex === index) {
-            return destinations;
-          }
-
-          return [
-            ...destinations,
-            destinationIndex === matchingIndex
-              ? {
-                  ...destination,
-                  days: mergedDays || "",
-                }
-              : destination,
-          ];
-        },
-        [],
-      );
-    });
-  };
-
-  const addDestination = () => {
-    clearTripDetailsValidationDisplay();
-
-    setDestinations((current) => {
-      const lastDestination = current[current.length - 1];
-
-      if (!lastDestination?.country) {
-        return current;
-      }
-
-      return [
-        ...current,
-        {
-          country: null,
-          city: null,
-          days: "",
-        },
-      ];
-    });
-  };
-
-  const removeDestination = (index: number) => {
-    clearTripDetailsValidationDisplay();
-
-    setDestinations((current) =>
-      current.length === 1
-        ? current
-        : current.filter((_, destinationIndex) => destinationIndex !== index),
-    );
-  };
-
-  const getDestinationCities = (destination: TripDestination) => {
-    if (!destination.country) {
-      return [];
-    }
-
-    return getCitiesForCountry(destination.country.country_code).filter(
-      (city) => city.destination_id !== originCity?.destination_id,
-    );
-  };
-
-  const handleOriginCityChange = (
+  const handleDestinationCitiesChange = (
     _event: SyntheticEvent,
-    value: Destination | null,
+    value: Destination[],
   ) => {
     clearTripDetailsValidationDisplay();
 
-    setOriginCity(value);
-
-    if (value) {
-      clearFieldError("originCity");
-    }
-
-    if (value) {
-      setDestinations((current) =>
-        current.map((destination) =>
-          destination.city?.destination_id === value.destination_id
-            ? {
-                ...destination,
-                city: null,
-              }
-            : destination,
-        ),
-      );
-    }
+    setDestinationCities(value);
   };
 
   const toggleInterest = (interest: string) => {
@@ -543,45 +388,14 @@ const TripPlanningForm = () => {
 
     if (step === 1) {
       const areAllTripDetailsFieldsEmpty =
-        !originCountry &&
-        !originCity &&
-        destinations.every(
-          (destination) =>
-            !destination.country &&
-            !destination.city &&
-            destination.days === "",
-        ) &&
+        !destinationCountry &&
+        destinationCities.length === 0 &&
         startDate === null &&
         endDate === null;
 
-      nextErrors.originCountry = originCountry
+      nextErrors.destinations = destinationCountry
         ? ""
-        : t("tripPlanningForm.validation.originCountry");
-
-      nextErrors.originCity = "";
-      nextErrors.destinations = "";
-
-      if (destinations.length === 0) {
-        nextErrors.destinations = t(
-          "tripPlanningForm.validation.destinationRequired",
-        );
-      } else if (
-        destinations.some(
-          (destination) =>
-            !destination.country ||
-            typeof destination.days !== "number" ||
-            !Number.isInteger(destination.days) ||
-            destination.days <= 0,
-        )
-      ) {
-        nextErrors.destinations = t(
-          "tripPlanningForm.validation.destinationDetails",
-        );
-      } else if (hasOriginDestinationCityConflict) {
-        nextErrors.destinations = t(
-          "tripPlanningForm.validation.originDestinationConflict",
-        );
-      }
+        : t("tripPlanningForm.validation.destinationRequired");
 
       nextErrors.startDate =
         startDate?.isValid() === true
@@ -611,22 +425,18 @@ const TripPlanningForm = () => {
       if (
         !nextErrors.destinations &&
         tripDuration > 0 &&
-        allocatedDays !== tripDuration
+        !hasEnoughDaysForStops
       ) {
-        nextErrors.destinations =
-          allocatedDays > tripDuration
-            ? t("tripPlanningForm.validation.allocatedDaysOver", {
-                allocated: allocatedDays,
-                duration: tripDuration,
-              })
-            : t("tripPlanningForm.validation.daysUnassigned", {
-                count: tripDuration - allocatedDays,
-              });
+        nextErrors.destinations = t(
+          "tripPlanningForm.validation.notEnoughDaysForStops",
+          {
+            duration: tripDuration,
+            stops: stops.length,
+          },
+        );
       }
 
       isValid =
-        !nextErrors.originCountry &&
-        !nextErrors.originCity &&
         !nextErrors.destinations &&
         !nextErrors.startDate &&
         !nextErrors.endDate;
@@ -712,6 +522,14 @@ const TripPlanningForm = () => {
       return;
     }
 
+    // Step 1 already guarantees this; the guard keeps the day split below from
+    // dividing by zero if the steps are ever reordered.
+    if (stops.length === 0 || tripDuration <= 0) {
+      setSubmitError(t("tripPlanningForm.validation.requiredFields"));
+
+      return;
+    }
+
     setIsSubmitting(true);
     setGenerating(true);
 
@@ -720,25 +538,23 @@ const TripPlanningForm = () => {
     });
 
     try {
+      // The API still stores a day count per stop, but the form no longer asks
+      // for one — spread the trip evenly and hand the leftover days to the
+      // earliest stops. How the traveler actually wants the time split is in
+      // their notes, which ride along in the prompt below.
+      const baseDays = Math.floor(tripDuration / stops.length);
+      const extraDays = tripDuration % stops.length;
+
       const tripPayload = {
-        destination: destinations
-          .map((destination) =>
-            destination.city
-              ? `${destination.city.city}, ${
-                  destination.country?.country ?? ""
-                }`
-              : (destination.country?.country ?? ""),
+        destination: stops
+          .map((stop) =>
+            stop.city ? `${stop.city}, ${stop.country}` : stop.country,
           )
           .join(" • "),
 
-        destinations: destinations.map((destination) => ({
-          country: destination.country?.country ?? "",
-          ...(destination.city
-            ? {
-                city: destination.city.city,
-              }
-            : {}),
-          days: typeof destination.days === "number" ? destination.days : 0,
+        destinations: stops.map((stop, index) => ({
+          ...stop,
+          days: baseDays + (index < extraDays ? 1 : 0),
         })),
 
         start_date: startDate?.format("YYYY-MM-DD") ?? "",
@@ -767,6 +583,13 @@ const TripPlanningForm = () => {
       if (!canReusePendingTrip) {
         setPendingTrip(trip);
       }
+
+      // Nothing here talks to a model: the brief is only written down, ready
+      // for whoever wires the itinerary service up to one.
+      await saveTripPreferences(trip.id, { notes: tripPrompt }).catch(() => {
+        // Non-fatal — losing the notes shouldn't block the itinerary.
+      });
+
       const [{ data: itinerary }] = await Promise.all([
         generateItinerary(trip.id),
         minimumDisplayPromise,
@@ -777,6 +600,7 @@ const TripPlanningForm = () => {
         state: {
           trip,
           itinerary,
+          prompt: tripPrompt,
         },
       });
     } catch (error) {
@@ -884,7 +708,7 @@ const TripPlanningForm = () => {
                       display: "block",
                     }}
                   >
-                    {t("tripPlanningForm.tripDetails.origin")}
+                    {t("tripPlanningForm.tripDetails.destination")}
                   </Typography>
 
                   <div className={styles.grid}>
@@ -894,244 +718,62 @@ const TripPlanningForm = () => {
                       isOptionEqualToValue={(option, value) =>
                         option.country_code === value.country_code
                       }
-                      value={originCountry}
-                      onChange={handleOriginCountryChange}
+                      value={destinationCountry}
+                      onChange={handleDestinationCountryChange}
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label={t("tripPlanningForm.tripDetails.fromCountry")}
+                          label={t("tripPlanningForm.tripDetails.country")}
                           placeholder={t(
-                            "tripPlanningForm.tripDetails.destinationCountryPlaceholder",
+                            "tripPlanningForm.tripDetails.countryPlaceholder",
                           )}
-                          sx={getFieldSx(!!originCountry)}
-                          error={!!fieldErrors.originCountry}
-                          helperText={getTripDetailsHelperText("originCountry")}
+                          sx={getFieldSx(!!destinationCountry)}
+                          error={!!fieldErrors.destinations}
                         />
                       )}
                     />
 
                     <Autocomplete
+                      multiple
+                      disableCloseOnSelect
                       options={
-                        originCountry
-                          ? getCitiesForCountry(originCountry.country_code)
+                        destinationCountry
+                          ? getCitiesForCountry(destinationCountry.country_code)
                           : []
                       }
                       getOptionLabel={(option) => option.city}
                       isOptionEqualToValue={(option, value) =>
                         option.destination_id === value.destination_id
                       }
-                      value={originCity}
-                      onChange={handleOriginCityChange}
-                      disabled={!originCountry}
+                      value={destinationCities}
+                      onChange={handleDestinationCitiesChange}
+                      disabled={!destinationCountry}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           label={
-                            originCountry
-                              ? t("tripPlanningForm.tripDetails.fromCity")
+                            destinationCountry
+                              ? t("tripPlanningForm.tripDetails.cities")
                               : t(
                                   "tripPlanningForm.tripDetails.selectCountryFirst",
                                 )
                           }
                           placeholder={
-                            originCountry
+                            destinationCountry && destinationCities.length === 0
                               ? t(
-                                  "tripPlanningForm.tripDetails.destinationCityPlaceholder",
+                                  "tripPlanningForm.tripDetails.citiesPlaceholder",
                                 )
                               : undefined
                           }
-                          sx={getFieldSx(!!originCity)}
-                          error={!!fieldErrors.originCity}
-                          helperText={getTripDetailsHelperText("originCity")}
+                          sx={getFieldSx(destinationCities.length > 0)}
                         />
                       )}
                     />
                   </div>
-                </div>
 
-                <Divider sx={{ my: 1.5 }} />
-
-                <div>
-                  <div className={styles.destinationSectionHeader}>
-                    <Typography component="p" className={styles.label}>
-                      {t("tripPlanningForm.tripDetails.destinations")}
-                    </Typography>
-
-                    <AppButton
-                      appearance="secondary"
-                      onClick={addDestination}
-                      startIcon={<AddIcon />}
-                      size="small"
-                    >
-                      {t("tripPlanningForm.tripDetails.addDestination")}
-                    </AppButton>
-                  </div>
-
-                  <div className={styles.destinationList}>
-                    {destinations.map((destination, index) => (
-                      <div key={index} className={styles.destinationCard}>
-                        <div className={styles.destinationRow}>
-                          <Typography
-                            component="span"
-                            className={styles.destinationNumber}
-                          >
-                            {index + 1}
-                          </Typography>
-
-                          <Autocomplete
-                            className={styles.destinationInput}
-                            options={allCountries}
-                            getOptionLabel={(option) => option.country}
-                            isOptionEqualToValue={(option, value) =>
-                              option.country_code === value.country_code
-                            }
-                            value={destination.country}
-                            onChange={(_event, value) => {
-                              updateDestination(index, {
-                                country: value,
-                                city: null,
-                              });
-                            }}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={t(
-                                  "tripPlanningForm.tripDetails.country",
-                                )}
-                                placeholder={t(
-                                  "tripPlanningForm.tripDetails.countryPlaceholder",
-                                )}
-                                sx={getFieldSx(!!destination.country)}
-                              />
-                            )}
-                          />
-
-                          <Autocomplete
-                            className={styles.destinationInput}
-                            options={getDestinationCities(destination)}
-                            getOptionLabel={(option) => option.city}
-                            isOptionEqualToValue={(option, value) =>
-                              option.destination_id === value.destination_id
-                            }
-                            value={destination.city}
-                            onChange={(_event, value) =>
-                              handleDestinationCityChange(index, value)
-                            }
-                            disabled={!destination.country}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={t("tripPlanningForm.tripDetails.city")}
-                                placeholder={
-                                  destination.country
-                                    ? t(
-                                        "tripPlanningForm.tripDetails.cityPlaceholder",
-                                      )
-                                    : undefined
-                                }
-                                sx={getFieldSx(!!destination.city)}
-                              />
-                            )}
-                          />
-
-                          <TextField
-                            className={styles.destinationInput}
-                            label={t("tripPlanningForm.tripDetails.days")}
-                            type="number"
-                            value={destination.days}
-                            onChange={(event) => {
-                              const value = event.target.value;
-
-                              const days = value === "" ? "" : Number(value);
-
-                              updateDestination(index, {
-                                days:
-                                  value === "" ||
-                                  (typeof days === "number" &&
-                                    Number.isInteger(days) &&
-                                    days > 0)
-                                    ? days
-                                    : destination.days,
-                              });
-                            }}
-                            slotProps={{
-                              htmlInput: {
-                                min: 1,
-                                step: 1,
-                              },
-                            }}
-                            error={
-                              !!fieldErrors.destinations &&
-                              (destination.days === "" ||
-                                typeof destination.days !== "number" ||
-                                !Number.isInteger(destination.days) ||
-                                destination.days <= 0)
-                            }
-                            helperText={
-                              fieldErrors.destinations &&
-                              (destination.days === "" ||
-                                typeof destination.days !== "number" ||
-                                !Number.isInteger(destination.days) ||
-                                destination.days <= 0)
-                                ? t("tripPlanningForm.validation.required")
-                                : undefined
-                            }
-                            sx={getFieldSx(
-                              typeof destination.days === "number" &&
-                                destination.days > 0,
-                            )}
-                          />
-
-                          {destinations.length > 1 && (
-                            <IconButton
-                              className={styles.destinationRemoveButton}
-                              onClick={() => removeDestination(index)}
-                              aria-label={t(
-                                "tripPlanningForm.tripDetails.removeDestination",
-                                { number: index + 1 },
-                              )}
-                              size="small"
-                            >
-                              <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className={styles.daysSummary}>
-                    <Typography
-                      component="p"
-                      className={styles.daysSummaryItem}
-                    >
-                      <strong>
-                        {allocatedDays} / {tripDuration > 0 ? tripDuration : 0}{" "}
-                        {t("tripPlanningForm.tripDetails.daysPlanned", {
-                          count: tripDuration > 0 ? tripDuration : 0,
-                        })}
-                      </strong>
-                    </Typography>
-
-                    <Typography
-                      component="p"
-                      className={mergeClasses(
-                        styles.daysSummaryItem,
-                        styles.daysSummaryStatus,
-                        remainingDays < 0 && styles.daysSummaryOverage,
-                      )}
-                    >
-                      {remainingDays > 0
-                        ? t("tripPlanningForm.tripDetails.daysLeft", {
-                            count: remainingDays,
-                          })
-                        : remainingDays === 0
-                          ? ""
-                          : t("tripPlanningForm.tripDetails.daysOver", {
-                              count: Math.abs(remainingDays),
-                            })}
-                    </Typography>
-                  </div>
+                  <Typography component="p" className={styles.destinationHint}>
+                    {t("tripPlanningForm.tripDetails.citiesHint")}
+                  </Typography>
 
                   {fieldErrors.destinations && (
                     <Typography
@@ -1579,6 +1221,31 @@ const TripPlanningForm = () => {
                   </div>
                 )}
 
+                <div className={styles.notesField}>
+                  <Typography
+                    component="label"
+                    htmlFor="trip-notes"
+                    className={styles.label}
+                  >
+                    {t("tripPlanningForm.notes.label")}
+                  </Typography>
+
+                  <TextField
+                    id="trip-notes"
+                    fullWidth
+                    multiline
+                    minRows={3}
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    placeholder={t("tripPlanningForm.notes.placeholder")}
+                    slotProps={{
+                      htmlInput: { maxLength: maxNotesLength },
+                    }}
+                    helperText={t("tripPlanningForm.notes.helper")}
+                    sx={getFieldSx(!!notes.trim())}
+                  />
+                </div>
+
                 <div className={styles.summary}>
                   <Typography component="h3" className={styles.summaryTitle}>
                     {t("tripPlanningForm.summary.title")}
@@ -1588,29 +1255,20 @@ const TripPlanningForm = () => {
                     {[
                       [
                         t("tripPlanningForm.summary.destinations"),
-                        destinations
-                          .map(
-                            (destination) =>
-                              `${
-                                destination.country?.country ||
-                                t("tripPlanningForm.summary.notAvailable")
-                              }${
-                                destination.city
-                                  ? `, ${destination.city.city}`
-                                  : ""
-                              } (${t(
-                                "tripPlanningForm.summary.destinationDays",
-                                { count: destination.days || 0 },
-                              )})`,
-                          )
-                          .join(" • "),
+                        destinationCountry
+                          ? `${destinationCountry.country}${
+                              destinationCities.length > 0
+                                ? ` (${destinationCities
+                                    .map((city) => city.city)
+                                    .join(", ")})`
+                                : ""
+                            }`
+                          : t("tripPlanningForm.summary.notAvailable"),
                       ],
                       [
                         t("tripPlanningForm.summary.stay"),
-                        t("tripPlanningForm.summary.daysAllocated", {
+                        t("tripPlanningForm.summary.destinationDays", {
                           count: tripDuration || 0,
-                          allocated: allocatedDays,
-                          duration: tripDuration || 0,
                         }),
                       ],
                       [

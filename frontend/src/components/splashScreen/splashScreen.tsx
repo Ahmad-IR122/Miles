@@ -1,4 +1,4 @@
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/newLogo.png";
 import TravelLoadingBar from "./travelLoadingBar";
 import TravelPattern from "./travelPattern";
 import { useSplashScreenStyles } from "./splashScreen.styles";

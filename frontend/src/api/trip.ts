@@ -22,3 +22,6 @@ export const deleteTrip = async (payload: { tripId: number }) => {
 
   return response;
 };
+
+export const getTripById = (tripId: number) =>
+  api.get<Trip>(`/trips/${tripId}`);

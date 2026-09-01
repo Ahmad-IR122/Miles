@@ -1,9 +1,6 @@
 import { makeStyles, shorthands } from "@griffel/react";
 import {
   colors,
-  itinerary,
-  itineraryGradients,
-  itineraryShadows,
   semanticColors,
   warm,
   warmGradients,
@@ -11,12 +8,34 @@ import {
 } from "../../../common/theme/colors";
 import { layout, typography } from "../../../common/theme/typography";
 
+/**
+ * This screen used to run its own coral/pink accent and warm-brown text ramp
+ * (see colors.ts history), independent of `warm`/`semanticColors` used by the
+ * rest of the app — so it drifted out of step with the app's actual accent
+ * (now blue) and its own body font (Inter here vs. the app's Helvetica Neue
+ * elsewhere). Everything below now draws from the shared `warm`/
+ * `semanticColors` tokens instead, the same ones every other page uses.
+ *
+ * The half-dozen activity-category colors (culture/food/nature/etc.) are the
+ * one deliberate exception: they exist purely to tell categories apart at a
+ * glance, not to carry brand meaning, so they keep distinct hues (sourced
+ * from `colors.success` / `colors.warning` / `semanticColors.textError`,
+ * plus `warm.rose` and two blue shades for the rest) rather than collapsing
+ * onto a single accent color.
+ */
 export const useItineraryStyles = makeStyles({
   page: {
     minHeight: "100vh",
-    color: itinerary.textDarkest,
+    color: semanticColors.textPrimary,
     backgroundColor: warm.bgPage,
-    fontFamily: typography.fontFamily.ui,
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    // Viewport-relative so "cover" sizes against the screen, not the full
+    // scroll height — the page can be much taller than the wallpaper image.
+    backgroundAttachment: "fixed",
+    fontFamily: typography.fontFamily.sans,
   },
   shell: {
     maxWidth: "none",
@@ -58,27 +77,27 @@ export const useItineraryStyles = makeStyles({
     gridArea: "summary",
     minWidth: 0,
     minHeight: "100vh",
-    background: itineraryGradients.sidebar,
+    backgroundColor: semanticColors.bgPrimary,
     backdropFilter: "blur(18px)",
     ...shorthands.borderLeft(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderCoral,
+      semanticColors.borderAccent,
     ),
     ...shorthands.padding(layout.padding.xl, "22px"),
-    boxShadow: itineraryShadows.sidebar,
+    boxShadow: warmShadows.lg,
     "@media (max-width: 980px)": {
       minHeight: "auto",
       ...shorthands.borderLeft("0"),
       ...shorthands.borderBottom(
         layout.borderWidth.hairline,
         "solid",
-        itinerary.borderCoral,
+        semanticColors.borderAccent,
       ),
     },
   },
   summaryTitle: {
-    color: itinerary.textDark,
+    color: semanticColors.textPrimary,
     fontSize: typography.fontSize.size8,
     lineHeight: "24px",
     fontWeight: 850,
@@ -102,11 +121,11 @@ export const useItineraryStyles = makeStyles({
     position: "relative",
     minWidth: 0,
     minHeight: "128px",
-    backgroundColor: itinerary.surfaceCard,
+    backgroundColor: semanticColors.bgPrimary,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach14,
+      semanticColors.borderLight,
     ),
     ...shorthands.borderRadius("22px"),
     ...shorthands.padding(
@@ -114,19 +133,19 @@ export const useItineraryStyles = makeStyles({
       layout.padding.md,
       layout.padding.md,
     ),
-    boxShadow: itineraryShadows.summaryCard,
+    boxShadow: warmShadows.sm,
   },
   summaryCheck: {
     position: "absolute",
     top: layout.spacing[4],
     right: layout.spacing[4],
-    color: itinerary.check,
+    color: colors.success,
     fontSize: typography.fontSize.size4,
     lineHeight: "14px",
     fontWeight: 900,
   },
   summaryValue: {
-    color: itinerary.textDark,
+    color: semanticColors.textPrimary,
     fontSize: typography.displaySize.sm,
     lineHeight: "30px",
     fontWeight: 900,
@@ -134,7 +153,7 @@ export const useItineraryStyles = makeStyles({
     overflowWrap: "anywhere",
   },
   summaryLabel: {
-    color: itinerary.pink,
+    color: warm.coralBright,
     fontSize: typography.fontSize.size1,
     lineHeight: "15px",
     fontWeight: 800,
@@ -142,18 +161,18 @@ export const useItineraryStyles = makeStyles({
     textTransform: "uppercase",
   },
   summaryNote: {
-    color: itinerary.textFaint,
+    color: semanticColors.textTertiary,
     fontSize: typography.fontSize.size2,
     lineHeight: "17px",
     fontWeight: typography.fontWeight.medium,
     marginTop: layout.spacing[1],
   },
   summaryMoneyIcon: {
-    color: itinerary.peach,
+    color: warm.coralBright,
     fontSize: typography.fontSize.size10,
   },
   summaryCalendarIcon: {
-    color: itinerary.pink,
+    color: warm.coralBright,
     fontSize: typography.fontSize.size10,
   },
   summaryTargetIcon: {
@@ -161,14 +180,14 @@ export const useItineraryStyles = makeStyles({
     fontSize: typography.fontSize.size10,
   },
   summaryTravelersIcon: {
-    color: itinerary.clay,
+    color: warm.coralBright,
     fontSize: typography.fontSize.size10,
   },
   budgetRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    color: itinerary.textSecondary,
+    color: semanticColors.textSecondary,
     fontSize: typography.fontSize.size2,
     lineHeight: "17px",
     fontWeight: 800,
@@ -177,66 +196,66 @@ export const useItineraryStyles = makeStyles({
   progressTrack: {
     height: layout.spacing[2],
     overflow: "hidden",
-    backgroundColor: itinerary.track,
+    backgroundColor: semanticColors.bgTrack,
     ...shorthands.borderRadius(layout.radius.pill),
     marginBottom: layout.spacing[5.5],
   },
   progressFill: {
     height: "100%",
-    background: itineraryGradients.coral,
+    background: warmGradients.primary,
     ...shorthands.borderRadius(layout.radius.pill),
   },
   modifyTripButton: {
     width: "100%",
     height: "52px",
     color: semanticColors.textOnAccent,
-    background: itineraryGradients.coral,
+    background: warmGradients.primary,
     ...shorthands.borderRadius(layout.radius.pill),
     textTransform: "none",
     fontSize: typography.fontSize.size4,
     lineHeight: "20px",
     fontWeight: 850,
-    boxShadow: itineraryShadows.modifyTrip,
+    boxShadow: semanticColors.shadowInteractive,
     marginBottom: layout.spacing[3.5],
     ":hover": {
-      background: itineraryGradients.peach,
-      boxShadow: itineraryShadows.modifyTripHover,
+      background: warmGradients.primaryHover,
+      boxShadow: semanticColors.shadowInteractiveHover,
     },
   },
   modifyTripIcon: {
-    color: itinerary.iconOnPrimary,
+    color: semanticColors.textOnAccent,
     fontSize: typography.fontSize.size8,
   },
   exportButton: {
     width: "100%",
     height: layout.controlSize["2xl"],
-    color: itinerary.textStrong,
-    backgroundColor: itinerary.surfaceTranslucent,
+    color: semanticColors.textPrimary,
+    backgroundColor: semanticColors.surfaceTranslucent,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach22,
+      semanticColors.borderDefault,
     ),
     ...shorthands.borderRadius(layout.radius.pill),
     textTransform: "none",
     fontSize: typography.fontSize.size3,
     lineHeight: "18px",
     fontWeight: 850,
-    boxShadow: itineraryShadows.export,
+    boxShadow: warmShadows.xs,
     ":hover": {
-      backgroundColor: itinerary.surfaceRaised,
-      boxShadow: itineraryShadows.exportHover,
+      backgroundColor: semanticColors.bgPrimary,
+      boxShadow: warmShadows.sm,
     },
   },
   headerFrame: {
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach18,
+      semanticColors.borderLight,
     ),
     ...shorthands.borderRadius(layout.radius["2xl"]),
-    backgroundColor: itinerary.surfaceCardSoft,
-    boxShadow: itineraryShadows.sectionBar,
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.xs,
     ...shorthands.padding(layout.padding.sm, layout.padding.lg),
     marginBottom: layout.spacing[8],
     minWidth: 0,
@@ -262,13 +281,16 @@ export const useItineraryStyles = makeStyles({
     color: warm.coralBright,
     fontSize: typography.fontSize.size12,
     transform: "rotate(-18deg)",
-    filter: itineraryShadows.planeIcon,
+    filter: `drop-shadow(0 2px 4px color-mix(in srgb, ${warm.coralBright} 30%, transparent))`,
   },
   titleCountry: {
     "&.MuiTypography-root": {
       margin: 0,
-      color: itinerary.textDarkest,
-      fontFamily: typography.fontFamily.brand,
+      color: semanticColors.textPrimary,
+      // Matches the serif used for display headings across the rest of the
+      // app (home hero, page h1/h2) instead of the brand wordmark font,
+      // which is reserved for the "Miles" logotype itself.
+      fontFamily: typography.fontFamily.serif,
       fontSize: typography.displaySize.xl,
       fontWeight: typography.fontWeight.bold,
       lineHeight: 1,
@@ -284,7 +306,7 @@ export const useItineraryStyles = makeStyles({
     "&.MuiTypography-root": {
       margin: 0,
       marginTop: "-4px",
-      color: itinerary.textStrong,
+      color: semanticColors.textPrimary,
       fontFamily: typography.fontFamily.serif,
       fontSize: typography.displaySize.md,
       fontWeight: typography.fontWeight.normal,
@@ -301,7 +323,7 @@ export const useItineraryStyles = makeStyles({
     alignItems: "center",
     ...shorthands.padding("0", layout.padding.sm),
     ...shorthands.borderRadius(layout.radius.pill),
-    backgroundColor: itinerary.bgBadge,
+    backgroundColor: `color-mix(in srgb, ${warm.coralBright} 14%, transparent)`,
     color: warm.coralBright,
     fontSize: typography.fontSize.size0,
     lineHeight: "14px",
@@ -318,7 +340,7 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.borderBottom(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach18,
+      semanticColors.borderLight,
     ),
   },
   factCell: {
@@ -327,7 +349,7 @@ export const useItineraryStyles = makeStyles({
     gap: "2px",
   },
   factLabel: {
-    color: itinerary.pink,
+    color: warm.coralBright,
     fontSize: typography.fontSize.size0,
     lineHeight: "13px",
     fontWeight: 800,
@@ -335,7 +357,7 @@ export const useItineraryStyles = makeStyles({
     textTransform: "uppercase",
   },
   factValue: {
-    color: itinerary.textStrong,
+    color: semanticColors.textPrimary,
     fontSize: typography.fontSize.size4,
     lineHeight: "18px",
     fontWeight: 700,
@@ -350,21 +372,21 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach18,
+      semanticColors.borderLight,
     ),
     ...shorthands.borderRadius(layout.radius.xl),
-    backgroundColor: itinerary.surfaceCardSoft,
-    boxShadow: itineraryShadows.emptyState,
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.md,
   },
   emptyTitle: {
-    color: itinerary.textDark,
+    color: semanticColors.textPrimary,
     fontSize: typography.fontSize.size9,
     lineHeight: "28px",
     fontWeight: 900,
     marginBottom: layout.spacing[2],
   },
   emptyMessage: {
-    color: itinerary.textSecondary,
+    color: semanticColors.textSecondary,
     fontSize: typography.fontSize.size4,
     lineHeight: "22px",
     fontWeight: typography.fontWeight.medium,
@@ -398,23 +420,23 @@ export const useItineraryStyles = makeStyles({
   },
   ghostButton: {
     color: warm.textSecondary,
-    backgroundColor: itinerary.bgGhost,
+    backgroundColor: semanticColors.bgSecondary,
     ...shorthands.border(layout.borderWidth.hairline, "solid", warm.border),
     boxShadow: warmShadows.xs,
     ":hover": {
       color: warm.textPrimary,
-      backgroundColor: itinerary.surfaceRaised,
-      boxShadow: itineraryShadows.ghostHover,
+      backgroundColor: semanticColors.bgPrimary,
+      boxShadow: warmShadows.sm,
     },
   },
   primaryButton: {
     minWidth: "88px",
     color: semanticColors.textOnAccent,
     background: warmGradients.primary,
-    boxShadow: itineraryShadows.primary,
+    boxShadow: semanticColors.shadowInteractive,
     ":hover": {
       background: warmGradients.primaryHover,
-      boxShadow: itineraryShadows.primaryHover,
+      boxShadow: semanticColors.shadowInteractiveHover,
     },
   },
   dayActionsRow: {
@@ -465,14 +487,14 @@ export const useItineraryStyles = makeStyles({
       "solid",
       colors.transparent,
     ),
-    background: itineraryGradients.peach,
-    color: itinerary.iconOnPrimary,
-    boxShadow: itineraryShadows.iconButton,
+    background: warmGradients.primary,
+    color: semanticColors.textOnAccent,
+    boxShadow: warmShadows.xs,
     transitionProperty: "transform, box-shadow, background, opacity",
     transitionDuration: layout.duration.normal,
     ":hover": {
       transform: "translateY(-1px)",
-      boxShadow: itineraryShadows.dayTabHover,
+      boxShadow: warmShadows.sm,
     },
     ":disabled": {
       opacity: 0.4,
@@ -487,10 +509,10 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach20,
+      semanticColors.borderDefault,
     ),
-    backgroundColor: itinerary.surfaceCardSoftest,
-    color: itinerary.textSecondary,
+    backgroundColor: semanticColors.bgTertiary,
+    color: semanticColors.textSecondary,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -499,19 +521,19 @@ export const useItineraryStyles = makeStyles({
     fontWeight: 900,
     fontSize: typography.fontSize.size3,
     lineHeight: "18px",
-    boxShadow: itineraryShadows.dayTab,
+    boxShadow: warmShadows.xs,
     transitionProperty: "transform, box-shadow, background, color",
     transitionDuration: layout.duration.normal,
     ":hover": {
       transform: "translateY(-1px)",
-      boxShadow: itineraryShadows.dayTabHover,
+      boxShadow: warmShadows.sm,
     },
   },
   dayTabActive: {
-    background: itineraryGradients.coral,
+    background: warmGradients.primary,
     color: `${semanticColors.textOnAccent} !important`,
     ...shorthands.borderColor(colors.transparent),
-    boxShadow: itineraryShadows.dayTabActive,
+    boxShadow: semanticColors.shadowInteractive,
   },
   dayDate: {
     fontSize: typography.fontSize.size0,
@@ -524,10 +546,10 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach16,
+      semanticColors.borderLight,
     ),
     ...shorthands.borderRadius(layout.radius.xl),
-    backgroundColor: itinerary.surfaceCardSofter,
+    backgroundColor: semanticColors.bgSecondary,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -539,14 +561,14 @@ export const useItineraryStyles = makeStyles({
       "22px",
     ),
     marginBottom: layout.spacing[5.5],
-    boxShadow: itineraryShadows.sectionBar,
+    boxShadow: warmShadows.xs,
     "@media (max-width: 680px)": {
       alignItems: "flex-start",
       flexDirection: "column",
     },
   },
   sectionTitle: {
-    color: itinerary.textDark,
+    color: semanticColors.textPrimary,
     fontSize: typography.fontSize.size8,
     lineHeight: "24px",
     fontWeight: 900,
@@ -568,18 +590,18 @@ export const useItineraryStyles = makeStyles({
   },
   outlineBlueButton: {
     color: warm.coralBright,
-    backgroundColor: itinerary.surfaceRaised,
+    backgroundColor: semanticColors.bgPrimary,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderCoralStrong,
+      semanticColors.borderAccentStrong,
     ),
     ":hover": {
-      backgroundColor: itinerary.bgHoverPeach,
-      boxShadow: itineraryShadows.outlineHover,
+      backgroundColor: semanticColors.bgInteractiveSubtle,
+      boxShadow: warmShadows.sm,
     },
   },
-  regenerateIcon: { color: itinerary.peach },
+  regenerateIcon: { color: warm.coralBright },
   timeline: {
     position: "relative",
     paddingLeft: "58px",
@@ -606,7 +628,7 @@ export const useItineraryStyles = makeStyles({
   timelineOverlayText: {
     fontSize: typography.fontSize.size4,
     fontWeight: typography.fontWeight.bold,
-    color: itinerary.textSecondary,
+    color: semanticColors.textSecondary,
   },
   connector: {
     position: "absolute",
@@ -614,7 +636,7 @@ export const useItineraryStyles = makeStyles({
     top: "0",
     height: "100%",
     width: "34px",
-    color: itinerary.pink,
+    color: warm.coralBright,
     opacity: 0.9,
   },
   connectorSvg: {
@@ -642,7 +664,7 @@ export const useItineraryStyles = makeStyles({
     transform: "translate(-50%, -50%) rotate(135deg)",
     fontSize: typography.fontSize.size9,
     color: warm.coralBright,
-    filter: itineraryShadows.planeIcon,
+    filter: `drop-shadow(0 2px 4px color-mix(in srgb, ${warm.coralBright} 30%, transparent))`,
     willChange: "left, transform",
     "@media (max-width: 560px)": {
       left: layout.spacing[4.5],
@@ -659,11 +681,11 @@ export const useItineraryStyles = makeStyles({
     width: layout.controlSize.xl,
     height: layout.controlSize.xl,
     ...shorthands.borderRadius(layout.radius.lg),
-    backgroundColor: itinerary.bgGradientMid,
+    backgroundColor: semanticColors.bgSecondary,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: itineraryShadows.marker,
+    boxShadow: warmShadows.xs,
     "@media (max-width: 560px)": {
       left: "-42px",
       width: layout.controlSize.xs,
@@ -677,28 +699,32 @@ export const useItineraryStyles = makeStyles({
       fontSize: typography.fontSize.size7,
     },
   },
+  // The category marker/chip colors below are deliberately the one place
+  // that keeps distinct hues instead of the shared accent — see the file
+  // banner comment. Borders are a single neutral tone throughout; only the
+  // icon/text color differs per category.
   markerGreen: {
-    color: itinerary.markerGreen,
+    color: colors.success,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderGreen,
+      semanticColors.borderLight,
     ),
   },
   markerPurple: {
-    color: itinerary.peach,
+    color: warm.rose,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderPeach,
+      semanticColors.borderLight,
     ),
   },
   markerBlue: {
-    color: itinerary.pink,
+    color: warm.coral,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderPink,
+      semanticColors.borderLight,
     ),
   },
   markerCyan: {
@@ -706,23 +732,23 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderCoral,
+      semanticColors.borderLight,
     ),
   },
   markerOrange: {
-    color: itinerary.peach,
+    color: colors.warning,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderOrange,
+      semanticColors.borderLight,
     ),
   },
   markerRed: {
-    color: itinerary.clay,
+    color: semanticColors.textError,
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.markerBorderClay,
+      semanticColors.borderLight,
     ),
   },
   activityCard: {
@@ -730,11 +756,11 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach16,
+      semanticColors.borderLight,
     ),
     ...shorthands.borderRadius("26px"),
-    backgroundColor: itinerary.surfaceCard,
-    boxShadow: itineraryShadows.activityCard,
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.sm,
     display: "flex",
     justifyContent: "space-between",
     gap: layout.spacing[5],
@@ -748,7 +774,7 @@ export const useItineraryStyles = makeStyles({
     transitionDuration: layout.duration.normal,
     ":hover": {
       transform: "translateY(-2px)",
-      boxShadow: itineraryShadows.activityCardHover,
+      boxShadow: warmShadows.md,
     },
     "@media (max-width: 620px)": {
       flexDirection: "column",
@@ -771,7 +797,7 @@ export const useItineraryStyles = makeStyles({
     alignItems: "center",
     ...shorthands.padding("0", "10px"),
     ...shorthands.borderRadius(layout.radius.pill),
-    backgroundColor: itinerary.bgBadge,
+    backgroundColor: `color-mix(in srgb, ${warm.coralBright} 14%, transparent)`,
     color: warm.coralBright,
     fontSize: typography.fontSize.size0,
     lineHeight: "14px",
@@ -779,28 +805,28 @@ export const useItineraryStyles = makeStyles({
     textTransform: "uppercase",
   },
   categoryBlue: {
-    backgroundColor: itinerary.categoryPinkBg,
-    color: itinerary.pink,
+    backgroundColor: `color-mix(in srgb, ${warm.coralBright} 14%, transparent)`,
+    color: warm.coralBright,
   },
   categoryGreen: {
-    backgroundColor: itinerary.categoryGreenBg,
-    color: itinerary.categoryGreenText,
+    backgroundColor: `color-mix(in srgb, ${colors.success} 14%, transparent)`,
+    color: colors.success,
   },
   categoryAmber: {
-    backgroundColor: itinerary.categoryAmberBg,
-    color: itinerary.peach,
+    backgroundColor: `color-mix(in srgb, ${colors.warning} 14%, transparent)`,
+    color: colors.warning,
   },
   categoryOrange: {
-    backgroundColor: itinerary.categoryAmberBg,
-    color: itinerary.peach,
+    backgroundColor: `color-mix(in srgb, ${colors.warning} 20%, transparent)`,
+    color: colors.warning,
   },
   categoryRed: {
-    backgroundColor: itinerary.categoryRedBg,
-    color: warm.coralBright,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.textError} 14%, transparent)`,
+    color: semanticColors.textError,
   },
   activityTime: {
     "&.MuiTypography-root": {
-      color: itinerary.textTertiary,
+      color: semanticColors.textTertiary,
       fontSize: typography.fontSize.size2,
       lineHeight: "17px",
       fontWeight: 750,
@@ -809,7 +835,7 @@ export const useItineraryStyles = makeStyles({
   activityTitle: {
     "&.MuiTypography-root": {
       margin: 0,
-      color: itinerary.textDarkest,
+      color: semanticColors.textPrimary,
       fontSize: typography.fontSize.size9,
       lineHeight: "27px",
       fontWeight: typography.fontWeight.semibold,
@@ -820,7 +846,7 @@ export const useItineraryStyles = makeStyles({
   activityDescription: {
     "&.MuiTypography-root": {
       margin: 0,
-      color: itinerary.textBody,
+      color: semanticColors.textSecondary,
       fontSize: typography.fontSize.size4,
       lineHeight: "22px",
       fontWeight: typography.fontWeight.normal,
@@ -833,7 +859,7 @@ export const useItineraryStyles = makeStyles({
     gap: layout.gap.lg,
     rowGap: layout.spacing[2.5],
     flexWrap: "wrap",
-    color: itinerary.textMuted,
+    color: semanticColors.textTertiary,
     fontSize: typography.fontSize.size2,
     lineHeight: "17px",
   },
@@ -843,15 +869,15 @@ export const useItineraryStyles = makeStyles({
     gap: layout.spacing[1.5],
     minWidth: 0,
   },
-  detailIcon: { color: itinerary.pink, fontSize: typography.fontSize.size5 },
-  trainIcon: { color: itinerary.peach, fontSize: typography.fontSize.size5 },
+  detailIcon: { color: warm.coralBright, fontSize: typography.fontSize.size5 },
+  trainIcon: { color: warm.coralBright, fontSize: typography.fontSize.size5 },
   mutedIcon: {
-    color: itinerary.textDisabled,
+    color: semanticColors.textDisabled,
     fontSize: typography.fontSize.size5,
   },
-  costIcon: { color: itinerary.peach, fontSize: typography.fontSize.size5 },
+  costIcon: { color: warm.coralBright, fontSize: typography.fontSize.size5 },
   weatherIcon: {
-    color: itinerary.textTertiary,
+    color: semanticColors.textTertiary,
     fontSize: typography.fontSize.size5,
   },
   cardActions: {
@@ -868,18 +894,18 @@ export const useItineraryStyles = makeStyles({
     ...shorthands.border(
       layout.borderWidth.hairline,
       "solid",
-      itinerary.borderPeach20,
+      semanticColors.borderDefault,
     ),
     ...shorthands.borderRadius(layout.radius.md),
-    backgroundColor: itinerary.surfaceRaised,
-    boxShadow: itineraryShadows.iconButton,
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.xs,
     ":hover": {
-      backgroundColor: itinerary.bgHoverCream,
+      backgroundColor: semanticColors.bgInteractiveSubtle,
     },
   },
-  editIcon: { color: itinerary.peach, fontSize: typography.fontSize.size7 },
+  editIcon: { color: warm.coralBright, fontSize: typography.fontSize.size7 },
   deleteIcon: {
-    color: itinerary.textDisabled,
+    color: semanticColors.textDisabled,
     fontSize: typography.fontSize.size7,
   },
 });

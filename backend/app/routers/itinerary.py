@@ -1,3 +1,5 @@
+from datetime import date
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.db import get_db
-from app.models import User
+from app.models import Itinerary, Trip, User
 from app.schemas import (
     ActivityCreate,
     ItineraryCreate,
@@ -198,3 +200,30 @@ def delete_itinerary(
         itinerary_id,
         current_user.id,
     )
+
+@router.get("/by-trip/{trip_id}", response_model=ItineraryDetailResponse)
+def get_itinerary_by_trip(trip_id: int, db: Session = Depends(get_db)):
+    itinerary = db.query(Itinerary).filter(Itinerary.trip_id == trip_id).first()
+    if not itinerary:
+        raise HTTPException(status_code=404, detail="No itinerary found for this trip")
+    return itinerary
+
+
+@router.get("/upcoming", response_model=ItineraryDetailResponse)
+def get_upcoming_itinerary(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    trip = (
+        db.query(Trip)
+        .filter(Trip.user_id == current_user.id, Trip.start_date >= date.today())
+        .order_by(Trip.start_date.asc())
+        .first()
+    )
+    if not trip:
+        raise HTTPException(status_code=404, detail="No upcoming trips")
+
+    itinerary = db.query(Itinerary).filter(Itinerary.trip_id == trip.id).first()
+    if not itinerary:
+        raise HTTPException(status_code=404, detail="No itinerary found for this trip")
+    return itinerary

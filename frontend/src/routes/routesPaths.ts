@@ -9,3 +9,6 @@ export const routesPaths = {
   itineraryDetail: "/itinerary/:itineraryId",
   savedTrips: "/trips",
 };
+
+export const buildItineraryDetailPath = (itineraryId: string | number) =>
+  routesPaths.itineraryDetail.replace(":itineraryId", String(itineraryId));

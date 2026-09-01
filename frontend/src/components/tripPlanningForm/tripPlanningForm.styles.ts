@@ -71,6 +71,11 @@ export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
     minHeight: "100dvh",
   },
   content: {
@@ -402,110 +407,12 @@ export const useTripPlanningFormStyles = makeStyles({
     },
   },
   otherField: { marginTop: layout.gap.md },
-  destinationList: {
-    display: "flex",
-    flexDirection: "column",
-    rowGap: layout.gap.sm,
-  },
-  destinationSectionHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: layout.gap.md,
-    flexWrap: "wrap",
-    marginBottom: layout.gap.sm,
-  },
-  destinationRow: {
-    display: "grid",
-    gridTemplateColumns:
-      "28px minmax(0, 1fr) minmax(0, 1fr) minmax(72px, 96px) 32px",
-    alignItems: "start",
-    gap: layout.gap.sm,
-    [`@media ${bp.tablet}`]: {
-      gridTemplateColumns: "28px minmax(0, 1fr) minmax(72px, 96px) 32px",
-      "& > :nth-child(2)": { gridColumn: "2 / 5" },
-      "& > :nth-child(3)": { gridColumn: "2 / 3" },
-      "& > :nth-child(4)": { gridColumn: "3 / 4" },
-      "& > :nth-child(5)": { gridColumn: "4 / 5" },
-    },
-    [`@media ${bp.mobile}`]: {
-      gridTemplateColumns: "28px minmax(0, 1fr) 32px",
-      "& > :nth-child(2), & > :nth-child(3)": { gridColumn: "2 / 4" },
-      "& > :nth-child(4)": { gridColumn: "2 / 3" },
-      "& > :nth-child(5)": { gridColumn: "3 / 4" },
-    },
-  },
-  destinationCard: {
-    padding: layout.gap.sm,
-    borderRadius: layout.radius.md,
-    backgroundColor: semanticColors.bgSecondary,
-    ...shorthands.border(
-      layout.borderWidth.thin,
-      "solid",
-      semanticColors.borderDefault,
-    ),
-  },
-  destinationNumber: {
-    width: layout.spacing[7],
-    height: layout.spacing[7],
-    borderRadius: layout.radius.full,
-    backgroundImage: gradients.primary,
-    color: semanticColors.textOnAccent,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: typography.fontSize.size2,
-    fontWeight: typography.fontWeight.bold,
-    marginTop: layout.spacing[2],
-  },
-  destinationInput: {
-    "& .MuiOutlinedInput-root": {
-      minHeight: layout.controlSize.xl,
-    },
-    "& .MuiInputLabel-root": {
-      fontSize: typography.fontSize.size3,
-    },
-    "& .MuiFormHelperText-root": {
-      marginTop: layout.spacing[1],
-      fontSize: typography.fontSize.size1,
-    },
-  },
-  destinationRemoveButton: {
-    width: layout.controlSize.sm,
-    height: layout.controlSize.sm,
-    marginTop: layout.spacing[1],
+  destinationHint: {
+    ...typographyPresets.caption,
     color: semanticColors.textTertiary,
-    ":hover": {
-      color: semanticColors.textError,
-      backgroundColor: semanticColors.bgSecondary,
-    },
+    margin: `${layout.gap.sm} 0 0`,
   },
-  daysSummary: {
-    display: "flex",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: layout.gap.sm,
-    marginTop: layout.gap.sm,
-    padding: `${layout.spacing[1]} ${layout.gap.sm}`,
-    borderRadius: layout.radius.md,
-    backgroundColor: colors.transparent,
-  },
-  daysSummaryItem: {
-    margin: 0,
-    color: semanticColors.textSecondary,
-    fontSize: typography.fontSize.size2,
-  },
-  daysSummaryStatus: {
-    paddingLeft: layout.gap.sm,
-    ...shorthands.borderLeft(
-      layout.borderWidth.thin,
-      "solid",
-      semanticColors.borderDefault,
-    ),
-  },
-  daysSummaryOverage: {
-    color: semanticColors.textError,
-  },
+  notesField: { marginTop: layout.gap.lg },
   summary: {
     marginTop: layout.gap.lg,
     backgroundImage: gradients.summary,

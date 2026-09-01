@@ -79,11 +79,18 @@ def build_itinerary_prompt(
     else:
         data_lines = "No travel data found."
 
-    from datetime import date
+    from datetime import date, timedelta
 
     start = date.fromisoformat(preferences.start_date)
     end = date.fromisoformat(preferences.end_date)
     num_days = (end - start).days + 1
+    # Spelling the dates out gives the model a checklist to work through. Given
+    # only a start/end and per-destination allocations it tends to return one
+    # destination's worth of days and stop.
+    required_dates = "\n".join(
+        f"  {offset + 1}. {(start + timedelta(days=offset)).isoformat()}"
+        for offset in range(num_days)
+    )
     interests_str = (
         ", ".join(preferences.interests)
         if preferences.interests
@@ -102,9 +109,15 @@ TRIP DETAILS:
 - Destinations and allocated days: {destinations_str}
 - Start Date: {preferences.start_date}
 - End Date: {preferences.end_date}
-- Number of Days: {num_days}
 - Interests: {interests_str}
 - Total Budget: {preferences.budget}
+
+THE TRIP IS {num_days} DAYS LONG. Return exactly {num_days} day objects, one for
+each date below, in this order. The per-destination day counts above say how to
+split these {num_days} days between destinations - they are not the length of
+the trip.
+
+{required_dates}
 
 AVAILABLE ATTRACTIONS, ACTIVITIES & RESTAURANTS:
 {data_lines}
@@ -172,12 +185,64 @@ RESPONSE FORMAT (JSON ONLY):
 }}
 
 CRITICAL REQUIREMENTS:
-- Generate exactly {num_days} days
+- Generate exactly {num_days} days - one per date listed above, none missing.
+  Do not stop early, do not merge days, do not summarise or abbreviate any day.
 - Each day: 3-5 activities (mix of attractions, meals, experiences)
 - Dates match trip dates ({preferences.start_date} to {preferences.end_date})
 - Times in chronological order, no overlaps
 - All locations are real places in the selected destinations: {destinations_str}
 - Return ONLY JSON, nothing else"""
+
+
+def build_missing_days_prompt(
+    preferences: TravelPreferences,
+    travel_data: list[TravelDataItem],
+    planned_so_far: Itinerary,
+    missing_dates: list[str],
+) -> str:
+    """Ask for just the days that came back missing from a first attempt.
+
+    Asked for a long trip in one go the model tends to answer with only the
+    first few days. It handles a short, explicit list of dates reliably, so the
+    gaps are filled in a second pass instead.
+    """
+    destinations_str = "; ".join(
+        f"{destination['city'] + ', ' if destination.get('city') else ''}"
+        f"{destination['country']} ({destination['days']} days)"
+        for destination in preferences.destinations
+    )
+    dates_list = "\n".join(f"  - {value}" for value in missing_dates)
+
+    return f"""You are a professional travel itinerary planner. A trip is partly planned and
+some days are still missing. Plan ONLY the missing days.
+
+TRIP DETAILS:
+- Destinations and allocated days: {destinations_str}
+- Full trip: {preferences.start_date} to {preferences.end_date}
+- Interests: {", ".join(preferences.interests) or "general sightseeing"}
+- Total Budget: {preferences.budget}
+
+AVAILABLE ATTRACTIONS, ACTIVITIES & RESTAURANTS:
+{_format_travel_data(travel_data)}
+
+ALREADY PLANNED (do not repeat these activities or locations):
+{planned_so_far.model_dump_json(indent=2)}
+
+MISSING DATES - return exactly one day object for each, in this order:
+{dates_list}
+
+RULES:
+- Return exactly {len(missing_dates)} day objects, one per missing date above.
+- Do not return any date that is already planned.
+- Every day MUST contain 3-5 fully filled-in activities. A day with an empty
+  activities list is not acceptable - plan each one properly.
+- Activities run chronologically, starting 6:00-8:00 AM and ending with an
+  evening meal or activity, times in "HH:MM AM/PM" format.
+- Each activity needs a real location, a 1-2 sentence recommendation, 2-3 tags,
+  a duration in minutes and an estimated cost.
+- Keep each destination's allocated days contiguous where the already-planned
+  days allow it.
+- All locations are real places in the selected destinations: {destinations_str}"""
 
 
 def _format_travel_data(travel_data: list[TravelDataItem]) -> str:
