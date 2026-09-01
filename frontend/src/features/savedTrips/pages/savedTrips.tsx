@@ -8,7 +8,8 @@ import { useSavedTripsStyles } from "../styles/savedTrips.styles";
 const SavedTrips = () => {
   const styles = useSavedTripsStyles();
 
-  const { trips, loading, errorMessage } = useSavedTrips();
+  const { trips, loading, errorMessage, deletingTripIds, handleDeleteTrip } =
+    useSavedTrips();
 
   if (loading) {
     return (
@@ -35,6 +36,8 @@ const SavedTrips = () => {
                   trip.destinations.map(({ country }) => country).join("-")
                 }
                 trip={trip}
+                isDeleting={deletingTripIds.includes(trip.id)}
+                onDelete={handleDeleteTrip}
               />
             ))}
           </div>
