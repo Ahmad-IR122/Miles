@@ -19,7 +19,10 @@ router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 @router.post("/")
 def itinerary(request: ItineraryRequest):
     print("Received itinerary request:", request.travel_data)
-    result = generate_itinerary(request.preferences, request.travel_data)
+    try:
+        result = generate_itinerary(request.preferences, request.travel_data)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
     return result
 
 
