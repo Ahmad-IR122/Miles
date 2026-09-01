@@ -46,36 +46,26 @@ const en = {
       },
       tripDetails: {
         title: "Trip Details",
-        origin: "Origin",
         destination: "Destination",
         destinationPlaceholder: "Enter destination...",
-        fromCountry: "From (Country)",
-        fromCity: "From (City)",
-        toCountry: "To (Country)",
-        toCity: "To (City)",
         selectCountryFirst: "Select a country first",
-        originCountryPlaceholder: "e.g. Japan",
-        originCityPlaceholder: "e.g. Tokyo",
-        destinationCountryPlaceholder: "e.g. France",
-        destinationCityPlaceholder: "e.g. Paris",
         startDate: "Start Date",
         endDate: "End Date",
-        destinations: "Destinations",
-        addDestination: "Add",
         country: "Country",
-        city: "City",
-        days: "Days",
+        cities: "Cities",
         countryPlaceholder: "e.g. Oman",
-        cityPlaceholder: "e.g. Muscat",
-        removeDestination: "Remove destination {{number}}",
+        citiesPlaceholder: "e.g. Muscat, Nizwa",
+        citiesHint:
+          "Pick as many cities as you like — tell us how long to spend in each one in the notes on the last step.",
         travelDates: "Travel Dates",
         bookedDayTooltip: "This day is already booked in another trip",
-        daysPlanned_one: "day planned",
-        daysPlanned_other: "days planned",
-        daysLeft_one: "{{count}} left",
-        daysLeft_other: "{{count}} left",
-        daysOver_one: "{{count}} over",
-        daysOver_other: "{{count}} over",
+      },
+      notes: {
+        label: "Additional Notes",
+        placeholder:
+          "Add any notes for your trip... e.g. 3 days in Bratislava and the rest in Košice, we travel with a toddler, prefer trains over flights.",
+        helper:
+          "Anything you write here is passed along with your trip when the itinerary is put together.",
       },
       travelers: {
         adults: "Adults",
@@ -157,8 +147,6 @@ const en = {
         stay: "Stay",
         destinationDays_one: "{{count}} day",
         destinationDays_other: "{{count}} days",
-        daysAllocated_one: "{{allocated}} / {{duration}} day allocated",
-        daysAllocated_other: "{{allocated}} / {{duration}} days allocated",
         budgetRange: "{{minimum}}$ - {{maximum}}$",
       },
       generating: {
@@ -181,25 +169,22 @@ const en = {
         budget: "Please enter a valid budget greater than 0.",
         interests: "Please select at least one interest.",
         submitError: "Something went wrong. Please try again.",
+        aiServiceUnavailable:
+          "We couldn't build your itinerary just now — the planning service isn't responding. Your trip is saved, so try again in a moment.",
+        tripDatesConflict:
+          "You already have a trip planned on those dates. Go back and pick a different date range.",
+        networkUnreachable:
+          "We couldn't reach the server. Check your connection and try again.",
         requiredFields: "Please fill the required fields before moving on.",
-        originCountry: "Please select an origin country.",
-        destinationRequired: "Please add at least one destination.",
-        destinationDetails:
-          "Each destination must have a country and a positive number of stay days.",
-        originDestinationConflict:
-          "A destination cannot use the same city as the origin city.",
+        destinationRequired: "Please select a destination country.",
         startDate: "Please select a start date.",
         endDate: "Please select an end date.",
         endDateBeforeStart: "End date cannot be before start date.",
         maxTripDays: "Trip duration cannot exceed {{count}} days.",
         maxTravelers:
           "A trip can include at most {{count}} travelers, with at least one adult.",
-        allocatedDaysOver:
-          "Allocated days ({{allocated}}) exceed the trip duration ({{duration}} days).",
-        daysUnassigned_one:
-          "{{count}} day still needs to be assigned to destinations.",
-        daysUnassigned_other:
-          "{{count}} days still need to be assigned to destinations.",
+        notEnoughDaysForStops:
+          "Your trip is {{duration}} days but covers {{stops}} places. Add more days or remove a city.",
         dateOverlap:
           "Those dates overlap a trip you already have planned. Pick a different date range.",
         minimumInterests_one: "Please select at least {{count}} interest.",
