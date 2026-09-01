@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core import settings
 from app.routers import (
     activity,
+    chat,
     clerk_webhook,
     conversation,
     health,
@@ -48,3 +49,5 @@ app.include_router(interest.router)
 app.include_router(trip_interest.router)
 app.include_router(trip_preference.router)
 app.include_router(recommendations.router)
+app.include_router(chat.router)
+

@@ -1,3 +1,4 @@
+/* eslint-disable indent -- Prettier and the legacy indent rule disagree on multiline JSX/ternaries. */
 import {
   useEffect,
   useMemo,
@@ -7,6 +8,7 @@ import {
 } from "react";
 import axios from "axios";
 import { mergeClasses } from "@griffel/react";
+import { useTranslation } from "react-i18next";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -18,10 +20,8 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import Autocomplete from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import IconButton from "@mui/material/IconButton";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
+import Slider from "@mui/material/Slider";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
@@ -42,6 +42,7 @@ import {
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
 import { routesPaths } from "../../routes/routesPaths";
+
 type Destination = {
   destination_id: string;
   city: string;
@@ -49,80 +50,69 @@ type Destination = {
   country_code: string;
   region: string;
 };
+
 type CountryOption = {
   country: string;
   country_code: string;
   region: string;
 };
-type BudgetLevel = "LOW" | "MID" | "HIGH";
 
 type TripDestination = {
   country: CountryOption | null;
   city: Destination | null;
   days: number | "";
 };
-const budgetLabels: Record<BudgetLevel, string> = {
-  LOW: "Low",
-  MID: "Mid",
-  HIGH: "High",
-};
-const budgetOptions: { value: BudgetLevel; label: string }[] = [
-  { value: "LOW", label: budgetLabels.LOW },
-  { value: "MID", label: budgetLabels.MID },
-  { value: "HIGH", label: budgetLabels.HIGH },
-];
-const budgetAmounts: Record<BudgetLevel, number> = {
-  LOW: 1000,
-  MID: 2000,
-  HIGH: 3000,
-};
+
+const budgetSliderMin = 0;
+const budgetSliderMax = 5000;
+const budgetSliderStep = 50;
+const defaultBudgetMax = 100;
+
 type FieldErrors = {
   originCountry: string;
   originCity: string;
   destinations: string;
   startDate: string;
   endDate: string;
+  travelers: string;
   budget: string;
   interests: string;
 };
+
 const emptyFieldErrors: FieldErrors = {
   originCountry: "",
   originCity: "",
   destinations: "",
   startDate: "",
   endDate: "",
+  travelers: "",
   budget: "",
   interests: "",
 };
-const tripDetailsRequiredMessage =
-  "Please fill the required fields before moving on.";
-const aiServiceUnavailableMessage =
-  "We couldn't generate your itinerary right now — the AI service is temporarily unavailable. Your trip details are saved, so just click Generate Itinerary to try again.";
-const tripDatesConflictMessage =
-  "Those dates overlap a trip you already have planned. Pick a different date range.";
-const networkUnreachableMessage =
-  "We couldn't reach the server. Please check your connection and try again.";
-const genericGenerationErrorMessage = "Something went wrong. Please try again.";
-const getGenerationErrorMessage = (error: unknown): string => {
+
+// Maps an itinerary-generation failure to an i18n key, so the caller can
+// translate it with `t()` rather than displaying hardcoded English.
+const getGenerationErrorKey = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
-    if (status === 502) return aiServiceUnavailableMessage;
-    if (status === 409) return tripDatesConflictMessage;
-    if (!error.response) return networkUnreachableMessage;
+    if (status === 502)
+      return "tripPlanningForm.validation.aiServiceUnavailable";
+    if (status === 409) return "tripPlanningForm.validation.tripDatesConflict";
+    if (!error.response)
+      return "tripPlanningForm.validation.networkUnreachable";
   }
-  return genericGenerationErrorMessage;
+  return "tripPlanningForm.validation.submitError";
 };
+
 const maxTripDays = 31;
 const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
-const steps = [
-  { num: 1, label: "Trip Details" },
-  { num: 2, label: "Travelers & Budget" },
-  { num: 3, label: "Interests" },
-];
-// Extract unique countries from destinations
+const minAdults = 1;
+const maxTravelers = 10;
+
 const getUniqueCountries = (): CountryOption[] => {
   const countryMap = new Map<string, CountryOption>();
+
   destinationData.forEach((dest: Destination) => {
     if (!countryMap.has(dest.country_code)) {
       countryMap.set(dest.country_code, {
@@ -132,22 +122,28 @@ const getUniqueCountries = (): CountryOption[] => {
       });
     }
   });
+
   return Array.from(countryMap.values()).sort((a, b) =>
     a.country.localeCompare(b.country),
   );
 };
-// Get cities for a specific country
+
 const getCitiesForCountry = (countryCode: string): Destination[] => {
   return destinationData
     .filter((dest: Destination) => dest.country_code === countryCode)
     .sort((a, b) => a.city.localeCompare(b.city));
 };
+
 const allCountries = getUniqueCountries();
-const createBookedDay = (existingTrips: Trip[]) => {
+
+const createBookedDay = (existingTrips: Trip[], bookedTooltip: string) => {
   const BookedDay = (props: PickerDayProps) => {
     const styles = useTripPlanningFormStyles();
+
     const { day, outsideCurrentMonth, ...other } = props;
+
     const isPast = day.isBefore(dayjs(), "day");
+
     const isBooked =
       !isPast &&
       !outsideCurrentMonth &&
@@ -156,6 +152,7 @@ const createBookedDay = (existingTrips: Trip[]) => {
           !day.isBefore(trip.start_date, "day") &&
           !day.isAfter(trip.end_date, "day"),
       );
+
     const dayElement = (
       <PickerDay
         {...other}
@@ -164,51 +161,78 @@ const createBookedDay = (existingTrips: Trip[]) => {
         className={isBooked ? styles.bookedDay : undefined}
       />
     );
+
     if (!isBooked) return dayElement;
+
     return (
-      <Tooltip title="This day is already booked in another trip" arrow>
+      <Tooltip title={bookedTooltip} arrow>
         <span>{dayElement}</span>
       </Tooltip>
     );
   };
+
   return BookedDay;
 };
+
 const TripPlanningForm = () => {
   const styles = useTripPlanningFormStyles();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const tripDetailsRequiredMessage = t(
+    "tripPlanningForm.validation.requiredFields",
+  );
+  const steps = [
+    { num: 1, label: t("tripPlanningForm.steps.tripDetails") },
+    { num: 2, label: t("tripPlanningForm.steps.travelersBudget") },
+    { num: 3, label: t("tripPlanningForm.steps.interests") },
+  ];
+
   const [step, setStep] = useState(1);
-  const [budget, setBudget] = useState<BudgetLevel | "">("");
-  // Origin
+
+  const [budgetMax, setBudgetMax] = useState(defaultBudgetMax);
+
   const [originCountry, setOriginCountry] = useState<CountryOption | null>(
     null,
   );
+
   const [originCity, setOriginCity] = useState<Destination | null>(null);
-  // Destinations
+
   const [destinations, setDestinations] = useState<TripDestination[]>([
-    { country: null, city: null, days: "" },
+    {
+      country: null,
+      city: null,
+      days: "",
+    },
   ]);
-  // Dates & travelers
+
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
+
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-  // Interests
+
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [otherInterest, setOtherInterest] = useState("");
+
   const interestsSectionRef = useRef<HTMLDivElement | null>(null);
+
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>(emptyFieldErrors);
+
   const tripDuration =
     startDate?.isValid() === true &&
     endDate?.isValid() === true &&
     !endDate.isBefore(startDate, "day")
       ? endDate.diff(startDate, "day") + 1
       : 0;
+
   const allocatedDays = destinations.reduce(
     (total, destination) =>
       total + (typeof destination.days === "number" ? destination.days : 0),
     0,
   );
+
   const remainingDays = tripDuration - allocatedDays;
+
   const hasValidDestinationDays =
     destinations.length > 0 &&
     destinations.every(
@@ -218,12 +242,14 @@ const TripPlanningForm = () => {
         Number.isInteger(destination.days) &&
         destination.days > 0,
     );
+
   const hasOriginDestinationCityConflict =
     !!originCity &&
     destinations.some(
       (destination) =>
         destination.city?.destination_id === originCity.destination_id,
     );
+
   const isTripDetailsComplete =
     !!originCountry &&
     destinations.length > 0 &&
@@ -231,51 +257,76 @@ const TripPlanningForm = () => {
     !hasOriginDestinationCityConflict &&
     tripDuration > 0 &&
     allocatedDays === tripDuration;
-  const isTravelersBudgetComplete = adults >= 1 && children >= 0 && !!budget;
+
+  const totalTravelers = adults + children;
+
+  const isTravelerCountValid =
+    adults >= minAdults && children >= 0 && totalTravelers <= maxTravelers;
+
+  const isTravelersBudgetComplete =
+    isTravelerCountValid && budgetMax > budgetSliderMin;
+
   const isInterestsComplete = selectedInterests.length >= minInterests;
+
   const completedSteps = [
     isTripDetailsComplete,
     isTravelersBudgetComplete,
     isInterestsComplete,
   ];
-  // Loading & errors
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
+
   // Set when a trip was created but itinerary generation then failed, so a
   // retry can reuse it instead of re-creating it (which would 409 on the
   // same dates). Cleared whenever the details change or generation succeeds.
   const [pendingTrip, setPendingTrip] = useState<Trip | null>(null);
+
   useEffect(() => {
     getTrips()
       .then(({ data }) => setExistingTrips(data))
       .catch(() => {
-        // Non-fatal: if this fails we just skip client-side date blocking;
-        // the backend's overlap check still protects against overlaps.
+        // Non-fatal.
       });
   }, []);
+
   const isDateBooked = (date: Dayjs) =>
     existingTrips.some(
       (trip) =>
         !date.isBefore(trip.start_date, "day") &&
         !date.isAfter(trip.end_date, "day"),
     );
+
   const rangesOverlap = (
     startA: Dayjs,
     endA: Dayjs,
     startB: Dayjs,
     endB: Dayjs,
   ) => !startA.isAfter(endB, "day") && !startB.isAfter(endA, "day");
+
   const BookedDay = useMemo(
-    () => createBookedDay(existingTrips),
-    [existingTrips],
+    () =>
+      createBookedDay(
+        existingTrips,
+        t("tripPlanningForm.tripDetails.bookedDayTooltip"),
+      ),
+    [existingTrips, t],
   );
+
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors((current) =>
-      current[field] ? { ...current, [field]: "" } : current,
+      current[field]
+        ? {
+            ...current,
+            [field]: "",
+          }
+        : current,
     );
   };
+
   const clearTripDetailsValidationDisplay = () => {
     setFieldErrors((current) => ({
       ...current,
@@ -285,30 +336,42 @@ const TripPlanningForm = () => {
       startDate: "",
       endDate: "",
     }));
+
     setSubmitError((current) =>
       current === tripDetailsRequiredMessage ? "" : current,
     );
   };
+
   const getTripDetailsHelperText = (field: keyof FieldErrors) =>
     submitError === tripDetailsRequiredMessage ? "" : fieldErrors[field];
+
   const handleOriginCountryChange = (
     _event: SyntheticEvent,
     value: CountryOption | null,
   ) => {
     clearTripDetailsValidationDisplay();
+
     setOriginCountry(value);
     setOriginCity(null);
-    if (value) clearFieldError("originCountry");
+
+    if (value) {
+      clearFieldError("originCountry");
+    }
   };
+
   const updateDestination = (
     index: number,
     updates: Partial<TripDestination>,
   ) => {
     clearTripDetailsValidationDisplay();
+
     setDestinations((current) =>
       current.map((destination, destinationIndex) =>
         destinationIndex === index
-          ? { ...destination, ...updates }
+          ? {
+              ...destination,
+              ...updates,
+            }
           : destination,
       ),
     );
@@ -319,14 +382,21 @@ const TripPlanningForm = () => {
     city: Destination | null,
   ) => {
     clearTripDetailsValidationDisplay();
+
     setDestinations((current) => {
       const selectedDestination = current[index];
-      if (!selectedDestination) return current;
+
+      if (!selectedDestination) {
+        return current;
+      }
 
       if (!city) {
         return current.map((destination, destinationIndex) =>
           destinationIndex === index
-            ? { ...destination, city: null }
+            ? {
+                ...destination,
+                city: null,
+              }
             : destination,
         );
       }
@@ -339,28 +409,42 @@ const TripPlanningForm = () => {
 
       if (matchingIndex === -1) {
         return current.map((destination, destinationIndex) =>
-          destinationIndex === index ? { ...destination, city } : destination,
+          destinationIndex === index
+            ? {
+                ...destination,
+                city,
+              }
+            : destination,
         );
       }
 
       const matchingDestination = current[matchingIndex];
+
       const selectedDays =
         typeof selectedDestination.days === "number"
           ? selectedDestination.days
           : 0;
+
       const matchingDays =
         typeof matchingDestination.days === "number"
           ? matchingDestination.days
           : 0;
+
       const mergedDays = selectedDays + matchingDays;
 
       return current.reduce<TripDestination[]>(
         (destinations, destination, destinationIndex) => {
-          if (destinationIndex === index) return destinations;
+          if (destinationIndex === index) {
+            return destinations;
+          }
+
           return [
             ...destinations,
             destinationIndex === matchingIndex
-              ? { ...destination, days: mergedDays || "" }
+              ? {
+                  ...destination,
+                  days: mergedDays || "",
+                }
               : destination,
           ];
         },
@@ -371,16 +455,28 @@ const TripPlanningForm = () => {
 
   const addDestination = () => {
     clearTripDetailsValidationDisplay();
+
     setDestinations((current) => {
       const lastDestination = current[current.length - 1];
-      if (!lastDestination?.country) return current;
 
-      return [...current, { country: null, city: null, days: "" }];
+      if (!lastDestination?.country) {
+        return current;
+      }
+
+      return [
+        ...current,
+        {
+          country: null,
+          city: null,
+          days: "",
+        },
+      ];
     });
   };
 
   const removeDestination = (index: number) => {
     clearTripDetailsValidationDisplay();
+
     setDestinations((current) =>
       current.length === 1
         ? current
@@ -389,7 +485,10 @@ const TripPlanningForm = () => {
   };
 
   const getDestinationCities = (destination: TripDestination) => {
-    if (!destination.country) return [];
+    if (!destination.country) {
+      return [];
+    }
+
     return getCitiesForCountry(destination.country.country_code).filter(
       (city) => city.destination_id !== originCity?.destination_id,
     );
@@ -400,14 +499,21 @@ const TripPlanningForm = () => {
     value: Destination | null,
   ) => {
     clearTripDetailsValidationDisplay();
+
     setOriginCity(value);
-    if (value) clearFieldError("originCity");
+
+    if (value) {
+      clearFieldError("originCity");
+    }
 
     if (value) {
       setDestinations((current) =>
         current.map((destination) =>
           destination.city?.destination_id === value.destination_id
-            ? { ...destination, city: null }
+            ? {
+                ...destination,
+                city: null,
+              }
             : destination,
         ),
       );
@@ -418,13 +524,23 @@ const TripPlanningForm = () => {
     const nextInterests = selectedInterests.includes(interest)
       ? selectedInterests.filter((item) => item !== interest)
       : [...selectedInterests, interest];
+
     setSelectedInterests(nextInterests);
-    if (nextInterests.length >= minInterests) clearFieldError("interests");
+
+    if (nextInterests.length >= minInterests) {
+      clearFieldError("interests");
+    }
   };
+
   const validateCurrentStep = (): boolean => {
     setSubmitError("");
-    const nextErrors = { ...fieldErrors };
+
+    const nextErrors = {
+      ...fieldErrors,
+    };
+
     let isValid = true;
+
     if (step === 1) {
       const areAllTripDetailsFieldsEmpty =
         !originCountry &&
@@ -440,12 +556,15 @@ const TripPlanningForm = () => {
 
       nextErrors.originCountry = originCountry
         ? ""
-        : "Please select an origin country.";
+        : t("tripPlanningForm.validation.originCountry");
+
       nextErrors.originCity = "";
       nextErrors.destinations = "";
 
       if (destinations.length === 0) {
-        nextErrors.destinations = "Please add at least one destination.";
+        nextErrors.destinations = t(
+          "tripPlanningForm.validation.destinationRequired",
+        );
       } else if (
         destinations.some(
           (destination) =>
@@ -455,28 +574,36 @@ const TripPlanningForm = () => {
             destination.days <= 0,
         )
       ) {
-        nextErrors.destinations =
-          "Each destination must have a country and a positive number of stay days.";
+        nextErrors.destinations = t(
+          "tripPlanningForm.validation.destinationDetails",
+        );
       } else if (hasOriginDestinationCityConflict) {
-        nextErrors.destinations =
-          "A destination cannot use the same city as the origin city.";
+        nextErrors.destinations = t(
+          "tripPlanningForm.validation.originDestinationConflict",
+        );
       }
 
       nextErrors.startDate =
-        startDate?.isValid() === true ? "" : "Please select a start date.";
+        startDate?.isValid() === true
+          ? ""
+          : t("tripPlanningForm.validation.startDate");
 
       if (endDate?.isValid() !== true) {
-        nextErrors.endDate = "Please select an end date.";
+        nextErrors.endDate = t("tripPlanningForm.validation.endDate");
       } else if (
         startDate?.isValid() === true &&
         endDate.isBefore(startDate, "day")
       ) {
-        nextErrors.endDate = "End date cannot be before start date.";
+        nextErrors.endDate = t(
+          "tripPlanningForm.validation.endDateBeforeStart",
+        );
       } else if (
         startDate?.isValid() === true &&
         endDate.diff(startDate, "day") + 1 > maxTripDays
       ) {
-        nextErrors.endDate = "Trip duration cannot exceed 31 days.";
+        nextErrors.endDate = t("tripPlanningForm.validation.maxTripDays", {
+          count: maxTripDays,
+        });
       } else {
         nextErrors.endDate = "";
       }
@@ -488,10 +615,13 @@ const TripPlanningForm = () => {
       ) {
         nextErrors.destinations =
           allocatedDays > tripDuration
-            ? `Allocated days (${allocatedDays}) exceed the trip duration (${tripDuration} days).`
-            : `${tripDuration - allocatedDays} day${
-              tripDuration - allocatedDays === 1 ? "" : "s"
-            } still need to be assigned to destinations.`;
+            ? t("tripPlanningForm.validation.allocatedDaysOver", {
+                allocated: allocatedDays,
+                duration: tripDuration,
+              })
+            : t("tripPlanningForm.validation.daysUnassigned", {
+                count: tripDuration - allocatedDays,
+              });
       }
 
       isValid =
@@ -514,43 +644,63 @@ const TripPlanningForm = () => {
             dayjs(trip.end_date),
           ),
         );
+
         if (overlapsExisting) {
           setFieldErrors(nextErrors);
-          setSubmitError(
-            "Those dates overlap a trip you already have planned. Pick a different date range.",
-          );
+
+          setSubmitError(t("tripPlanningForm.validation.dateOverlap"));
+
           return false;
         }
       }
     }
+
     if (step === 2) {
+      nextErrors.travelers = isTravelerCountValid
+        ? ""
+        : t("tripPlanningForm.validation.maxTravelers", {
+            count: maxTravelers,
+          });
+
       nextErrors.budget =
-        adults >= 1 && children >= 0 && budget
+        budgetMax > budgetSliderMin
           ? ""
-          : "Please select a budget level.";
-      isValid = !nextErrors.budget;
+          : t("tripPlanningForm.validation.budget");
+
+      isValid = !nextErrors.travelers && !nextErrors.budget;
     }
+
     if (step === 3) {
       nextErrors.interests =
         selectedInterests.length >= minInterests
           ? ""
-          : `Please select at least ${minInterests} interests.`;
+          : t("tripPlanningForm.validation.minimumInterests", {
+              count: minInterests,
+            });
+
       isValid = !nextErrors.interests;
     }
+
     setFieldErrors(nextErrors);
+
     return isValid;
   };
+
   const goNext = () => {
     if (validateCurrentStep()) {
       setStep((current) => current + 1);
     }
   };
+
   const goBack = () => {
     setSubmitError("");
+
     setStep((current) => Math.max(1, current - 1));
   };
+
   const handleSubmit = async () => {
     setSubmitError("");
+
     if (!validateCurrentStep()) {
       if (step === 3) {
         interestsSectionRef.current?.scrollIntoView({
@@ -558,30 +708,46 @@ const TripPlanningForm = () => {
           block: "start",
         });
       }
+
       return;
     }
+
     setIsSubmitting(true);
     setGenerating(true);
+
     const minimumDisplayPromise = new Promise<void>((resolve) => {
       window.setTimeout(resolve, minimumGeneratingDisplayMs);
     });
+
     try {
       const tripPayload = {
         destination: destinations
           .map((destination) =>
             destination.city
-              ? `${destination.city.city}, ${destination.country?.country ?? ""}`
+              ? `${destination.city.city}, ${
+                  destination.country?.country ?? ""
+                }`
               : (destination.country?.country ?? ""),
           )
           .join(" • "),
+
         destinations: destinations.map((destination) => ({
           country: destination.country?.country ?? "",
-          ...(destination.city ? { city: destination.city.city } : {}),
+          ...(destination.city
+            ? {
+                city: destination.city.city,
+              }
+            : {}),
           days: typeof destination.days === "number" ? destination.days : 0,
         })),
+
         start_date: startDate?.format("YYYY-MM-DD") ?? "",
+
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
-        budget: budget ? budgetAmounts[budget] : 0,
+
+        budget_min: budgetSliderMin,
+        budget_max: budgetMax,
+
         travelers_count: adults + children,
       };
       // If a previous attempt already created this exact trip and only
@@ -607,47 +773,59 @@ const TripPlanningForm = () => {
       ]);
 
       setPendingTrip(null);
-      navigate(routesPaths.itinerary, { state: { trip, itinerary } });
+      navigate(routesPaths.itinerary, {
+        state: {
+          trip,
+          itinerary,
+        },
+      });
     } catch (error) {
-      setSubmitError(getGenerationErrorMessage(error));
+      setSubmitError(t(getGenerationErrorKey(error)));
     } finally {
       setGenerating(false);
       setIsSubmitting(false);
     }
   };
+
   if (generating) {
     return (
       <LoadingScreen
-        title="Creating your personalized journey..."
-        subtitle="Exploring your selected destinations and arranging a trip around your interests."
+        title={t("tripPlanningForm.generating.title")}
+        subtitle={t("tripPlanningForm.generating.selectedDestinations")}
         statusMessages={[
-          "Discovering local highlights...",
-          "Matching activities to your interests...",
-          "Organizing your days...",
-          "Adding the finishing touches...",
+          t("tripPlanningForm.generating.discovering"),
+          t("tripPlanningForm.generating.matching"),
+          t("tripPlanningForm.generating.organizing"),
+          t("tripPlanningForm.generating.finishing"),
         ]}
-        ariaLabel="Itinerary generation progress"
+        ariaLabel={t("tripPlanningForm.generating.progressLabel")}
       />
     );
   }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={styles.page}>
         <main className={styles.content}>
           <header className={styles.header}>
             <Typography component="h1" className={styles.title}>
-              Plan your{" "}
-              <span className={styles.gradientText}>perfect trip</span>
+              {t("tripPlanningForm.header.titlePrefix")}{" "}
+              <span className={styles.gradientText}>
+                {t("tripPlanningForm.header.titleAccent")}
+              </span>
             </Typography>
+
             <Typography component="p" className={styles.subtitle}>
-              Tell us about your trip and we&apos;ll create a personalized
-              itinerary in seconds.
+              {t("tripPlanningForm.header.subtitle")}
             </Typography>
           </header>
+
           <div className={styles.steps}>
             {steps.map((item, index) => {
               const isCurrent = step === item.num;
+
               const isComplete = completedSteps[index] && !isCurrent;
+
               return (
                 <div
                   key={item.num}
@@ -667,6 +845,7 @@ const TripPlanningForm = () => {
                     >
                       {isComplete ? <CheckIcon fontSize="small" /> : item.num}
                     </Typography>
+
                     <Typography
                       component="span"
                       className={mergeClasses(
@@ -679,6 +858,7 @@ const TripPlanningForm = () => {
                       {item.label}
                     </Typography>
                   </div>
+
                   {index < steps.length - 1 && (
                     <div
                       className={mergeClasses(
@@ -691,18 +871,22 @@ const TripPlanningForm = () => {
               );
             })}
           </div>
+
           <section className={styles.card}>
             {step === 1 && (
               <div className={styles.column24}>
-                {/* ORIGIN SECTION */}
                 <div>
                   <Typography
-                    component="label"
+                    component="p"
                     className={styles.label}
-                    sx={{ mb: 2.5, display: "block" }}
+                    sx={{
+                      mb: 2.5,
+                      display: "block",
+                    }}
                   >
-                    Origin
+                    {t("tripPlanningForm.tripDetails.origin")}
                   </Typography>
+
                   <div className={styles.grid}>
                     <Autocomplete
                       options={allCountries}
@@ -715,14 +899,17 @@ const TripPlanningForm = () => {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          label="From (Country)"
-                          placeholder="e.g. France"
+                          label={t("tripPlanningForm.tripDetails.fromCountry")}
+                          placeholder={t(
+                            "tripPlanningForm.tripDetails.destinationCountryPlaceholder",
+                          )}
                           sx={getFieldSx(!!originCountry)}
                           error={!!fieldErrors.originCountry}
                           helperText={getTripDetailsHelperText("originCountry")}
                         />
                       )}
                     />
+
                     <Autocomplete
                       options={
                         originCountry
@@ -741,10 +928,18 @@ const TripPlanningForm = () => {
                           {...params}
                           label={
                             originCountry
-                              ? "From (City)"
-                              : "Select a country first"
+                              ? t("tripPlanningForm.tripDetails.fromCity")
+                              : t(
+                                  "tripPlanningForm.tripDetails.selectCountryFirst",
+                                )
                           }
-                          placeholder={originCountry ? "e.g. Paris" : undefined}
+                          placeholder={
+                            originCountry
+                              ? t(
+                                  "tripPlanningForm.tripDetails.destinationCityPlaceholder",
+                                )
+                              : undefined
+                          }
                           sx={getFieldSx(!!originCity)}
                           error={!!fieldErrors.originCity}
                           helperText={getTripDetailsHelperText("originCity")}
@@ -753,19 +948,22 @@ const TripPlanningForm = () => {
                     />
                   </div>
                 </div>
+
                 <Divider sx={{ my: 1.5 }} />
+
                 <div>
                   <div className={styles.destinationSectionHeader}>
-                    <Typography component="label" className={styles.label}>
-                      Destinations
+                    <Typography component="p" className={styles.label}>
+                      {t("tripPlanningForm.tripDetails.destinations")}
                     </Typography>
+
                     <AppButton
                       appearance="secondary"
                       onClick={addDestination}
                       startIcon={<AddIcon />}
                       size="small"
                     >
-                      Add
+                      {t("tripPlanningForm.tripDetails.addDestination")}
                     </AppButton>
                   </div>
 
@@ -779,6 +977,7 @@ const TripPlanningForm = () => {
                           >
                             {index + 1}
                           </Typography>
+
                           <Autocomplete
                             className={styles.destinationInput}
                             options={allCountries}
@@ -796,8 +995,12 @@ const TripPlanningForm = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label="Country"
-                                placeholder="e.g. Oman"
+                                label={t(
+                                  "tripPlanningForm.tripDetails.country",
+                                )}
+                                placeholder={t(
+                                  "tripPlanningForm.tripDetails.countryPlaceholder",
+                                )}
                                 sx={getFieldSx(!!destination.country)}
                               />
                             )}
@@ -818,10 +1021,12 @@ const TripPlanningForm = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label="City"
+                                label={t("tripPlanningForm.tripDetails.city")}
                                 placeholder={
                                   destination.country
-                                    ? "e.g. Muscat"
+                                    ? t(
+                                        "tripPlanningForm.tripDetails.cityPlaceholder",
+                                      )
                                     : undefined
                                 }
                                 sx={getFieldSx(!!destination.city)}
@@ -831,12 +1036,14 @@ const TripPlanningForm = () => {
 
                           <TextField
                             className={styles.destinationInput}
-                            label="Days"
+                            label={t("tripPlanningForm.tripDetails.days")}
                             type="number"
                             value={destination.days}
                             onChange={(event) => {
                               const value = event.target.value;
+
                               const days = value === "" ? "" : Number(value);
+
                               updateDestination(index, {
                                 days:
                                   value === "" ||
@@ -866,7 +1073,7 @@ const TripPlanningForm = () => {
                                 typeof destination.days !== "number" ||
                                 !Number.isInteger(destination.days) ||
                                 destination.days <= 0)
-                                ? "Required"
+                                ? t("tripPlanningForm.validation.required")
                                 : undefined
                             }
                             sx={getFieldSx(
@@ -874,11 +1081,15 @@ const TripPlanningForm = () => {
                                 destination.days > 0,
                             )}
                           />
+
                           {destinations.length > 1 && (
                             <IconButton
                               className={styles.destinationRemoveButton}
                               onClick={() => removeDestination(index)}
-                              aria-label={`Remove destination ${index + 1}`}
+                              aria-label={t(
+                                "tripPlanningForm.tripDetails.removeDestination",
+                                { number: index + 1 },
+                              )}
                               size="small"
                             >
                               <DeleteOutlineIcon fontSize="small" />
@@ -896,9 +1107,12 @@ const TripPlanningForm = () => {
                     >
                       <strong>
                         {allocatedDays} / {tripDuration > 0 ? tripDuration : 0}{" "}
-                        days planned
+                        {t("tripPlanningForm.tripDetails.daysPlanned", {
+                          count: tripDuration > 0 ? tripDuration : 0,
+                        })}
                       </strong>
                     </Typography>
+
                     <Typography
                       component="p"
                       className={mergeClasses(
@@ -908,39 +1122,59 @@ const TripPlanningForm = () => {
                       )}
                     >
                       {remainingDays > 0
-                        ? `${remainingDays} left`
+                        ? t("tripPlanningForm.tripDetails.daysLeft", {
+                            count: remainingDays,
+                          })
                         : remainingDays === 0
                           ? ""
-                          : `${Math.abs(remainingDays)} over`}
+                          : t("tripPlanningForm.tripDetails.daysOver", {
+                              count: Math.abs(remainingDays),
+                            })}
                     </Typography>
                   </div>
 
                   {fieldErrors.destinations && (
-                    <Typography component="p" className={styles.fieldError}>
+                    <Typography
+                      component="p"
+                      role="alert"
+                      className={styles.fieldError}
+                    >
                       {fieldErrors.destinations}
                     </Typography>
                   )}
                 </div>
+
                 <Divider sx={{ my: 1.5 }} />
-                {/* DATES SECTION */}
+
                 <div>
                   <Typography
-                    component="label"
+                    component="p"
                     className={styles.label}
-                    sx={{ mb: 2.5, display: "block" }}
+                    sx={{
+                      mb: 2.5,
+                      display: "block",
+                    }}
                   >
-                    Travel Dates
+                    {t("tripPlanningForm.tripDetails.travelDates")}
                   </Typography>
+
                   <div className={styles.grid}>
                     <div>
-                      <Typography component="label" className={styles.label}>
-                        Start Date
+                      <Typography
+                        component="label"
+                        htmlFor="trip-start-date"
+                        className={styles.label}
+                      >
+                        {t("tripPlanningForm.tripDetails.startDate")}
                       </Typography>
+
                       <DatePicker
                         value={startDate}
                         onChange={(value) => {
                           clearTripDetailsValidationDisplay();
+
                           setStartDate(value);
+
                           if (
                             value?.isValid() === true &&
                             endDate?.isValid() === true &&
@@ -949,13 +1183,19 @@ const TripPlanningForm = () => {
                           ) {
                             setEndDate(null);
                           }
-                          if (value?.isValid()) clearFieldError("startDate");
+
+                          if (value?.isValid()) {
+                            clearFieldError("startDate");
+                          }
                         }}
                         disablePast
                         shouldDisableDate={isDateBooked}
-                        slots={{ day: BookedDay }}
+                        slots={{
+                          day: BookedDay,
+                        }}
                         slotProps={{
                           textField: {
+                            id: "trip-start-date",
                             fullWidth: true,
                             sx: getFieldSx(startDate?.isValid() === true),
                             error: !!fieldErrors.startDate,
@@ -965,7 +1205,7 @@ const TripPlanningForm = () => {
                             sx: {
                               "&.Mui-selected": {
                                 backgroundColor: semanticColors.interactive,
-                                color: semanticColors.bgPrimary,
+                                color: semanticColors.textOnAccent,
                               },
                               "&.Mui-selected:hover": {
                                 backgroundColor: semanticColors.interactive,
@@ -978,23 +1218,36 @@ const TripPlanningForm = () => {
                         }}
                       />
                     </div>
+
                     <div>
-                      <Typography component="label" className={styles.label}>
-                        End Date
+                      <Typography
+                        component="label"
+                        htmlFor="trip-end-date"
+                        className={styles.label}
+                      >
+                        {t("tripPlanningForm.tripDetails.endDate")}
                       </Typography>
+
                       <DatePicker
                         value={endDate}
                         onChange={(value) => {
                           clearTripDetailsValidationDisplay();
+
                           setEndDate(value);
-                          if (value?.isValid()) clearFieldError("endDate");
+
+                          if (value?.isValid()) {
+                            clearFieldError("endDate");
+                          }
                         }}
                         disablePast
                         minDate={startDate ?? undefined}
                         shouldDisableDate={isDateBooked}
-                        slots={{ day: BookedDay }}
+                        slots={{
+                          day: BookedDay,
+                        }}
                         slotProps={{
                           textField: {
+                            id: "trip-end-date",
                             fullWidth: true,
                             sx: getFieldSx(endDate?.isValid() === true),
                             error: !!fieldErrors.endDate,
@@ -1004,7 +1257,7 @@ const TripPlanningForm = () => {
                             sx: {
                               "&.Mui-selected": {
                                 backgroundColor: semanticColors.interactive,
-                                color: semanticColors.bgPrimary,
+                                color: semanticColors.textOnAccent,
                               },
                               "&.Mui-selected:hover": {
                                 backgroundColor: semanticColors.interactive,
@@ -1018,9 +1271,11 @@ const TripPlanningForm = () => {
                       />
                     </div>
                   </div>
+
                   {submitError === tripDetailsRequiredMessage && (
                     <Typography
                       component="p"
+                      role="alert"
                       className={styles.tripDetailsGeneralError}
                     >
                       {submitError}
@@ -1029,129 +1284,209 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
+
             {step === 2 && (
               <div className={styles.column28}>
-                {/* TRAVELERS SECTION */}
                 <div>
                   <Typography
                     component="p"
                     className={styles.label}
                     sx={{ mb: 1.5 }}
                   >
-                    Travelers
+                    {t("tripPlanningForm.budget.travelers")}
                   </Typography>
+
+                  <Typography
+                    component="p"
+                    className={styles.hint}
+                    sx={{ mb: 1.5 }}
+                  >
+                    {t("tripPlanningForm.travelers.totalSummary", {
+                      total: totalTravelers,
+                      max: maxTravelers,
+                    })}
+                  </Typography>
+
                   <div>
                     <Typography
                       component="p"
                       className={styles.label}
-                      sx={{ fontSize: "0.875rem", mb: 1 }}
+                      sx={{ mb: 1 }}
                     >
-                      Adults
+                      {t("tripPlanningForm.travelers.adults")}
                     </Typography>
+
                     <div className={styles.counterRow}>
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() =>
-                          setAdults((value) => Math.max(1, value - 1))
-                        }
-                        aria-label="Decrease adults"
+                        onClick={() => {
+                          setAdults((value) => Math.max(minAdults, value - 1));
+                          clearFieldError("travelers");
+                        }}
+                        aria-label={t(
+                          "tripPlanningForm.travelers.decreaseAdults",
+                        )}
+                        disabled={adults === minAdults}
                       >
                         <RemoveIcon />
                       </IconButton>
+
                       <Typography component="span" className={styles.count}>
                         {adults}
                       </Typography>
+
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() => setAdults((value) => value + 1)}
-                        aria-label="Increase adults"
+                        onClick={() =>
+                          setAdults((value) =>
+                            value + children < maxTravelers ? value + 1 : value,
+                          )
+                        }
+                        aria-label={t(
+                          "tripPlanningForm.travelers.increaseAdults",
+                        )}
+                        disabled={totalTravelers >= maxTravelers}
                       >
                         <AddIcon />
                       </IconButton>
+
                       <Typography component="span" className={styles.hint}>
-                        {adults === 1 ? "1 adult" : `${adults} adults`}
+                        {t("tripPlanningForm.travelers.adultCount", {
+                          count: adults,
+                        })}
                       </Typography>
                     </div>
                   </div>
+
                   <div className={styles.travelerGroupSpacing}>
                     <Typography
                       component="p"
                       className={styles.label}
-                      sx={{ fontSize: "0.875rem", mb: 1 }}
+                      sx={{ mb: 1 }}
                     >
-                      Children
+                      {t("tripPlanningForm.travelers.children")}
                     </Typography>
+
                     <div className={styles.counterRow}>
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() =>
-                          setChildren((value) => Math.max(0, value - 1))
-                        }
-                        aria-label="Decrease children"
+                        onClick={() => {
+                          setChildren((value) => Math.max(0, value - 1));
+                          clearFieldError("travelers");
+                        }}
+                        aria-label={t(
+                          "tripPlanningForm.travelers.decreaseChildren",
+                        )}
+                        disabled={children === 0}
                       >
                         <RemoveIcon />
                       </IconButton>
+
                       <Typography component="span" className={styles.count}>
                         {children}
                       </Typography>
+
                       <IconButton
                         className={styles.counterButton}
-                        onClick={() => setChildren((value) => value + 1)}
-                        aria-label="Increase children"
+                        onClick={() =>
+                          setChildren((value) =>
+                            adults + value < maxTravelers ? value + 1 : value,
+                          )
+                        }
+                        aria-label={t(
+                          "tripPlanningForm.travelers.increaseChildren",
+                        )}
+                        disabled={totalTravelers >= maxTravelers}
                       >
                         <AddIcon />
                       </IconButton>
+
                       <Typography component="span" className={styles.hint}>
                         {children === 0
-                          ? "No children"
-                          : `${children} children`}
+                          ? t("tripPlanningForm.travelers.noChildren")
+                          : t("tripPlanningForm.travelers.childCount", {
+                              count: children,
+                            })}
                       </Typography>
                     </div>
                   </div>
+
+                  {fieldErrors.travelers && (
+                    <Typography
+                      component="p"
+                      role="alert"
+                      className={styles.fieldError}
+                    >
+                      {fieldErrors.travelers}
+                    </Typography>
+                  )}
                 </div>
+
                 <Divider sx={{ my: 1.5 }} />
-                {/* BUDGET SECTION */}
+
                 <div>
                   <Typography
                     component="span"
-                    id="budget-level-label"
+                    id="budget-range-label"
                     className={styles.label}
-                    sx={{ mb: 2, display: "block" }}
-                  >
-                    Budget Level
-                  </Typography>
-                  <RadioGroup
-                    row
-                    aria-labelledby="budget-level-label"
-                    aria-describedby={
-                      fieldErrors.budget ? "budget-level-error" : undefined
-                    }
-                    name="budget-level"
-                    value={budget}
-                    onChange={(event) => {
-                      setBudget(event.target.value as BudgetLevel);
-                      clearFieldError("budget");
+                    sx={{
+                      mb: 2,
+                      display: "block",
                     }}
-                    className={styles.budgetOptions}
                   >
-                    {budgetOptions.map((option) => (
-                      <FormControlLabel
-                        key={option.value}
-                        value={option.value}
-                        control={<Radio />}
-                        label={option.label}
-                        className={mergeClasses(
-                          styles.budgetOption,
-                          budget === option.value &&
-                            styles.budgetOptionSelected,
-                        )}
-                      />
-                    ))}
-                  </RadioGroup>
+                    {t("tripPlanningForm.budget.range")}
+                  </Typography>
+
+                  <div className={styles.budgetSliderWrapper}>
+                    <Slider
+                      aria-labelledby="budget-range-label"
+                      aria-describedby={
+                        fieldErrors.budget ? "budget-range-error" : undefined
+                      }
+                      className={styles.budgetSlider}
+                      value={budgetMax}
+                      onChange={(_event, value) => {
+                        setBudgetMax(Number(value));
+                        clearFieldError("budget");
+                      }}
+                      valueLabelDisplay="on"
+                      valueLabelFormat={(value) =>
+                        t("tripPlanningForm.budget.value", { amount: value })
+                      }
+                      getAriaValueText={(value) =>
+                        t("tripPlanningForm.budget.value", { amount: value })
+                      }
+                      min={budgetSliderMin}
+                      max={budgetSliderMax}
+                      step={budgetSliderStep}
+                    />
+                  </div>
+
+                  <div className={styles.budgetRangeSummary}>
+                    <Typography
+                      component="span"
+                      className={styles.budgetRangeSummaryLabel}
+                    >
+                      {t("tripPlanningForm.budget.value", {
+                        amount: budgetSliderMin,
+                      })}
+                    </Typography>
+
+                    <Typography
+                      component="span"
+                      className={styles.budgetRangeSummaryLabel}
+                    >
+                      {t("tripPlanningForm.budget.value", {
+                        amount: budgetSliderMax,
+                      })}
+                    </Typography>
+                  </div>
+
                   {fieldErrors.budget && (
                     <Typography
                       component="p"
-                      id="budget-level-error"
+                      id="budget-range-error"
+                      role="alert"
                       className={styles.fieldError}
                     >
                       {fieldErrors.budget}
@@ -1160,39 +1495,54 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
+
             {step === 3 && (
               <div>
                 <div
                   ref={interestsSectionRef}
                   className={styles.interestHeader}
+                  aria-describedby={
+                    fieldErrors.interests ? "interests-error" : undefined
+                  }
                 >
                   <div className={styles.interestHeaderRow}>
                     <Typography component="h3" className={styles.interestTitle}>
-                      What are you interested in?
+                      {t("tripPlanningForm.interests.selectInterests")}
                     </Typography>
+
                     <span
                       className={mergeClasses(
                         styles.interestCounter,
                         selectedInterests.length >= minInterests &&
                           styles.interestCounterComplete,
                       )}
-                      title={`Selected ${selectedInterests.length} ${selectedInterests.length === 1 ? "interest" : "interests"}`}
+                      aria-label={t(
+                        "tripPlanningForm.interests.selectedCount",
+                        { count: selectedInterests.length },
+                      )}
                     >
                       {selectedInterests.length}
                     </span>
                   </div>
+
                   <Typography component="p" className={styles.interestText}>
                     {selectedInterests.length >= minInterests
-                      ? "Select all that apply"
-                      : `Choose at least ${minInterests} to personalize your trip`}
+                      ? t("tripPlanningForm.interests.selectAll")
+                      : t("tripPlanningForm.interests.chooseMinimum", {
+                          count: minInterests,
+                        })}
                   </Typography>
                 </div>
+
                 <div className={styles.chips}>
                   {interestOptions.map((interest) => (
                     <Chip
                       key={interest}
-                      label={interest}
+                      label={t(
+                        `tripPlanningForm.interests.options.${interest}`,
+                      )}
                       clickable
+                      aria-pressed={selectedInterests.includes(interest)}
                       onClick={() => toggleInterest(interest)}
                       className={mergeClasses(
                         styles.chip,
@@ -1202,61 +1552,109 @@ const TripPlanningForm = () => {
                     />
                   ))}
                 </div>
+
+                {fieldErrors.interests && (
+                  <Typography
+                    component="p"
+                    id="interests-error"
+                    role="alert"
+                    className={styles.fieldError}
+                  >
+                    {fieldErrors.interests}
+                  </Typography>
+                )}
+
                 {selectedInterests.includes("Other") && (
                   <div className={styles.otherField}>
                     <TextField
                       fullWidth
-                      label="Tell us your interest"
-                      placeholder="e.g. Photography or local markets"
+                      label={t("tripPlanningForm.interests.otherLabel")}
+                      placeholder={t(
+                        "tripPlanningForm.interests.otherPlaceholder",
+                      )}
                       value={otherInterest}
                       onChange={(event) => setOtherInterest(event.target.value)}
                       sx={getFieldSx(!!otherInterest.trim())}
                     />
                   </div>
                 )}
+
                 <div className={styles.summary}>
                   <Typography component="h3" className={styles.summaryTitle}>
-                    Trip Summary
+                    {t("tripPlanningForm.summary.title")}
                   </Typography>
+
                   <div className={styles.summaryGrid}>
                     {[
                       [
-                        "Destinations",
+                        t("tripPlanningForm.summary.destinations"),
                         destinations
                           .map(
                             (destination) =>
-                              `${destination.country?.country || "-"}${
+                              `${
+                                destination.country?.country ||
+                                t("tripPlanningForm.summary.notAvailable")
+                              }${
                                 destination.city
                                   ? `, ${destination.city.city}`
                                   : ""
-                              } (${destination.days || 0} days)`,
+                              } (${t(
+                                "tripPlanningForm.summary.destinationDays",
+                                { count: destination.days || 0 },
+                              )})`,
                           )
                           .join(" • "),
                       ],
                       [
-                        "Stay",
-                        `${allocatedDays} / ${tripDuration || 0} days allocated`,
+                        t("tripPlanningForm.summary.stay"),
+                        t("tripPlanningForm.summary.daysAllocated", {
+                          count: tripDuration || 0,
+                          allocated: allocatedDays,
+                          duration: tripDuration || 0,
+                        }),
                       ],
                       [
-                        "Dates",
+                        t("tripPlanningForm.summary.dates"),
                         startDate && endDate
-                          ? `${startDate.format("YYYY-MM-DD")} -> ${endDate.format("YYYY-MM-DD")}`
-                          : "-",
+                          ? t("tripPlanningForm.summary.dateRange", {
+                              startDate: startDate.format(
+                                t("tripPlanningForm.summary.dateFormat"),
+                              ),
+                              endDate: endDate.format(
+                                t("tripPlanningForm.summary.dateFormat"),
+                              ),
+                            })
+                          : t("tripPlanningForm.summary.notAvailable"),
                       ],
                       [
-                        "Travelers",
-                        `${adults + children} ${
-                          adults + children === 1 ? "person" : "people"
-                        }`,
+                        t("tripPlanningForm.summary.travelers"),
+                        t("tripPlanningForm.summary.travelerCount", {
+                          count: adults + children,
+                        }),
                       ],
-                      ["Budget", budget ? budgetLabels[budget] : "-"],
-                      ["Interests", `${selectedInterests.length} selected`],
-                      ["Style", "Balanced"],
+                      [
+                        t("tripPlanningForm.summary.budget"),
+                        t("tripPlanningForm.summary.budgetRange", {
+                          minimum: budgetSliderMin,
+                          maximum: budgetMax,
+                        }),
+                      ],
+                      [
+                        t("tripPlanningForm.summary.interests"),
+                        t("tripPlanningForm.summary.interestCount", {
+                          count: selectedInterests.length,
+                        }),
+                      ],
+                      [
+                        t("tripPlanningForm.summary.style"),
+                        t("tripPlanningForm.summary.balanced"),
+                      ],
                     ].map(([label, value]) => (
                       <div key={label}>
                         <Typography component="p" className={styles.summaryKey}>
                           {label}
                         </Typography>
+
                         <Typography
                           component="p"
                           className={styles.summaryValue}
@@ -1269,12 +1667,14 @@ const TripPlanningForm = () => {
                 </div>
               </div>
             )}
+
             {submitError && submitError !== tripDetailsRequiredMessage && (
-              <Typography component="p" className={styles.error}>
+              <Typography component="p" role="alert" className={styles.error}>
                 {submitError}
               </Typography>
             )}
           </section>
+
           <div className={styles.navigation}>
             <AppButton
               appearance="secondary"
@@ -1282,15 +1682,16 @@ const TripPlanningForm = () => {
               onClick={goBack}
               startIcon={<ArrowBackIcon />}
             >
-              Back
+              {t("tripPlanningForm.back")}
             </AppButton>
+
             {step < steps.length ? (
               <AppButton
                 appearance="primary"
                 onClick={goNext}
                 endIcon={<ArrowForwardIcon />}
               >
-                Continue
+                {t("tripPlanningForm.continue")}
               </AppButton>
             ) : (
               <AppButton
@@ -1298,7 +1699,7 @@ const TripPlanningForm = () => {
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
-                Generate Itinerary
+                {t("tripPlanningForm.submit")}
               </AppButton>
             )}
           </div>
@@ -1307,4 +1708,5 @@ const TripPlanningForm = () => {
     </LocalizationProvider>
   );
 };
+
 export default TripPlanningForm;
