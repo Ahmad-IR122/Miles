@@ -5,6 +5,7 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import FlightTakeoffRoundedIcon from "@mui/icons-material/FlightTakeoffRounded";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import { Link } from "react-router-dom";
 
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { formatDateRange } from "../../Itinerary/utils/dateUtils";
@@ -12,6 +13,7 @@ import { formatTripDestinations } from "../../../types/trip";
 import { useSavedTripsStyles } from "../styles/savedTrips.styles";
 import type { SavedTrip } from "../types/savedTrips.types";
 import { tripStatusLabels } from "../utils/tripStatus";
+import { buildItineraryDetailPath } from "../../../routes/routesPaths";
 
 type TripCardProps = {
   trip: SavedTrip;
@@ -92,14 +94,17 @@ const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
           </span>
         </div>
 
-        <div className={styles.cardFooter}>
+        <Link
+          to={buildItineraryDetailPath(trip.id)}
+          className={styles.cardFooter}
+        >
           <span>View full itinerary</span>
 
           <ArrowForwardRoundedIcon
             fontSize="small"
             className={styles.cardFooterArrow}
           />
-        </div>
+        </Link>
       </div>
 
       <ConfirmDialog
