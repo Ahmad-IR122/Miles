@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { api } from "../../../api/api";
+import { useLocation, useParams } from "react-router-dom";
 import {
   addActivity,
+  getItineraryByTripId,
+  getUpcomingItinerary,
   regenerateActivity,
   regenerateDay,
   regenerateTrip,
 } from "../../../api/itinerary";
+import { getTripById } from "../../../api/trip";
 import { useRegenerate } from "../../../hooks/useRegenerate";
 import type { GeneratedItinerary } from "../../../types/itinerary";
 import type { Trip as ApiTrip } from "../../../types/trip";
@@ -14,7 +16,6 @@ import type { Activity, Trip } from "../types/itinerary.types";
 import {
   adaptGeneratedDays,
   adaptGeneratedItinerary,
-  adaptItineraries,
 } from "../utils/adaptItinerary";
 
 const itineraryLoadError =
@@ -24,6 +25,7 @@ type LocationState = { trip?: ApiTrip; itinerary?: GeneratedItinerary } | null;
 
 export const useItinerary = () => {
   const location = useLocation();
+  const { itineraryId } = useParams<{ itineraryId: string }>();
   const state = (location.state ?? null) as LocationState;
   const hasGenerated = !!(state?.trip && state?.itinerary);
 
@@ -41,12 +43,26 @@ export const useItinerary = () => {
     }
 
     const fetchItinerary = async () => {
+      setLoading(true);
       try {
-        const response = await api.get("/itinerary");
-        const payload = response?.data?.data ?? response?.data ?? [];
-        setItineraryData(
-          Array.isArray(payload) ? adaptItineraries(payload) : [],
-        );
+        // itineraryId here is actually a trip id (see api/itinerary.ts +
+        // backend /itinerary/by-trip/{trip_id} route). When there's no
+        // param at all (top-nav "Itinerary" page), fall back to whichever
+        // trip is soonest via /itinerary/upcoming.
+        const response = itineraryId
+          ? await getItineraryByTripId(Number(itineraryId))
+          : await getUpcomingItinerary();
+
+        const generated: GeneratedItinerary = response.data;
+
+        // GeneratedItinerary only carries trip_id, not the full trip
+        // (destination, dates, travelers, budget, etc) — fetch the trip
+        // separately and reuse the same adapter the generate flow uses,
+        // so both paths build an identical Trip shape.
+        const tripResponse = await getTripById(generated.trip_id);
+        const tripData: ApiTrip = tripResponse.data;
+
+        setItineraryData([adaptGeneratedItinerary(tripData, generated)]);
         setErrorMessage("");
       } catch (error) {
         console.error("Error fetching itinerary data:", error);
@@ -58,7 +74,7 @@ export const useItinerary = () => {
 
     fetchItinerary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [itineraryId]);
 
   const regenerate = useRegenerate((updated) => {
     setItineraryData((prev) => {

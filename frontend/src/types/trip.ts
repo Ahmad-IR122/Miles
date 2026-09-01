@@ -30,4 +30,5 @@ export type Trip = {
   trip_status: string;
   created_at: string;
   updated_at: string;
+  itinerary_id: number | null;
 };
