@@ -29,35 +29,52 @@
   color-scheme: dark;
 }
 
+/* Home page background image. Same tiering as color-scheme above, but as a
+   plain custom property override rather than light-dark() — light-dark()
+   only resolves to a <color>, it can't switch between two url()s. */
+:root {
+  --warm-bg-image: url("../../assets/lightMode.webp");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --warm-bg-image: url("../../assets/darkMode.webp");
+  }
+}
+
+:root[data-theme="dark"] {
+  --warm-bg-image: url("../../assets/darkMode.webp");
+}
+
 :root {
   /* ---------------------------------------------------------------------
    * semanticColors — the default palette (cool gray ramp, coral/rose accent)
    * ------------------------------------------------------------------ */
 
   /* Text */
-  --color-text-primary: light-dark(#111827, #f5ede7);
-  --color-text-secondary: light-dark(#4b5563, #bfb3ac);
-  --color-text-tertiary: light-dark(#6b7280, #a2958d);
+  --color-text-primary: light-dark(#432d32, #fff3d6);
+  --color-text-secondary: light-dark(#7c5f63, #c8b49c);
+  --color-text-tertiary: light-dark(#9e8488, #a8967f);
   --color-text-disabled: light-dark(#9ca3af, #746760);
   /* brown #6B4226 is unreadable on a dark surface; lifted to a warm tan */
   --color-text-brand: light-dark(#6b4226, #e8b99a);
   --color-text-error: light-dark(#dc2626, #f87171);
 
   /* Backgrounds */
-  --color-bg-primary: light-dark(#ffffff, #1f1815);
-  --color-bg-secondary: light-dark(#fafbfb, #191310);
-  --color-bg-tertiary: light-dark(#f3f4f5, #2a211c);
-  --color-bg-page: light-dark(#fbf8f3, #15100d);
-  --color-bg-disabled: light-dark(#f3f4f5, #2a211c);
-  --color-bg-track: light-dark(#e5e7eb, #3a2e27);
+  --color-bg-primary: light-dark(#fffdf7, #28212a);
+  --color-bg-secondary: light-dark(#fff9f0, #221c26);
+  --color-bg-tertiary: light-dark(#f7eedc, #322933);
+  --color-bg-page: light-dark(#fff9f0, #211c25);
+  --color-bg-disabled: light-dark(#efe4cc, #362b39);
+  --color-bg-track: light-dark(#eadfc7, #3a303d);
   /* Tints need more alpha on dark to stay visible against a low-luminance base */
   --color-bg-accent: light-dark(
-    rgba(255, 122, 89, 0.08),
-    rgba(255, 122, 89, 0.14)
+    rgba(155, 183, 209, 0.12),
+    rgba(217, 120, 140, 0.16)
   );
   --color-bg-interactive-subtle: light-dark(
-    rgba(255, 122, 89, 0.06),
-    rgba(255, 122, 89, 0.1)
+    rgba(155, 183, 209, 0.08),
+    rgba(217, 120, 140, 0.12)
   );
 
   /* Foreground on a coral/rose gradient. Identical in both themes by design —
@@ -67,26 +84,26 @@
 
   /* Translucent surface for controls floating over imagery. */
   --color-surface-translucent: light-dark(
-    rgba(255, 255, 255, 0.9),
-    rgba(31, 24, 21, 0.9)
+    rgba(255, 253, 247, 0.9),
+    rgba(40, 33, 42, 0.9)
   );
 
   /* Borders */
-  --color-border-default: light-dark(#d1d5db, #453931);
-  --color-border-light: light-dark(#e5e7eb, #332a24);
-  --color-border-accent: light-dark(#ff7a59, #ff8a6b);
+  --color-border-default: light-dark(#e4d5b8, #473a4a);
+  --color-border-light: light-dark(#efe4cc, #362b39);
+  --color-border-accent: light-dark(#9bb7d1, #d9788c);
   --color-border-accent-light: light-dark(
-    rgba(255, 122, 89, 0.15),
-    rgba(255, 122, 89, 0.25)
+    rgba(155, 183, 209, 0.2),
+    rgba(217, 120, 140, 0.3)
   );
   --color-border-accent-strong: light-dark(
-    rgba(255, 122, 89, 0.2),
-    rgba(255, 122, 89, 0.35)
+    rgba(155, 183, 209, 0.28),
+    rgba(217, 120, 140, 0.4)
   );
 
   /* Interactive */
-  --color-interactive: light-dark(#ff7a59, #ff8a6b);
-  --color-interactive-hover: light-dark(#e94f92, #f4679f);
+  --color-interactive: light-dark(#9bb7d1, #d9788c);
+  --color-interactive-hover: light-dark(#7fa0c2, #c5647a);
 
   /* Elevation. Geometry is shared; only the shadow colour changes. Neutral
    * shadows go near-black on dark, where a tinted shadow reads as haze. */
@@ -97,9 +114,9 @@
   --shadow-strong: 0 20px 40px -24px
     light-dark(rgba(17, 24, 39, 0.15), rgba(0, 0, 0, 0.6));
   --shadow-interactive: 0 10px 26px
-    light-dark(rgba(233, 79, 146, 0.3), rgba(233, 79, 146, 0.35));
+    light-dark(rgba(155, 183, 209, 0.3), rgba(217, 120, 140, 0.35));
   --shadow-interactive-hover: 0 14px 30px
-    light-dark(rgba(233, 79, 146, 0.4), rgba(233, 79, 146, 0.45));
+    light-dark(rgba(155, 183, 209, 0.4), rgba(217, 120, 140, 0.45));
 
   /* Brand gradients — accents keep their hue in both themes. */
   --gradient-primary: linear-gradient(
@@ -114,44 +131,59 @@
   );
   --gradient-summary: linear-gradient(
     135deg,
-    light-dark(rgba(255, 122, 89, 0.05), rgba(255, 122, 89, 0.1)),
-    light-dark(rgba(233, 79, 146, 0.05), rgba(233, 79, 146, 0.1))
+    light-dark(rgba(155, 183, 209, 0.08), rgba(217, 120, 140, 0.1)),
+    light-dark(rgba(127, 160, 194, 0.08), rgba(197, 100, 122, 0.1))
   );
 
   /* ---------------------------------------------------------------------
    * warm — the second palette (warm brown ramp, used by nav/home/chatbot)
    * ------------------------------------------------------------------ */
 
-  --warm-coral: light-dark(#ff7a66, #ff8f78);
-  --warm-coral-hover: light-dark(#ff856f, #ff9c86);
-  --warm-coral-bright: light-dark(#ff6b6b, #ff7f7f);
-  --warm-rose: light-dark(#f43f7a, #f65189);
+  /* Exact hex values from the design spec (AI-rendered mockups, values
+     confirmed by design). Light: powder blue accent. Dark: the accent splits
+     in two — dusty flamingo pink drives buttons/active states, muted dusty
+     blue is reserved for the cool/pattern accent (see --warm-rose). */
+  --warm-coral: light-dark(#9bb7d1, #d9788c);
+  --warm-coral-hover: light-dark(#7fa0c2, #c5647a);
+  --warm-coral-bright: light-dark(#6f93bc, #e39fae);
+  --warm-rose: light-dark(#a9c1d8, #526a82);
+  /* "Highlight headline / card" role — same exact hex in both themes. Used
+     for the home hero's italic highlight text and as a flat card/badge fill
+     (see --warm-bg-tint below), not as a gradient. */
+  --warm-gold: #ffe18d;
 
-  --warm-bg-page: light-dark(#fff9f5, #15100d);
-  --warm-bg-surface: light-dark(#fffcf9, #1f1815);
+  /* Chat widget only. Light mode collapses this into the general accent
+     ("Blue accents / chat button" is one role), but dark mode gives the chat
+     button its own deep navy, distinct from the pink used everywhere else. */
+  --warm-chat: light-dark(#9bb7d1, #28394d);
+  --warm-chat-hover: light-dark(#87a9c7, #33465f);
+
+  --warm-bg-page: light-dark(#fff9f0, #211c25);
+  --warm-bg-surface: light-dark(#fffdf7, #28212a);
   /* sticky headers/footers over blur */
   --warm-bg-surface-blur: light-dark(
-    rgba(255, 252, 249, 0.96),
-    rgba(31, 24, 21, 0.96)
+    rgba(255, 253, 247, 0.96),
+    rgba(40, 33, 42, 0.96)
   );
-  --warm-bg-tint: light-dark(#fff1eb, #2a211c);
-  --warm-bg-disabled: light-dark(#e8cbc1, #3a2e27);
+  /* Flat "highlight / card" fill — see --warm-gold. */
+  --warm-bg-tint: #ffe18d;
+  --warm-bg-disabled: light-dark(#efe4cc, #362b39);
   /* Continuous band drawn behind a run of trip days in the account calendar.
-     Rose-tinted rather than neutral so it reads as the same accent family as
-     the gradient endpoints capping each run. */
+     Tied to --warm-rose so it reads as the same accent family as the
+     gradient endpoints capping each run. */
   --warm-bg-accent-band: light-dark(
-    rgba(244, 63, 122, 0.12),
-    rgba(246, 81, 137, 0.22)
+    rgba(169, 193, 216, 0.18),
+    rgba(82, 106, 130, 0.3)
   );
-  --warm-border: light-dark(#f3ded4, #3a2e27);
+  --warm-border: light-dark(#eadfc7, #3a303d);
   --warm-border-coral-bright: light-dark(
-    rgba(255, 107, 107, 0.3),
-    rgba(255, 127, 127, 0.35)
+    rgba(111, 147, 188, 0.3),
+    rgba(227, 159, 174, 0.35)
   );
 
-  --warm-text-primary: light-dark(#2f211b, #f5ede7);
-  --warm-text-secondary: light-dark(#7f7068, #b5a49b);
-  --warm-text-tertiary: light-dark(#9b8a82, #96857c);
+  --warm-text-primary: light-dark(#432d32, #fff3d6);
+  --warm-text-secondary: light-dark(#7c5f63, #c8b49c);
+  --warm-text-tertiary: light-dark(#9e8488, #a8967f);
   --warm-text-brand: light-dark(#8b5a4b, #e2a98e);
   --warm-text-on-accent-disabled: light-dark(
     rgba(255, 255, 255, 0.78),
@@ -185,13 +217,13 @@
   --warm-shadow-nav-raised: 0 8px 18px
     light-dark(rgba(47, 33, 27, 0.07), rgba(0, 0, 0, 0.35));
 
-  /* Rose glow for accent/gradient surfaces — keeps its hue in both themes */
+  /* Cool-accent glow for accent/gradient surfaces — keeps its hue in both themes */
   --warm-shadow-rose-soft: 0 10px 20px
-    light-dark(rgba(244, 63, 122, 0.2), rgba(244, 63, 122, 0.26));
+    light-dark(rgba(169, 193, 216, 0.28), rgba(82, 106, 130, 0.32));
   --warm-shadow-rose: 0 12px 24px
-    light-dark(rgba(244, 63, 122, 0.26), rgba(244, 63, 122, 0.32));
+    light-dark(rgba(169, 193, 216, 0.34), rgba(82, 106, 130, 0.38));
   --warm-shadow-rose-hover: 0 14px 28px
-    light-dark(rgba(244, 63, 122, 0.28), rgba(244, 63, 122, 0.34));
+    light-dark(rgba(169, 193, 216, 0.38), rgba(82, 106, 130, 0.42));
 
   /* Footer artwork and surface details */
   --footer-shell-end: light-dark(
@@ -312,7 +344,7 @@
   --itin-track: light-dark(#f2dfd2, #3a2e27);
   /* Raised controls that were a literal white — kept exactly #ffffff in light
    * so the screen is unchanged there, rather than folded into --warm-bg-surface
-   * (#fffcf9), which would have shifted it. */
+   * (#fdf9f5), which would have shifted it. */
   --itin-surface-raised: light-dark(#ffffff, #241c18);
   --itin-surface-card: light-dark(
     rgba(255, 252, 248, 0.9),

@@ -11,7 +11,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/newLogo.png";
 import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { routesPaths } from "../../routes/routesPaths";
 import AppButton from "../AppButton/appButton";

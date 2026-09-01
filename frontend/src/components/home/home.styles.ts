@@ -1,49 +1,12 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import { warm, warmGradients, warmShadows } from "../../common/theme/colors";
+import { warm, warmShadows } from "../../common/theme/colors";
 
 import {
   layout,
   typography,
   typographyPresets,
 } from "../../common/theme/typography";
-
-/*
- * Very subtle travel doodles used as part of the page background.
- * The stroke color matches the existing warm border tone so the
- * illustrations blend into the background instead of standing out.
- */
-const doodleBackground = `
-  url("data:image/svg+xml,%3Csvg width='420' height='300' viewBox='0 0 420 300' xmlns='http://www.w3.org/2000/svg'%3E
-    %3Cg fill='none' stroke='%23F3DED4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E
-
-      %3C!-- Sparkle --%3E
-      %3Cpath d='M55 45v16M47 53h16'/%3E
-      %3Cpath d='M62 33v7M58.5 36.5h7'/%3E
-
-      %3C!-- Curved travel path --%3E
-      %3Cpath d='M140 70c35-25 70-20 95 6' stroke-dasharray='4 6'/%3E
-      %3Ccircle cx='140' cy='70' r='3'/%3E
-      %3Ccircle cx='235' cy='76' r='3'/%3E
-
-      %3C!-- Location pin --%3E
-      %3Cpath d='M340 58c0 10-12 22-12 22s-12-12-12-22a12 12 0 1 1 24 0Z'/%3E
-      %3Ccircle cx='328' cy='58' r='4'/%3E
-
-      %3C!-- Sun --%3E
-      %3Ccircle cx='87' cy='220' r='10'/%3E
-      %3Cpath d='M87 198v8M87 234v8M65 220h8M101 220h8M72 205l6 6M96 229l6 6M102 205l-6 6M78 229l-6 6'/%3E
-
-      %3C!-- Wave --%3E
-      %3Cpath d='M265 220c10-8 20-8 30 0s20 8 30 0 20-8 30 0'/%3E
-
-      %3C!-- Small sparkles --%3E
-      %3Cpath d='M385 160v12M379 166h12'/%3E
-      %3Cpath d='M185 255v10M180 260h10'/%3E
-
-    %3C/g%3E
-  %3C/svg%3E")
-`;
 
 export const useHomeStyles = makeStyles({
   page: {
@@ -56,27 +19,10 @@ export const useHomeStyles = makeStyles({
 
     fontFamily: typography.fontFamily.sans,
     backgroundColor: warm.bgPage,
-
-    /*
-     * Decorative background layer.
-     * pointerEvents prevents it from ever interfering with UI.
-     */
-    "&::before": {
-      content: "''",
-
-      position: "absolute",
-      inset: 0,
-
-      zIndex: 0,
-
-      backgroundImage: doodleBackground,
-      backgroundRepeat: "repeat",
-      backgroundSize: "420px 300px",
-
-      opacity: 0.32,
-
-      pointerEvents: "none",
-    },
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
   },
 
   authHeader: {
@@ -285,14 +231,8 @@ export const useHomeStyles = makeStyles({
 
     fontStyle: "italic",
 
-    backgroundImage: warmGradients.primary,
-
-    backgroundClip: "text",
-    WebkitBackgroundClip: "text",
-
-    color: "transparent",
-
-    WebkitTextFillColor: "transparent",
+    // Flat "highlight headline" hex from the design spec, not a gradient.
+    color: warm.gold,
   },
 
   description: {

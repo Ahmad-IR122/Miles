@@ -110,11 +110,23 @@ export const warm = {
   coralHover: "var(--warm-coral-hover)",
   coralBright: "var(--warm-coral-bright)",
   rose: "var(--warm-rose)",
+  // "Highlight headline / card" role — one flat hex in both themes. Used as a
+  // solid text color (home hero) and as a solid fill (see bgTint below), not
+  // as a gradient endpoint.
+  gold: "var(--warm-gold)",
+
+  // Chat widget only — dark mode gives it a dedicated navy, distinct from
+  // the coral/rose accent used everywhere else. See theme.css.
+  chat: "var(--warm-chat)",
+  chatHover: "var(--warm-chat-hover)",
 
   bgPage: "var(--warm-bg-page)",
   bgSurface: "var(--warm-bg-surface)",
   bgSurfaceBlur: "var(--warm-bg-surface-blur)", // sticky headers/footers over blur
   bgTint: "var(--warm-bg-tint)",
+  // Home page background image only (fades to solid past the fold, not a
+  // repeating tile — see home.styles.ts).
+  bgImage: "var(--warm-bg-image)",
   bgAccentBand: "var(--warm-bg-accent-band)",
   bgDisabled: "var(--warm-bg-disabled)",
   border: "var(--warm-border)",

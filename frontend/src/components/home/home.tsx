@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import AppButton from "../../common/AppButton/appButton";
 import ThemeToggle from "../../common/theme/themeToggle";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/newLogo.png";
 import homeImage from "../../assets/image.svg";
 import { routesPaths } from "../../routes/routesPaths";
 import { useHomeStyles } from "./home.styles";
