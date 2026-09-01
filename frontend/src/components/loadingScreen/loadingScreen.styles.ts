@@ -1,11 +1,5 @@
 import { makeStyles } from "@griffel/react";
-import {
-  itinerary,
-  itineraryGradients,
-  itineraryShadows,
-  semanticColors,
-  warm,
-} from "../../common/theme/colors";
+import { semanticColors, warm } from "../../common/theme/colors";
 import {
   layout,
   typography,
@@ -29,14 +23,21 @@ export const progressRingCircumference = 2 * Math.PI * progressRing.radius;
 
 export const useLoadingScreenStyles = makeStyles({
   root: {
+    position: "fixed",
+    inset: 0,
+    zIndex: 1100,
+
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100dvh",
+    overflow: "hidden",
     padding: layout.padding["2xl"],
     rowGap: layout.gap.xl,
-    backgroundImage: itineraryGradients.page,
+    // Same layered-gradient recipe as the splash screen, so the two
+    // full-page loading states read as one consistent background in both
+    // light and dark mode.
+    backgroundImage: `radial-gradient(circle at 50% 42%, color-mix(in srgb, ${semanticColors.bgPrimary} 55%, transparent) 0%, transparent 50%), radial-gradient(circle at 16% 26%, ${semanticColors.bgAccent} 0%, transparent 36%), radial-gradient(circle at 84% 74%, ${semanticColors.bgInteractiveSubtle} 0%, transparent 38%), radial-gradient(circle at 12% 8%, ${semanticColors.bgAccent} 0%, transparent 34%), radial-gradient(circle at 88% 92%, ${semanticColors.bgInteractiveSubtle} 0%, transparent 32%), linear-gradient(160deg, ${semanticColors.bgPage} 0%, ${semanticColors.bgPrimary} 55%, ${warm.bgTint} 100%)`,
     "@media (max-width: 640px)": {
       padding: layout.padding.lg,
     },
@@ -47,13 +48,13 @@ export const useLoadingScreenStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    backgroundImage: itineraryGradients.spriteHalo,
+    backgroundImage: `radial-gradient(circle, color-mix(in srgb, ${warm.coralBright} 16%, transparent) 0%, transparent 70%)`,
     "& img": {
       width: "100%",
       height: "100%",
       objectFit: "contain",
       imageRendering: "pixelated",
-      filter: itineraryShadows.sprite,
+      filter: `drop-shadow(0 0 2px color-mix(in srgb, ${semanticColors.bgPrimary} 65%, transparent)) drop-shadow(0 0 9px color-mix(in srgb, ${warm.coralBright} 35%, transparent))`,
     },
   },
   centered: { textAlign: "center" },
@@ -93,13 +94,13 @@ export const useLoadingScreenStyles = makeStyles({
     stroke: "url(#loadingProgressGradient)",
     strokeWidth: `${progressRing.stroke}px`,
     strokeLinecap: "round",
-    filter: itineraryShadows.progressGlow,
+    filter: `drop-shadow(0 0 10px color-mix(in srgb, ${warm.coralBright} 35%, transparent))`,
     transitionProperty: "stroke-dashoffset",
     transitionDuration: layout.duration.normal,
     transitionTimingFunction: "linear",
   },
   progressRingGradientStart: { stopColor: warm.coralBright },
-  progressRingGradientEnd: { stopColor: itinerary.pink },
+  progressRingGradientEnd: { stopColor: warm.rose },
   // Parked at the centre; the inline transform walks it around the ring.
   progressPlane: {
     position: "absolute",
@@ -107,7 +108,7 @@ export const useLoadingScreenStyles = makeStyles({
     left: "50%",
     color: warm.coralBright,
     fontSize: typography.fontSize.size11,
-    filter: itineraryShadows.planeIcon,
+    filter: `drop-shadow(0 8px 14px color-mix(in srgb, ${warm.coralBright} 28%, transparent))`,
     transitionProperty: "transform",
     transitionDuration: layout.duration.normal,
     transitionTimingFunction: "linear",

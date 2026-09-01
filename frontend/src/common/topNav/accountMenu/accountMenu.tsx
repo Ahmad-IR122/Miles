@@ -94,6 +94,7 @@ const AccountMenu = () => {
               <DateCalendar
                 value={null}
                 readOnly
+                reduceAnimations
                 className={styles.calendar}
                 slots={{ day: TripDay }}
               />

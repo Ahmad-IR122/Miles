@@ -39,6 +39,14 @@ export const useAccountMenuStyles = makeStyles({
     borderRadius: layout.radius.xl,
     boxShadow: warmShadows.md,
     ...shorthands.padding(layout.spacing[2]),
+    // MUI's Popover renders into a portal near document.body, outside the
+    // app's normal DOM tree — so it doesn't inherit a font-family from any
+    // app-level wrapper. Every other page sets its own fontFamily at the
+    // root for the same reason (there's no global body font); this is that
+    // root for the account menu, and it cascades to the name/email, the
+    // calendar heading and actions, and the MUI DateCalendar's own text,
+    // none of which set a fontFamily of their own.
+    fontFamily: typography.fontFamily.sans,
   },
   preview: {
     display: "flex",
@@ -101,12 +109,17 @@ export const useAccountMenuStyles = makeStyles({
     textTransform: "uppercase",
     padding: `0 ${layout.spacing[2.5]}`,
   },
-  // Seats the calendar on its own surface so it reads as a panel rather than
-  // loose rows floating between the profile card and the menu actions.
+  // Framed as an outlined card (border, no fill) rather than a solid block —
+  // otherwise a busy month's trip bands run edge-to-edge and the calendar
+  // reads as one flat rectangle instead of a grid sitting on a panel.
   calendarPanel: {
-    backgroundColor: warm.bgTint,
     borderRadius: layout.radius.lg,
-    padding: `${layout.spacing[2]} 0`,
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      warm.borderCoralBright,
+    ),
+    padding: `${layout.spacing[2]} ${layout.spacing[2]}`,
   },
   actions: {
     display: "flex",
@@ -142,16 +155,23 @@ export const useAccountMenuStyles = makeStyles({
    * fix the alignment), the grid is re-laid out on an exact column rhythm:
    *
    *   day 34px + 2px side margins = 38px column x 7 = 266px wide
-   *   header 34px + weekday row 28px + 6 rows x 38px = 290px tall
    *
    * The header then gets zero padding, so label, arrows and columns share one
-   * left/right edge. Height stays fixed so the popover does not jump between a
-   * 5-week and a 6-week month, or when switching to the year view.
+   * left/right edge. Month switches use the `reduceAnimations` prop (see
+   * accountMenu.tsx) instead of MUI's default slide transition: that
+   * transition positions each month's weeks with `position: absolute`,
+   * which needs a fixed-height parent to reserve space for — always sized
+   * for a 6-row month, leaving a slab of empty space below shorter ones. With
+   * animations off, the weeks render in normal flow, so the box can hug
+   * however many rows (5 or 6) the current month actually has — but only
+   * once `height` is freed from MUI's own default (a flat 336px, the "336"
+   * half of that fixed box mentioned above), which otherwise still forces
+   * the fixed height regardless of content.
    */
   calendar: {
     "&.MuiDateCalendar-root": {
       width: "266px",
-      height: "290px",
+      height: "auto",
       maxHeight: "none",
       margin: "0 auto",
     },
@@ -228,13 +248,17 @@ export const useAccountMenuStyles = makeStyles({
 
     /*
      * Day grid. Each day fills its whole 38px column with no side margin, so
-     * consecutive trip days butt up against each other and their backgrounds
-     * read as one continuous band. The 4px breathing room that a margin would
-     * normally give is moved to the row instead (`weekContainer`), which keeps
-     * the band horizontal — a trip reads along a week, never down a column.
+     * columns line up cleanly with the header above. The 4px breathing room
+     * that a margin would normally give is moved to the row instead
+     * (`weekContainer`) — trip-day marking below draws its own fixed-size
+     * circle centred in the column, so it doesn't need column-level spacing.
      */
+    // MUI hardcodes this element's minHeight to fit 6 rows (240px) regardless
+    // of `reduceAnimations` — it is a fixed style on the slot itself, not
+    // something the transition-vs-no-transition branch controls. Zeroed out
+    // so a 5-row month isn't still held open to 6-row height.
     "& .MuiDayCalendar-slideTransition": {
-      minHeight: "228px",
+      minHeight: "0",
     },
     "& .MuiDayCalendar-weekContainer": {
       margin: "2px 0",
@@ -270,14 +294,14 @@ export const useAccountMenuStyles = makeStyles({
       color: warm.textTertiary,
     },
     /*
-     * Today is a dot under the number rather than MUI's ring: the ring would
-     * have to stretch to the full 38px column and read as a lozenge, and it
-     * competes with the trip band. `currentColor` means the dot turns white by
-     * itself when today also happens to be a trip endpoint.
+     * Today gets a circle traced around just the number, not MUI's own
+     * ring: that outline follows the day's own border-radius, and on a
+     * 38x34 pill it draws an oval, not a circle. Sizing the ring as a fixed
+     * 26px circle centred on the cell — independent of the cell's own
+     * width/height — sidesteps that. `currentColor` means the ring turns
+     * white by itself when today also happens to be a trip endpoint.
      */
     "& .MuiPickerDay-root.MuiPickerDay-today": {
-      // v9 rings today with `outline`, not `border` — and outline follows
-      // border-radius, so on a 38x34 pill it draws a lozenge.
       outlineStyle: "none",
       color: warm.coral,
       fontWeight: typography.fontWeight.semibold,
@@ -286,40 +310,55 @@ export const useAccountMenuStyles = makeStyles({
     "& .MuiPickerDay-root.MuiPickerDay-today::after": {
       content: "''",
       position: "absolute",
-      bottom: "4px",
+      top: "50%",
       left: "50%",
-      width: "3px",
-      height: "3px",
-      marginLeft: "-1.5px",
+      width: "26px",
+      height: "26px",
+      transform: "translate(-50%, -50%)",
       borderRadius: layout.radius.full,
-      backgroundColor: "currentColor",
+      ...shorthands.border(layout.borderWidth.thick, "solid", "currentColor"),
+      pointerEvents: "none",
     },
 
     /*
-     * Trip days. `data-trip-cap` says where a run of them should round off —
-     * at a free neighbour, or at a week edge so a trip crossing a row break is
-     * not left looking sliced. `data-trip-edge` marks the days a trip actually
-     * starts or ends on, which get the solid gradient; the days in between
-     * carry the softer band, so a run reads as "depart … return".
+     * Trip days each get their own circle — not a joined band across the
+     * week — drawn as a fixed 30px `::before`, independent of the day
+     * cell's own 38x34 box, so neighbouring trip days stay visually
+     * separate instead of reading as one connected pill. `data-trip-edge`
+     * marks the days a trip actually starts or ends on, which get the
+     * solid gradient circle; the days in between get the softer tint.
+     *
+     * Colors are the app's shared accent tokens — the same ones used
+     * everywhere else — not a dedicated palette for this one feature.
      */
     "& .MuiPickerDay-root[data-trip-cap]": {
-      backgroundColor: warm.bgAccentBand,
-      borderRadius: 0,
+      // `position: relative` + an explicit z-index (not `auto`) gives this
+      // button its own stacking context, so the ::before's negative
+      // z-index below is scoped to sitting behind *this* cell's own digit
+      // — not behind unrelated content elsewhere on the page.
+      position: "relative",
+      zIndex: 0,
+      backgroundColor: "transparent",
       color: warm.rose,
       fontWeight: typography.fontWeight.semibold,
     },
-    "& .MuiPickerDay-root[data-trip-cap='left']": {
-      borderRadius: `${layout.radius.pill} 0 0 ${layout.radius.pill}`,
-    },
-    "& .MuiPickerDay-root[data-trip-cap='right']": {
-      borderRadius: `0 ${layout.radius.pill} ${layout.radius.pill} 0`,
-    },
-    "& .MuiPickerDay-root[data-trip-cap='both']": {
-      borderRadius: layout.radius.pill,
+    "& .MuiPickerDay-root[data-trip-cap]::before": {
+      content: "''",
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      width: "30px",
+      height: "30px",
+      transform: "translate(-50%, -50%)",
+      borderRadius: layout.radius.full,
+      backgroundColor: warm.bgAccentBand,
+      zIndex: -1,
     },
     "& .MuiPickerDay-root[data-trip-edge]": {
-      backgroundImage: warmGradients.primary,
       color: semanticColors.textOnAccent,
+    },
+    "& .MuiPickerDay-root[data-trip-edge]::before": {
+      backgroundImage: warmGradients.primary,
     },
     /*
      * Days stay keyboard-focusable even though the calendar is read-only, and

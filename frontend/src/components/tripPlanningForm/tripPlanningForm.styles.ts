@@ -71,6 +71,11 @@ export const useTripPlanningFormStyles = makeStyles({
   page: {
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
+    backgroundImage: warm.bgImage,
+    backgroundSize: "cover",
+    backgroundPosition: "top center",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
     minHeight: "100dvh",
   },
   content: {
