@@ -76,7 +76,7 @@ def get_active_trip_detail(db: Session, trip_id: int, user_id: int) -> dict:
             "budget_level": preferences.budget_level,
             "food_preference": preferences.food_preference,
             "accommodation_type": preferences.accommodation_type,
-            "transportation_pref": preferences.transportation_pref,
+            "transportation_pref": preferences.transportation_preference,
         } if preferences else None,
         "days": day_details,
     }
