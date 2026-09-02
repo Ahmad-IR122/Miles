@@ -1,3 +1,5 @@
+import type { TripDestination } from "../../../types/trip";
+
 export type ActivityCategory =
   "culture" | "food" | "dining" | "shopping" | "nature";
 
@@ -29,6 +31,7 @@ export type Trip = {
   id?: string;
   tripRequestId?: string;
   destination?: string;
+  destinations?: TripDestination[];
   startDate?: string;
   endDate?: string;
   travelers?: number;

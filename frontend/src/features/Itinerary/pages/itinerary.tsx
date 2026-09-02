@@ -107,7 +107,11 @@ const Itinerary = () => {
       <Container className={classes.shell}>
         <Box className={mergeClasses(classes.layout, classes.noSummaryLayout)}>
           <Box className={classes.mainContent}>
-            <ItineraryHeader destination={trip?.destination} />
+            <ItineraryHeader
+              activeDayActivities={activeDay?.activities}
+              destination={trip?.destination}
+              destinations={trip?.destinations}
+            />
 
             {trip && (
               <>
