@@ -2,9 +2,19 @@ import { useRecommendationsStyles } from "../styles/recommendations.styles";
 
 type RecommendationsHeaderProps = {
   count: number;
+  currentPage: number;
+  totalPages: number;
+  visibleStart: number;
+  visibleEnd: number;
 };
 
-const RecommendationsHeader = ({ count }: RecommendationsHeaderProps) => {
+const RecommendationsHeader = ({
+  count,
+  currentPage,
+  totalPages,
+  visibleStart,
+  visibleEnd,
+}: RecommendationsHeaderProps) => {
   const styles = useRecommendationsStyles();
 
   return (
@@ -16,7 +26,10 @@ const RecommendationsHeader = ({ count }: RecommendationsHeaderProps) => {
           find the perfect places for your trip!
         </p>
       </div>
-      <div className={styles.countBadge}>{count} places found</div>
+      <div className={styles.countBadge}>
+        {visibleStart}-{visibleEnd} of {count} | Page {currentPage} of{" "}
+        {totalPages}
+      </div>
     </div>
   );
 };

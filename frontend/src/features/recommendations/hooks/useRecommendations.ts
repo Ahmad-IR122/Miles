@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  getActivities,
   getRecommendations,
   getRestaurantRecommendations,
+  type ActivityApiItem,
+  type ActivityResponse,
   type RecommendationApiItem,
   type RecommendationRequestPayload,
   type RecommendationResponse,
@@ -29,6 +32,7 @@ const restaurantRecommendationRequests = new Map<
   string,
   Promise<RestaurantRecommendationResponse>
 >();
+let activitiesRequest: Promise<ActivityResponse> | null = null;
 const mockRecommendationPayload: RecommendationRequestPayload = {
   interests: ["Adventure", "Nature", "Food"],
   budget_level: "high",
@@ -143,6 +147,21 @@ const getCachedRestaurantRecommendations = (
   return request;
 };
 
+const getCachedActivities = () => {
+  if (activitiesRequest) {
+    return activitiesRequest;
+  }
+
+  activitiesRequest = getActivities()
+    .then(({ data }) => data)
+    .catch((error) => {
+      activitiesRequest = null;
+      throw error;
+    });
+
+  return activitiesRequest;
+};
+
 const getDestinationLabel = (destinationId: string) => {
   const destination = destinations.find(
     (item) => item.destination_id === destinationId,
@@ -159,10 +178,8 @@ const getDestinationRegion = (destinationId: string) =>
 
 const getRecommendationCategory = (
   item: RecommendationApiItem,
-): RecommendationPlace["category"] => {
+): "Attractions" | "Activities" => {
   const style = item.style.toLowerCase();
-  if (style.includes("food")) return "Restaurants";
-  if (style.includes("hotel")) return "Hotels";
   if (style.includes("adventure") || style.includes("activity")) {
     return "Activities";
   }
@@ -223,6 +240,51 @@ const toRestaurantPlace = (
   };
 };
 
+const splitActivityTags = (tags?: string | null) => {
+  if (!tags) return [];
+
+  return tags
+    .replace(/^\[|\]$/g, "")
+    .split(/[|,/]/)
+    .map((tag) => tag.replace(/^['"]|['"]$/g, "").trim())
+    .filter(Boolean);
+};
+
+const toActivityPlace = (item: ActivityApiItem): RecommendationPlace => {
+  const destinationLabel =
+    item.city && item.country
+      ? `${item.city}, ${item.country}`
+      : item.destination_id
+        ? getDestinationLabel(item.destination_id)
+        : "Activity";
+  const duration = item.estimated_duration_minutes
+    ? `${Math.round(item.estimated_duration_minutes)} min`
+    : item.time_of_day || "";
+  const tags = [
+    item.category,
+    item.indoor_outdoor,
+    ...splitActivityTags(item.interest_tags),
+  ].filter((tag): tag is string => !!tag);
+
+  return {
+    id:
+      item.activity_id ??
+      [item.destination_id, item.name, item.city].filter(Boolean).join("-"),
+    destinationId: item.destination_id ?? "",
+    title: item.name ?? "Activity",
+    category: "Activities",
+    rating: item.rating ? Math.round(item.rating * 10) / 10 : 0,
+    reviews: item.review_count ? Math.round(item.review_count) : 0,
+    price: duration,
+    priceLevel: "$$",
+    location: destinationLabel,
+    desc: item.description ?? item.category ?? "Activity recommendation.",
+    img: placeholderImage,
+    tags,
+    saved: false,
+  };
+};
+
 export const useRecommendations = (
   locationState: unknown,
   activeCategory: RecommendationCategoryFilter,
@@ -233,6 +295,9 @@ export const useRecommendations = (
   const [restaurantPlaces, setRestaurantPlaces] = useState<
     RecommendationPlace[]
   >([]);
+  const [activityPlaces, setActivityPlaces] = useState<RecommendationPlace[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -279,7 +344,45 @@ export const useRecommendations = (
   }, [locationState]);
 
   useEffect(() => {
-    if (activeCategory !== "Restaurants") {
+    if (activeCategory !== "All" && activeCategory !== "Activities") {
+      return;
+    }
+
+    let isMounted = true;
+
+    void Promise.resolve()
+      .then(() => {
+        if (isMounted) {
+          setIsLoading(true);
+          setErrorMessage("");
+        }
+
+        return getCachedActivities();
+      })
+      .then((data) => {
+        if (isMounted) {
+          setActivityPlaces(data.activities.map(toActivityPlace));
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setErrorMessage("Unable to load activities. Please try again.");
+          setActivityPlaces([]);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (activeCategory !== "All" && activeCategory !== "Restaurants") {
       return;
     }
 
@@ -333,11 +436,21 @@ export const useRecommendations = (
     };
   }, [activeCategory, destinationPlaces, locationState]);
 
-  const places = useMemo(
-    () =>
-      activeCategory === "Restaurants" ? restaurantPlaces : destinationPlaces,
-    [activeCategory, destinationPlaces, restaurantPlaces],
-  );
+  const places = useMemo(() => {
+    if (activeCategory === "All") {
+      return [...destinationPlaces, ...restaurantPlaces, ...activityPlaces];
+    }
+
+    if (activeCategory === "Activities") {
+      return activityPlaces;
+    }
+
+    if (activeCategory === "Restaurants") {
+      return restaurantPlaces;
+    }
+
+    return destinationPlaces;
+  }, [activeCategory, activityPlaces, destinationPlaces, restaurantPlaces]);
 
   return { places, isLoading, errorMessage };
 };

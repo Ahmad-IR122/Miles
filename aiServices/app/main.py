@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health, itinerary, rag, recommendations, chat
+from app.routers import chat, health, itinerary, rag, recommendations
 
 load_dotenv()
 app = FastAPI()

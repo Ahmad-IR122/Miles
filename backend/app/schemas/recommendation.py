@@ -47,3 +47,26 @@ class RestaurantRecommendationItem(BaseModel):
 
 class RestaurantRecommendationResponse(BaseModel):
     recommendations: list[RestaurantRecommendationItem]
+
+
+class ActivityItem(BaseModel):
+    activity_id: str | None = None
+    destination_id: str | None = None
+    city: str | None = None
+    country: str | None = None
+    name: str | None = None
+    category: str | None = None
+    description: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    website: str | None = None
+    rating: float | None = None
+    review_count: float | None = None
+    estimated_duration_minutes: float | None = None
+    time_of_day: str | None = None
+    indoor_outdoor: str | None = None
+    interest_tags: str | None = None
+
+
+class ActivityResponse(BaseModel):
+    activities: list[ActivityItem]

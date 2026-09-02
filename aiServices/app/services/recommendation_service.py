@@ -507,3 +507,39 @@ def recommend_restaurants(
     ]
 
     return recommendations.to_dict(orient="records")
+
+
+def recommend_activities() -> list[dict]:
+    _, activities, _ = load_recommendation_data()
+
+    if activities.empty:
+        return []
+
+    columns = [
+        "activity_id",
+        "destination_id",
+        "city",
+        "country",
+        "name",
+        "category",
+        "description",
+        "latitude",
+        "longitude",
+        "website",
+        "rating",
+        "review_count",
+        "estimated_duration_minutes",
+        "time_of_day",
+        "indoor_outdoor",
+        "interest_tags",
+    ]
+
+    available_columns = [column for column in columns if column in activities.columns]
+    activities = activities[available_columns].copy()
+
+    activities = activities.astype(object).where(
+        pd.notna(activities),
+        None,
+    )
+
+    return activities.to_dict(orient="records")

@@ -13,13 +13,8 @@ import type {
   RecommendationCategoryFilter,
 } from "../types/types";
 
-const categories = [
-  "All",
-  "Attractions",
-  "Restaurants",
-  "Hotels",
-  "Activities",
-] as const;
+const categories = ["All", "Attractions", "Restaurants", "Activities"] as const;
+const ITEMS_PER_PAGE = 6;
 
 const budgets = [
   "Any Budget",
@@ -37,6 +32,17 @@ const budgetMap: Record<
   High: "$$$",
 };
 
+const getResultSetKey = (
+  places: { id: string }[],
+  activeCategory: RecommendationCategoryFilter,
+  activeBudget: BudgetFilterLabel,
+) =>
+  JSON.stringify({
+    activeCategory,
+    activeBudget,
+    ids: places.map((place) => place.id),
+  });
+
 const Recommendations = () => {
   const styles = useRecommendationsStyles();
   const location = useLocation();
@@ -44,6 +50,10 @@ const Recommendations = () => {
     useState<RecommendationCategoryFilter>("All");
   const [activeBudget, setActiveBudget] =
     useState<BudgetFilterLabel>("Any Budget");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    resultSetKey: "",
+  });
   const { places, isLoading, errorMessage } = useRecommendations(
     location.state,
     activeCategory,
@@ -55,7 +65,6 @@ const Recommendations = () => {
         if (activeCategory !== "All" && place.category !== activeCategory) {
           return false;
         }
-
         if (activeBudget !== "Any Budget") {
           const selectedPriceLevel = budgetMap[activeBudget];
           if (place.priceLevel !== selectedPriceLevel) {
@@ -68,10 +77,49 @@ const Recommendations = () => {
     [activeCategory, activeBudget, places],
   );
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredPlaces.length / ITEMS_PER_PAGE),
+  );
+  const resultSetKey = getResultSetKey(
+    filteredPlaces,
+    activeCategory,
+    activeBudget,
+  );
+  const currentPage =
+    pagination.resultSetKey === resultSetKey ? pagination.page : 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const visiblePlaces = filteredPlaces.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
+  const visibleStart = filteredPlaces.length === 0 ? 0 : startIndex + 1;
+  const visibleEnd = Math.min(
+    startIndex + visiblePlaces.length,
+    filteredPlaces.length,
+  );
+
+  const handlePageChange = (nextPage: number) => {
+    setPagination({
+      page: nextPage,
+      resultSetKey,
+    });
+    window.scrollTo({
+      top: 0,
+      behavior: "auto",
+    });
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.content}>
-        <RecommendationsHeader count={filteredPlaces.length} />
+        <RecommendationsHeader
+          count={filteredPlaces.length}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          visibleStart={visibleStart}
+          visibleEnd={visibleEnd}
+        />
 
         <RecommendationsFilters
           categories={categories}
@@ -96,10 +144,36 @@ const Recommendations = () => {
 
         {!isLoading && !errorMessage && (
           <div className={styles.grid}>
-            {filteredPlaces.map((place) => (
+            {visiblePlaces.map((place) => (
               <RecommendationCard key={place.id} place={place} />
             ))}
           </div>
+        )}
+
+        {!isLoading && !errorMessage && filteredPlaces.length > 0 && (
+          <nav className={styles.pagination} aria-label="Recommendations pages">
+            <div className={styles.paginationActions}>
+              <button
+                className={styles.paginationButton}
+                type="button"
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+
+              <button
+                className={styles.paginationButton}
+                type="button"
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </nav>
         )}
 
         {!isLoading && !errorMessage && filteredPlaces.length === 0 && (

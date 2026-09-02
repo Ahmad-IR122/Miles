@@ -1,5 +1,5 @@
 export type RecommendationCategory =
-  "Attractions" | "Restaurants" | "Hotels" | "Activities";
+  "Attractions" | "Restaurants" | "Activities";
 
 export type RecommendationCategoryFilter = "All" | RecommendationCategory;
 
@@ -11,7 +11,7 @@ export type RecommendationPlace = {
   id: string;
   destinationId: string;
   title: string;
-  category: RecommendationCategory;
+  category: RecommendationCategory | "Destinations";
   rating: number;
   reviews: number;
   price: string;

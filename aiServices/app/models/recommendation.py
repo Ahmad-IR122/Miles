@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import BaseModel, Field
 
 
@@ -8,7 +6,6 @@ class RecommendationRequest(BaseModel):
     budget_level: str
     travel_month: int = Field(ge=1, le=12)
     style: str
-    limit: int = Field(default=5, ge=1, le=20)
 
 
 class RecommendationItem(BaseModel):
@@ -30,8 +27,9 @@ class RecommendationResponse(BaseModel):
 
 
 class RestaurantRecommendationRequest(BaseModel):
-    destination_id: str
+    destination_id: str = Field(min_length=1)
     budget: float = Field(ge=0)
+
 
 class RestaurantRecommendationItem(BaseModel):
     restaurant_id: str
@@ -49,3 +47,26 @@ class RestaurantRecommendationItem(BaseModel):
 
 class RestaurantRecommendationResponse(BaseModel):
     recommendations: list[RestaurantRecommendationItem]
+
+
+class ActivityItem(BaseModel):
+    activity_id: str | None = None
+    destination_id: str | None = None
+    city: str | None = None
+    country: str | None = None
+    name: str | None = None
+    category: str | None = None
+    description: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    website: str | None = None
+    rating: float | None = None
+    review_count: float | None = None
+    estimated_duration_minutes: float | None = None
+    time_of_day: str | None = None
+    indoor_outdoor: str | None = None
+    interest_tags: str | None = None
+
+
+class ActivityResponse(BaseModel):
+    activities: list[ActivityItem]

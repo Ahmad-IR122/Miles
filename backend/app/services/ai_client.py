@@ -29,6 +29,15 @@ def post(path: str, payload: dict) -> dict:
         return response.json()
 
 
+def get(path: str) -> dict:
+    with httpx.Client(timeout=settings.AI_SERVICE_TIMEOUT) as client:
+        base_url = settings.AI_SERVICE_URL.rstrip("/")
+        normalized_path = path if path.startswith("/") else f"/{path}"
+        response = client.get(f"{base_url}{normalized_path}")
+        response.raise_for_status()
+        return response.json()
+
+
 def _parse_time(value: str):
     for fmt in TIME_FORMATS:
         try:
