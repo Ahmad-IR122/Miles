@@ -1,8 +1,4 @@
-import {
-  colors,
-  gradients,
-  semanticColors,
-} from "../../../common/theme/colors";
+import { gradients, semanticColors, warm } from "../../../common/theme/colors";
 import { layout, typography } from "../../../common/theme/typography";
 import type { ResolvedTheme } from "../../../common/theme/themeMode";
 
@@ -24,6 +20,8 @@ const palettes = {
     // Seed for Clerk's internal grey ramp — borders, muted labels, dividers.
     // It must contrast with the background, so it flips with the theme.
     neutral: "#000000",
+
+    accent: "#9bb7d1",
   },
   dark: {
     text: "#F5EDE7",
@@ -31,6 +29,8 @@ const palettes = {
     background: "#1F1815",
     inputBackground: "#2A211C", // --color-bg-tertiary, lifted off the card
     neutral: "#FFFFFF",
+
+    accent: "#9bb7d1",
   },
 } as const;
 
@@ -39,7 +39,7 @@ export const createClerkAppearance = (theme: ResolvedTheme) => {
 
   return {
     variables: {
-      colorPrimary: colors.coral,
+      colorPrimary: palette.accent,
       colorText: palette.text,
       colorTextSecondary: palette.textSecondary,
       colorBackground: palette.background,
@@ -61,7 +61,7 @@ export const createClerkAppearance = (theme: ResolvedTheme) => {
         },
       },
       footerActionLink: {
-        color: colors.rose,
+        color: warm.rose,
       },
     },
   };
