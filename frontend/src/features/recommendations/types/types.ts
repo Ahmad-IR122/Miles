@@ -26,6 +26,7 @@ export type RecommendationPlace = {
 export type RecommendationPreferences = {
   interests: string[];
   budgetLevel: "LOW" | "MID" | "HIGH";
+  budget?: number;
   travelMonth: number;
   style: string;
   destinationId?: string;

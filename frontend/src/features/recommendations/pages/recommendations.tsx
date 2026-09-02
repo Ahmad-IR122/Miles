@@ -47,7 +47,6 @@ const Recommendations = () => {
   const { places, isLoading, errorMessage } = useRecommendations(
     location.state,
     activeCategory,
-    activeBudget,
   );
 
   const filteredPlaces = useMemo(

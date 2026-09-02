@@ -49,7 +49,6 @@ def get_recommendations(
 
         recommendations = recommend_destinations(
             user_preferences=user_preferences,
-            limit=request.limit,
         )
 
         return {"recommendations": recommendations}
@@ -96,8 +95,7 @@ def get_restaurant_recommendations(
     try:
         recommendations = recommend_restaurants(
             destination_id=request.destination_id,
-            user_budget=request.budget_level,
-            limit=request.limit,
+            user_budget=request.budget,
         )
 
         if not recommendations:

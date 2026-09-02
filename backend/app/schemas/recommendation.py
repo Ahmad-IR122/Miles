@@ -1,5 +1,3 @@
-from typing import Literal
-
 from pydantic import BaseModel, Field
 
 
@@ -8,7 +6,6 @@ class RecommendationRequest(BaseModel):
     budget_level: str
     travel_month: int = Field(ge=1, le=12)
     style: str
-    limit: int = Field(default=5, ge=1, le=20)
 
 
 class RecommendationItem(BaseModel):
@@ -31,8 +28,7 @@ class RecommendationResponse(BaseModel):
 
 class RestaurantRecommendationRequest(BaseModel):
     destination_id: str = Field(min_length=1)
-    budget_level: Literal["low", "mid", "high"]
-    limit: int = Field(default=5, ge=1, le=20)
+    budget: float = Field(ge=0)
 
 
 class RestaurantRecommendationItem(BaseModel):

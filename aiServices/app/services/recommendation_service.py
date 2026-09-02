@@ -33,6 +33,16 @@ RESTAURANT_RATING_WEIGHT = 0.70
 RESTAURANT_BUDGET_WEIGHT = 0.30
 
 
+def get_budget_level(budget: float) -> str:
+    if budget < 400:
+        return "low"
+
+    if budget <= 1000:
+        return "mid"
+
+    return "high"
+
+
 def normalize_text(text: str) -> str:
     if pd.isna(text):
         return ""
@@ -120,15 +130,13 @@ def build_recommendation_profiles(
     destination_profiles = destinations.copy()
     activity_profiles = activities.copy()
 
-    destination_profiles["style"] = destination_profiles["style"].apply(
+    destination_profiles["style"] = destination_profiles["style"].apply(normalize_text)
+    destination_profiles["budget_level"] = destination_profiles["budget_level"].apply(
         normalize_text
     )
-    destination_profiles["budget_level"] = destination_profiles[
-        "budget_level"
-    ].apply(normalize_text)
-    destination_profiles["best_season"] = destination_profiles[
-        "best_season"
-    ].apply(normalize_text)
+    destination_profiles["best_season"] = destination_profiles["best_season"].apply(
+        normalize_text
+    )
 
     interest_column = get_activity_interest_column(activities)
 
@@ -355,7 +363,7 @@ def calculate_final_scores(profiles: pd.DataFrame) -> pd.DataFrame:
     return profiles
 
 
-def recommend_destinations(user_preferences: dict, limit: int = 5) -> list[dict]:
+def recommend_destinations(user_preferences: dict) -> list[dict]:
     destinations, activities, _ = load_recommendation_data()
 
     profiles = build_recommendation_profiles(
@@ -403,7 +411,7 @@ def recommend_destinations(user_preferences: dict, limit: int = 5) -> list[dict]
             "style_score_match",
             "final_score",
         ]
-    ].head(limit)
+    ]
 
     return recommendations.to_dict(orient="records")
 
@@ -428,17 +436,11 @@ def calculate_adjusted_rating_scores(restaurants: pd.DataFrame) -> pd.DataFrame:
         restaurants["adjusted_rating"] = restaurants["rating"]
     else:
         restaurants["adjusted_rating"] = (
-            (
-                restaurants["review_count"]
-                / (restaurants["review_count"] + minimum_reviews)
-            )
-            * restaurants["rating"]
-            + (
-                minimum_reviews
-                / (restaurants["review_count"] + minimum_reviews)
-            )
-            * average_rating
-        )
+            restaurants["review_count"]
+            / (restaurants["review_count"] + minimum_reviews)
+        ) * restaurants["rating"] + (
+            minimum_reviews / (restaurants["review_count"] + minimum_reviews)
+        ) * average_rating
 
     restaurants["adjusted_rating_score"] = restaurants["adjusted_rating"] / 5
 
@@ -447,11 +449,10 @@ def calculate_adjusted_rating_scores(restaurants: pd.DataFrame) -> pd.DataFrame:
 
 def recommend_restaurants(
     destination_id: str,
-    user_budget: str,
-    limit: int = 5,
+    user_budget: float,
 ) -> list[dict]:
     _, _, restaurants = load_recommendation_data()
-
+    budget_level = get_budget_level(user_budget)
     restaurants = calculate_adjusted_rating_scores(restaurants)
 
     destination_restaurants = restaurants[
@@ -465,11 +466,10 @@ def recommend_restaurants(
         "budget_level"
     ].apply(
         lambda restaurant_budget: calculate_budget_score(
-            user_budget,
+            budget_level,
             restaurant_budget,
         )
     )
-
     destination_restaurants["restaurant_score"] = (
         destination_restaurants["adjusted_rating_score"] * RESTAURANT_RATING_WEIGHT
         + destination_restaurants["budget_score_match"] * RESTAURANT_BUDGET_WEIGHT
@@ -504,6 +504,6 @@ def recommend_restaurants(
             "budget_score_match",
             "restaurant_score",
         ]
-    ].head(limit)
+    ]
 
     return recommendations.to_dict(orient="records")
