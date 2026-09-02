@@ -1,22 +1,11 @@
 import { useMemo, useState } from "react";
 
 import { mergeClasses } from "@griffel/react";
-import {
-  Box,
-  Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-  Snackbar,
-  Tooltip,
-} from "@mui/material";
+import { Box, Container, IconButton, Snackbar, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { DaySelector } from "../components/daySelector";
 import { EmptyItineraryMessage } from "../components/emptyItineraryMessage";
@@ -209,24 +198,15 @@ const Itinerary = () => {
         </Box>
       </Container>
 
-      <Dialog
-        onClose={() => setConfirmRegeneratePlan(false)}
+      <ConfirmDialog
         open={confirmRegeneratePlan}
-      >
-        <DialogTitle>Regenerate the whole plan?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This replaces all {days.length} days of your itinerary. Activities
-            you liked will be lost.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmRegeneratePlan(false)}>
-            Cancel
-          </Button>
-          <Button onClick={acceptRegeneratePlan}>Regenerate</Button>
-        </DialogActions>
-      </Dialog>
+        title="Regenerate the whole plan?"
+        description={`This replaces all ${days.length} days of your itinerary. Activities you liked will be lost.`}
+        confirmLabel="Regenerate"
+        isConfirming={tripRegenerating}
+        onConfirm={acceptRegeneratePlan}
+        onCancel={() => setConfirmRegeneratePlan(false)}
+      />
 
       <Snackbar
         autoHideDuration={6000}
