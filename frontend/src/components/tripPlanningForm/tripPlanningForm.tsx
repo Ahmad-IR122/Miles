@@ -37,26 +37,13 @@ import { buildTripPrompt } from "./tripPrompt";
 import type { Trip } from "../../types/trip";
 import AppButton from "../../common/AppButton/appButton";
 import { semanticColors } from "../../common/theme/colors";
-import destinationData from "../../data/destinations.json";
+import { Country, City } from "country-state-city";
+import type { ICountry, ICity } from "country-state-city";
 import {
   getFieldSx,
   useTripPlanningFormStyles,
 } from "./tripPlanningForm.styles";
 import { routesPaths } from "../../routes/routesPaths";
-
-type Destination = {
-  destination_id: string;
-  city: string;
-  country: string;
-  country_code: string;
-  region: string;
-};
-
-type CountryOption = {
-  country: string;
-  country_code: string;
-  region: string;
-};
 
 const budgetSliderMin = 0;
 const budgetSliderMax = 5000;
@@ -102,31 +89,14 @@ const minInterests = 3;
 const minAdults = 1;
 const maxTravelers = 10;
 
-const getUniqueCountries = (): CountryOption[] => {
-  const countryMap = new Map<string, CountryOption>();
+const allCountries: ICountry[] = Country.getAllCountries().sort((a, b) =>
+  a.name.localeCompare(b.name),
+);
 
-  destinationData.forEach((dest: Destination) => {
-    if (!countryMap.has(dest.country_code)) {
-      countryMap.set(dest.country_code, {
-        country: dest.country,
-        country_code: dest.country_code,
-        region: dest.region,
-      });
-    }
-  });
-
-  return Array.from(countryMap.values()).sort((a, b) =>
-    a.country.localeCompare(b.country),
+const getCitiesForCountry = (isoCode: string): ICity[] =>
+  (City.getCitiesOfCountry(isoCode) ?? []).sort((a, b) =>
+    a.name.localeCompare(b.name),
   );
-};
-
-const getCitiesForCountry = (countryCode: string): Destination[] => {
-  return destinationData
-    .filter((dest: Destination) => dest.country_code === countryCode)
-    .sort((a, b) => a.city.localeCompare(b.city));
-};
-
-const allCountries = getUniqueCountries();
 
 const createBookedDay = (existingTrips: Trip[], bookedTooltip: string) => {
   const BookedDay = (props: PickerDayProps) => {
@@ -183,11 +153,11 @@ const TripPlanningForm = () => {
 
   const [budgetMax, setBudgetMax] = useState(defaultBudgetMax);
 
-  const [destinationCountry, setDestinationCountry] =
-    useState<CountryOption | null>(null);
+  const [destinationCountry, setDestinationCountry] = useState<ICountry | null>(
+    null,
+  );
 
-  const [destinationCities, setDestinationCities] = useState<Destination[]>([]);
-
+  const [destinationCities, setDestinationCities] = useState<ICity[]>([]);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
@@ -212,14 +182,14 @@ const TripPlanningForm = () => {
   // Each chosen city is its own stop; the country on its own counts as one
   // stop when no city has been picked yet.
   const stops = ((): { country: string; city?: string }[] => {
-    const country = destinationCountry?.country;
+    const country = destinationCountry?.name;
 
     if (!country) {
       return [];
     }
 
     return destinationCities.length > 0
-      ? destinationCities.map((city) => ({ country, city: city.city }))
+      ? destinationCities.map((city) => ({ country, city: city.name }))
       : [{ country }];
   })();
 
@@ -246,8 +216,8 @@ const TripPlanningForm = () => {
     stops: destinationCountry
       ? [
           {
-            country: destinationCountry.country,
-            cities: destinationCities.map((city) => city.city),
+            country: destinationCountry.name,
+            cities: destinationCities.map((city) => city.name),
           },
         ]
       : [],
@@ -343,7 +313,7 @@ const TripPlanningForm = () => {
 
   const handleDestinationCountryChange = (
     _event: SyntheticEvent,
-    value: CountryOption | null,
+    value: ICountry | null,
   ) => {
     clearTripDetailsValidationDisplay();
 
@@ -358,7 +328,7 @@ const TripPlanningForm = () => {
 
   const handleDestinationCitiesChange = (
     _event: SyntheticEvent,
-    value: Destination[],
+    value: ICity[],
   ) => {
     clearTripDetailsValidationDisplay();
 
@@ -714,9 +684,9 @@ const TripPlanningForm = () => {
                   <div className={styles.grid}>
                     <Autocomplete
                       options={allCountries}
-                      getOptionLabel={(option) => option.country}
+                      getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
-                        option.country_code === value.country_code
+                        option.isoCode === value.isoCode
                       }
                       value={destinationCountry}
                       onChange={handleDestinationCountryChange}
@@ -738,12 +708,12 @@ const TripPlanningForm = () => {
                       disableCloseOnSelect
                       options={
                         destinationCountry
-                          ? getCitiesForCountry(destinationCountry.country_code)
+                          ? getCitiesForCountry(destinationCountry.isoCode)
                           : []
                       }
-                      getOptionLabel={(option) => option.city}
+                      getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
-                        option.destination_id === value.destination_id
+                        option.name === value.name
                       }
                       value={destinationCities}
                       onChange={handleDestinationCitiesChange}
@@ -1256,10 +1226,10 @@ const TripPlanningForm = () => {
                       [
                         t("tripPlanningForm.summary.destinations"),
                         destinationCountry
-                          ? `${destinationCountry.country}${
+                          ? `${destinationCountry.name}${
                               destinationCities.length > 0
                                 ? ` (${destinationCities
-                                    .map((city) => city.city)
+                                    .map((city) => city.name)
                                     .join(", ")})`
                                 : ""
                             }`
