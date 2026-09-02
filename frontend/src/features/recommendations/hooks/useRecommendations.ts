@@ -35,18 +35,9 @@ const restaurantRecommendationRequests = new Map<
 let activitiesRequest: Promise<ActivityResponse> | null = null;
 const mockRecommendationPayload: RecommendationRequestPayload = {
   interests: ["Adventure", "Nature", "Food"],
-  budget_level: "high",
+  budget: defaultRestaurantBudget,
   travel_month: 1,
   style: "nature",
-};
-
-const apiBudgetMap: Record<
-  RecommendationPreferences["budgetLevel"],
-  "low" | "mid" | "high"
-> = {
-  LOW: "low",
-  MID: "mid",
-  HIGH: "high",
 };
 
 const recommendationBudgetLabels: Record<
@@ -124,7 +115,7 @@ const toRecommendationPayload = (
   preferences: RecommendationPreferences,
 ): RecommendationRequestPayload => ({
   interests: preferences.interests,
-  budget_level: apiBudgetMap[preferences.budgetLevel],
+  budget: preferences.budget ?? defaultRestaurantBudget,
   travel_month: preferences.travelMonth,
   style: preferences.style,
 });
