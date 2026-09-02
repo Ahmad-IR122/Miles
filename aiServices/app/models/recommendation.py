@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class RecommendationRequest(BaseModel):
     interests: list[str] = Field(default_factory=list)
-    budget_level: str
+    budget: float = Field(ge=0)
     travel_month: int = Field(ge=1, le=12)
     style: str
 

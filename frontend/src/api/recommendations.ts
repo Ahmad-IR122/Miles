@@ -2,7 +2,7 @@ import { api } from "./api";
 
 export type RecommendationRequestPayload = {
   interests: string[];
-  budget_level: "low" | "mid" | "high";
+  budget: number;
   travel_month: number;
   style: string;
 };

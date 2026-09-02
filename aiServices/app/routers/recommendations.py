@@ -9,6 +9,7 @@ from app.models.recommendation import (
     RestaurantRecommendationResponse,
 )
 from app.services.recommendation_service import (
+    get_budget_level,
     recommend_activities,
     recommend_destinations,
     recommend_restaurants,
@@ -43,7 +44,7 @@ def get_recommendations(
     try:
         user_preferences = {
             "interests": request.interests,
-            "budget_level": request.budget_level,
+            "budget_level": get_budget_level(request.budget),
             "travel_month": request.travel_month,
             "style": request.style,
         }
