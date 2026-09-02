@@ -28,7 +28,7 @@ const ERROR_MESSAGE = "Sorry, something went wrong. Please try again later.";
 const ChatWidget = () => {
   const styles = useChatWidgetStyles();
   const { getToken } = useAuth();
-  const { tripId } = useParams();
+  const { itineraryId: tripId } = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -174,6 +174,7 @@ const ChatWidget = () => {
                       ? styles.messageBubbleUser
                       : styles.messageBubbleSystem,
                   )}
+                  sx={{ whiteSpace: "pre-line" }}
                 >
                   {entry.text}
                 </Typography>

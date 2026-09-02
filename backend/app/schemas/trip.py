@@ -100,7 +100,10 @@ class TripCreate(BaseModel):
     ) 
     currency: str = Field(default="USD", min_length=1, max_length=10)
     travelers_count: int = Field(default=1, ge=1, le=MAX_TRAVELERS)
+    adults: int = Field(default=1, ge=1)
+    children: int = Field(default=0, ge=0)
     trip_status: str = Field(default="planning", min_length=1, max_length=30)
+    additional_notes: str | None = Field(default=None, max_length=1000)
 
     @field_validator("currency", "trip_status")
     @classmethod
@@ -119,6 +122,14 @@ class TripCreate(BaseModel):
         allocated_days = sum(destination.days for destination in self.destinations)
         if allocated_days != trip_length:
             raise ValueError("destination days must equal the trip length")
+        return self
+
+    @model_validator(mode="after")
+    def check_travelers(self):
+        if self.adults + self.children != self.travelers_count:
+            raise ValueError("adults + children must equal travelers_count")
+        if self.adults + self.children > MAX_TRAVELERS:
+            raise ValueError(f"travelers cannot exceed {MAX_TRAVELERS}")
         return self
 
 

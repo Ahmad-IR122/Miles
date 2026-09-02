@@ -18,7 +18,7 @@ import type { ResolvedTheme } from "./themeMode";
  */
 const palettes = {
   light: {
-    primary: "#FF7A59", // --color-interactive
+    primary: "#9bb7d1", // --color-interactive
     error: "#DC2626", // --color-text-error
     bgDefault: "#FBF8F3", // --color-bg-page
     bgPaper: "#FFFFFF", // --color-bg-primary
@@ -28,7 +28,7 @@ const palettes = {
     divider: "#E5E7EB", // --color-border-light
   },
   dark: {
-    primary: "#FF8A6B",
+    primary: "#9bb7d1", // --color-interactive
     error: "#F87171",
     bgDefault: "#15100D",
     bgPaper: "#1F1815",

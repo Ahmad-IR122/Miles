@@ -236,64 +236,64 @@
     rgba(243, 222, 212, 0.82),
     rgba(58, 46, 39, 0.82)
   );
-  --footer-decor-coral: light-dark(#ff9b85, #ff8f78);
-  --footer-decor-coral-strong: light-dark(#ff6b6b, #ff7f7f);
-  --footer-decor-peach: light-dark(#ffd8c7, #5a3a31);
-  --footer-decor-brown: light-dark(#7f4a35, #d89b7e);
-  --footer-decor-muted: light-dark(#7f7068, #a89184);
-  --footer-hill-soft: light-dark(#ffe4d9, #2d211c);
-  --footer-hill-mid: light-dark(#ffdcd0, #35251f);
-  --footer-hill-strong: light-dark(#ffd0c0, #462c25);
-  --footer-hill-base: light-dark(#ffe3d7, #241a16);
-  --footer-tree: light-dark(#efb49d, #8f5c4c);
+  --footer-decor-coral: light-dark(#8fb4d9, #6f95c2);
+  --footer-decor-coral-strong: light-dark(#5f8ab8, #7fa8d6);
+  --footer-decor-peach: light-dark(#d8e6f2, #2f4256);
+  --footer-decor-brown: light-dark(#43607d, #b8cbe0);
+  --footer-decor-muted: light-dark(#6b7a89, #9aa8b8);
+  --footer-hill-soft: light-dark(#e3edf5, #1c242c);
+  --footer-hill-mid: light-dark(#d3e2ee, #212b34);
+  --footer-hill-strong: light-dark(#bcd3e6, #2a3742);
+  --footer-hill-base: light-dark(#e0ebf3, #17202a);
+  --footer-tree: light-dark(#a8c4dc, #5c7893);
 
   /* Not found page illustration */
-  --not-found-bg: light-dark(#fffaf7, #15100d);
+  --not-found-bg: light-dark(#f7fafc, #12161c);
   --not-found-glow: light-dark(
-    rgba(255, 217, 196, 0.4),
-    rgba(255, 122, 89, 0.12)
+    rgba(155, 183, 209, 0.4),
+    rgba(155, 183, 209, 0.14)
   );
   --not-found-sun-start: light-dark(
-    rgba(255, 230, 210, 0.75),
-    rgba(255, 138, 101, 0.16)
+    rgba(214, 230, 244, 0.8),
+    rgba(155, 183, 209, 0.22)
   );
   --not-found-sun-end: light-dark(
-    rgba(255, 244, 234, 0.4),
-    rgba(233, 79, 146, 0.06)
+    rgba(247, 251, 255, 0.4),
+    rgba(155, 183, 209, 0.08)
   );
   --not-found-cloud: light-dark(
     rgba(255, 255, 255, 0.78),
-    rgba(245, 237, 231, 0.16)
+    rgba(226, 236, 245, 0.16)
   );
   --not-found-cloud-shadow: light-dark(
     rgba(255, 255, 255, 0.72),
-    rgba(245, 237, 231, 0.13)
+    rgba(226, 236, 245, 0.13)
   );
   --not-found-ground: light-dark(
-    rgba(255, 218, 194, 0.84),
-    rgba(255, 138, 101, 0.18)
+    rgba(214, 230, 244, 0.84),
+    rgba(155, 183, 209, 0.2)
   );
   --not-found-post: light-dark(
-    linear-gradient(90deg, #8f5231, #b97655 46%, #7b442b),
-    linear-gradient(90deg, #5a3528, #9a654e 46%, #43281f)
+    linear-gradient(90deg, #3f5b74, #6f93bc 46%, #2f4a61),
+    linear-gradient(90deg, #24384a, #6f93bc 46%, #1a2935)
   );
   --not-found-sign: light-dark(
-    linear-gradient(180deg, #ffd4ba, #efab86 56%, #d88f6e),
-    linear-gradient(180deg, #d98872, #9b5f49 58%, #714334)
+    linear-gradient(180deg, #eaf2fa, #b9d3e8 56%, #9bb7d1),
+    linear-gradient(180deg, #4a6a86, #35506a 58%, #263c4f)
   );
-  --not-found-sign-text: light-dark(#6b4226, #2a1712);
+  --not-found-sign-text: light-dark(#2f4a61, #eaf2fa);
   --not-found-sign-shine: light-dark(
     rgba(255, 255, 255, 0.2),
-    rgba(255, 244, 234, 0.16)
+    rgba(234, 242, 250, 0.16)
   );
   --not-found-brown-line: light-dark(
-    rgba(107, 66, 38, 0.28),
-    rgba(42, 23, 18, 0.38)
+    rgba(47, 74, 97, 0.28),
+    rgba(38, 60, 79, 0.4)
   );
   --not-found-brown-mark: light-dark(
-    rgba(107, 66, 38, 0.62),
-    rgba(42, 23, 18, 0.7)
+    rgba(47, 74, 97, 0.62),
+    rgba(38, 60, 79, 0.75)
   );
-  --not-found-rock: light-dark(#d99b79, #9b6650);
-  --not-found-rock-large: light-dark(#e0aa89, #b2775e);
+  --not-found-rock: light-dark(#a9c1d8, #526a82);
+  --not-found-rock-large: light-dark(#bcd3e6, #6f93bc);
 }

@@ -18,7 +18,6 @@ router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
 @router.post("/")
 def itinerary(request: ItineraryRequest):
-    print("Received itinerary request:", request.travel_data)
     try:
         result = generate_itinerary(request.preferences, request.travel_data)
     except ValueError as e:
@@ -30,7 +29,10 @@ def itinerary(request: ItineraryRequest):
 def itinerary_regenerate(request: RegenerateItineraryRequest):
     try:
         result = regenerate_itinerary(
-            request.itinerary, request.user_query, request.travel_data
+            request.itinerary,
+            request.user_query,
+            request.travel_data,
+            request.preferences,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -45,6 +47,7 @@ def itinerary_regenerate_day(request: RegenerateDayRequest):
             request.day_number,
             request.user_query,
             request.travel_data,
+            request.preferences,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
@@ -60,6 +63,7 @@ def itinerary_regenerate_activity(request: RegenerateActivityRequest):
             request.activity_index,
             request.user_query,
             request.travel_data,
+            request.preferences,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

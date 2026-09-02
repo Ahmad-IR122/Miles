@@ -7,7 +7,6 @@ from . import (
     health,
     interest,
     itinerary,
-    test_db,
     trip,
     users,
 )
@@ -19,7 +18,6 @@ __all__ = [
     "health",
     "interest",
     "itinerary",
-    "test_db",
     "trip",
     "users",
 ]

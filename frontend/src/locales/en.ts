@@ -175,6 +175,8 @@ const en = {
           "You already have a trip planned on those dates. Go back and pick a different date range.",
         networkUnreachable:
           "We couldn't reach the server. Check your connection and try again.",
+        interestSyncError:
+          "Your trip is saved, but we couldn't attach all of your selected interests. Please try again.",
         requiredFields: "Please fill the required fields before moving on.",
         destinationRequired: "Please select a destination country.",
         startDate: "Please select a start date.",

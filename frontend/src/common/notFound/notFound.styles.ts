@@ -1,12 +1,6 @@
 import { makeStyles, shorthands } from "@griffel/react";
 
-import {
-  colors,
-  gradients,
-  semanticColors,
-  warm,
-  warmShadows,
-} from "../theme/colors";
+import { gradients, semanticColors, warm, warmShadows } from "../theme/colors";
 import { layout, typography } from "../theme/typography";
 
 export const useNotFoundStyles = makeStyles({
@@ -88,9 +82,9 @@ export const useNotFoundStyles = makeStyles({
     height: 0,
     ...shorthands.borderTop("14px", "solid", "transparent"),
     ...shorthands.borderBottom("14px", "solid", "transparent"),
-    ...shorthands.borderLeft("46px", "solid", colors.coral),
+    ...shorthands.borderLeft("46px", "solid", warm.coral),
     transform: "rotate(-40deg)",
-    filter: "drop-shadow(0 10px 16px rgba(233, 79, 146, 0.22))",
+    filter: "drop-shadow(0 10px 16px rgba(111, 147, 188, 0.22))",
 
     "::after": {
       content: "\"\"",
@@ -111,7 +105,7 @@ export const useNotFoundStyles = makeStyles({
     width: "142px",
     height: "58px",
     borderRadius: "50%",
-    ...shorthands.border("2px", "dashed", "rgba(255, 122, 89, 0.38)"),
+    ...shorthands.border("2px", "dashed", "rgba(155, 183, 209, 0.4)"),
     borderLeftColor: "transparent",
     borderBottomColor: "transparent",
     transform: "rotate(-8deg)",
@@ -192,7 +186,7 @@ export const useNotFoundStyles = makeStyles({
       position: "absolute",
       inset: 0,
       background:
-        "linear-gradient(72deg, transparent 46%, rgba(255,122,89,0.45) 48%, transparent 50%), linear-gradient(112deg, transparent 48%, rgba(233,79,146,0.34) 50%, transparent 52%)",
+        "linear-gradient(72deg, transparent 46%, rgba(155,183,209,0.5) 48%, transparent 50%), linear-gradient(112deg, transparent 48%, rgba(111,147,188,0.38) 50%, transparent 52%)",
     },
   },
 
@@ -246,7 +240,7 @@ export const useNotFoundStyles = makeStyles({
     fontWeight: 800,
     lineHeight: 0.86,
     letterSpacing: "0",
-    color: colors.coral,
+    color: warm.coral,
     backgroundImage: gradients.primary,
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",

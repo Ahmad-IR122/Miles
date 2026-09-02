@@ -9,6 +9,7 @@ type ConfirmDialogProps = {
   title: string;
   description?: string;
   confirmLabel: string;
+  confirmingLabel?: string;
   cancelLabel?: string;
   isConfirming?: boolean;
   onConfirm: () => void;
@@ -20,6 +21,7 @@ const ConfirmDialog = ({
   title,
   description,
   confirmLabel,
+  confirmingLabel = `${confirmLabel}…`,
   cancelLabel = "Cancel",
   isConfirming = false,
   onConfirm,
@@ -61,7 +63,7 @@ const ConfirmDialog = ({
           disabled={isConfirming}
           onClick={onConfirm}
         >
-          {isConfirming ? "Deleting…" : confirmLabel}
+          {isConfirming ? confirmingLabel : confirmLabel}
         </button>
 
         <button

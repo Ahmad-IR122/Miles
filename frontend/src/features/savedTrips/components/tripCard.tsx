@@ -112,6 +112,7 @@ const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
         title="Delete this trip?"
         description={`This action cannot be undone. "${tripLabel}" will be permanently removed.`}
         confirmLabel="Delete trip"
+        confirmingLabel="Deleting…"
         isConfirming={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmOpen(false)}

@@ -11,6 +11,9 @@ class TravelPreferences(BaseModel):
     budget: str
     budget_level: Literal["low", "mid", "high"] | None = None
 
+    adults: int = 1
+    children: int = 0
+    additional_notes: str | None = None
 
 class TravelDataItem(BaseModel):
     name: str
@@ -58,12 +61,14 @@ class ItineraryRequest(BaseModel):
 
 
 class RegenerateItineraryRequest(BaseModel):
+    preferences: TravelPreferences
     itinerary: Itinerary
     user_query: str
     travel_data: list[TravelDataItem] = []
 
 
 class RegenerateDayRequest(BaseModel):
+    preferences: TravelPreferences
     itinerary: Itinerary
     day_number: int
     user_query: str
@@ -71,6 +76,7 @@ class RegenerateDayRequest(BaseModel):
 
 
 class RegenerateActivityRequest(BaseModel):
+    preferences: TravelPreferences
     itinerary: Itinerary
     day_number: int
     activity_index: int

@@ -149,6 +149,7 @@ export const adaptGeneratedItinerary = (
 ): Trip => ({
   id: String(itinerary.id),
   destination: formatTripDestinations(trip.destinations),
+  destinations: trip.destinations,
   startDate: trip.start_date,
   endDate: trip.end_date,
   travelers: trip.travelers_count,

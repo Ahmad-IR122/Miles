@@ -253,7 +253,7 @@ export const useRecommendationsStyles = makeStyles({
     },
   },
   saveButtonActive: {
-    color: colors.rose,
+    color: semanticColors.interactive,
   },
   cardBody: {
     padding: "16px 18px 18px",

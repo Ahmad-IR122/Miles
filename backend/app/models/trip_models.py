@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Date, DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -58,6 +58,13 @@ class Trip(Base):
     travelers_count: Mapped[int] = mapped_column(
         nullable=False,
         default=1,
+    )
+    adults: Mapped[int] = mapped_column(nullable=False, default=1)
+    children: Mapped[int] = mapped_column(nullable=False, default=0)
+
+    additional_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
     )
 
     trip_status: Mapped[str] = mapped_column(

@@ -113,11 +113,11 @@ export const TripSummarySidebar = ({ trip }: TripSummarySidebarProps) => {
           <GroupsIcon className={classes.summaryTravelersIcon} />
           <CheckIcon className={classes.summaryCheck} />
           <Typography className={classes.summaryValue}>
-            {trip.travelers ?? 0} Adults
+            {trip.travelers ?? 0} Travelers
           </Typography>
           <Typography className={classes.summaryLabel}>Travelers</Typography>
           <Typography className={classes.summaryNote}>
-            per person costs shown
+            group budget estimate
           </Typography>
         </Box>
       </Box>
