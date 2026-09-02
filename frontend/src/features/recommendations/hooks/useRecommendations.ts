@@ -58,6 +58,30 @@ const recommendationBudgetLabels: Record<
   high: { price: "High", priceLevel: "$$$" },
 };
 
+const getBudgetLabel = (budgetLevel: string) => {
+  const normalizedBudget = budgetLevel.toLowerCase().trim();
+
+  if (normalizedBudget.includes("low")) {
+    return recommendationBudgetLabels.low;
+  }
+
+  if (normalizedBudget.includes("high")) {
+    return recommendationBudgetLabels.high;
+  }
+
+  if (
+    normalizedBudget.includes("mid") ||
+    normalizedBudget.includes("moderate")
+  ) {
+    return recommendationBudgetLabels.mid;
+  }
+
+  return {
+    price: budgetLevel,
+    priceLevel: "$$" as const,
+  };
+};
+
 const isRecommendationPreferences = (
   value: unknown,
 ): value is RecommendationPreferences => {
@@ -189,11 +213,7 @@ const getRecommendationCategory = (
 const toRecommendationPlace = (
   item: RecommendationApiItem,
 ): RecommendationPlace => {
-  const normalizedBudget = item.budget_level.toLowerCase();
-  const budgetLabel = recommendationBudgetLabels[normalizedBudget] ?? {
-    price: item.budget_level,
-    priceLevel: "$$" as const,
-  };
+  const budgetLabel = getBudgetLabel(item.budget_level);
 
   return {
     id: item.destination_id,
@@ -215,11 +235,7 @@ const toRecommendationPlace = (
 const toRestaurantPlace = (
   item: RestaurantRecommendationApiItem,
 ): RecommendationPlace => {
-  const normalizedBudget = item.budget_level.toLowerCase();
-  const budgetLabel = recommendationBudgetLabels[normalizedBudget] ?? {
-    price: item.budget_level,
-    priceLevel: "$$" as const,
-  };
+  const budgetLabel = getBudgetLabel(item.budget_level);
 
   return {
     id: item.restaurant_id,
