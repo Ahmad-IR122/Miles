@@ -40,12 +40,35 @@ export type RestaurantRecommendationApiItem = {
   restaurant_score: number;
 };
 
+export type ActivityApiItem = {
+  activity_id?: string | null;
+  destination_id?: string | null;
+  city?: string | null;
+  country?: string | null;
+  name?: string | null;
+  category?: string | null;
+  description?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  website?: string | null;
+  rating?: number | null;
+  review_count?: number | null;
+  estimated_duration_minutes?: number | null;
+  time_of_day?: string | null;
+  indoor_outdoor?: string | null;
+  interest_tags?: string | null;
+};
+
 export type RecommendationResponse = {
   recommendations: RecommendationApiItem[];
 };
 
 export type RestaurantRecommendationResponse = {
   recommendations: RestaurantRecommendationApiItem[];
+};
+
+export type ActivityResponse = {
+  activities: ActivityApiItem[];
 };
 
 export const getRecommendations = (payload: RecommendationRequestPayload) =>
@@ -58,3 +81,6 @@ export const getRestaurantRecommendations = (
     "/api/recommendations/restaurants/",
     payload,
   );
+
+export const getActivities = () =>
+  api.get<ActivityResponse>("/api/recommendations/activities/");

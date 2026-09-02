@@ -10,12 +10,14 @@ from azure.core.exceptions import (
 from fastapi import APIRouter, HTTPException, status
 
 from app.models.recommendation import (
+    ActivityResponse,
     RecommendationRequest,
     RecommendationResponse,
     RestaurantRecommendationRequest,
     RestaurantRecommendationResponse,
 )
 from app.services.recommendation_service import (
+    recommend_activities,
     recommend_destinations,
     recommend_restaurants,
 )
@@ -160,6 +162,83 @@ def get_restaurant_recommendations(
 
     except Exception as error:
         logger.exception("Unexpected restaurant recommendation error.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred.",
+        ) from error
+
+@router.get(
+    "/activities",
+    response_model=ActivityResponse,
+)
+def get_activities_endpoint():
+    try:
+        activities = recommend_activities()
+
+        if not activities:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No activities found.",
+            )
+
+        return {
+            "activities": activities,
+        }
+
+    except HTTPException:
+        raise
+
+    except ResourceNotFoundError as error:
+        logger.exception("Activity recommendation data was not found.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Activity recommendation data is unavailable.",
+        ) from error
+
+    except ClientAuthenticationError as error:
+        logger.exception("Azure authentication failed while loading activity data.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Activity recommendation service is unavailable.",
+        ) from error
+
+    except ServiceRequestError as error:
+        logger.exception("Failed to connect to activity data source.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Unable to connect to activity data source.",
+        ) from error
+
+    except HttpResponseError as error:
+        logger.exception("Azure returned an error while loading activity data.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Activity recommendation data is temporarily unavailable.",
+        ) from error
+
+    except (
+        pd.errors.EmptyDataError,
+        pd.errors.ParserError,
+    ) as error:
+        logger.exception("Activity dataset is empty or invalid.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Activity recommendation data is invalid.",
+        ) from error
+
+    except (
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as error:
+        logger.exception("Failed to process activity recommendation data.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process activity recommendation data.",
+        ) from error
+
+    except Exception as error:
+        logger.exception("Unexpected activity recommendation error.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred.",

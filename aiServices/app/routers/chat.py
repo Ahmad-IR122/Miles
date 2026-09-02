@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.models.chat import ChatMessageRequest, ChatMessageResponse
+from app.models.chat import ChatMessageRequest
 from app.services.chat_service import get_milo_reply
 
 router = APIRouter(prefix="/chat", tags=["chat"])

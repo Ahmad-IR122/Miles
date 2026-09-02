@@ -357,6 +357,48 @@ export const useRecommendationsStyles = makeStyles({
       semanticColors.borderDefault,
     ),
   },
+  pagination: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: layout.gap.md,
+    flexWrap: "wrap",
+  },
+  paginationStatus: {
+    fontSize: typography.fontSize.size3,
+    color: semanticColors.textSecondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  paginationActions: {
+    display: "flex",
+    gap: layout.gap.xs,
+    flexWrap: "wrap",
+  },
+  paginationButton: {
+    minWidth: "96px",
+    height: layout.controlSize.md,
+    ...shorthands.borderRadius(layout.radius.sm),
+    ...shorthands.border(
+      layout.borderWidth.thin,
+      "solid",
+      semanticColors.borderDefault,
+    ),
+    backgroundColor: semanticColors.bgPrimary,
+    color: semanticColors.textSecondary,
+    fontSize: typography.fontSize.size2,
+    fontWeight: typography.fontWeight.semibold,
+    cursor: "pointer",
+    fontFamily: typography.fontFamily.sans,
+    ":hover": {
+      ...shorthands.borderColor(semanticColors.borderAccent),
+      color: semanticColors.interactive,
+    },
+    ":disabled": {
+      color: semanticColors.textDisabled,
+      cursor: "not-allowed",
+      opacity: 0.7,
+    },
+  },
   emptyState: {
     textAlign: "center",
     ...shorthands.padding(layout.spacing[16], "40px"),

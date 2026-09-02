@@ -2,6 +2,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, status
 
 from app.schemas.recommendation import (
+    ActivityResponse,
     RecommendationRequest,
     RecommendationResponse,
     RestaurantRecommendationRequest,
@@ -33,6 +34,37 @@ def get_recommendations(payload: RecommendationRequest):
             payload.model_dump(),
         )
     except httpx.HTTPStatusError as error:
+        response_text = error.response.text
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "AI service returned "
+                f"{error.response.status_code}: {response_text}"
+            ),
+        ) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI service request failed: {error}",
+        ) from error
+
+
+@router.get("/activities", response_model=ActivityResponse)
+@router.get("/activities/", response_model=ActivityResponse)
+def get_activities():
+    try:
+        return ai_client.get("/api/recommendations/activities")
+    except httpx.HTTPStatusError as error:
+        if error.response.status_code in {
+            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+        }:
+            raise HTTPException(
+                status_code=error.response.status_code,
+                detail=_ai_error_detail(error),
+            ) from error
+
         response_text = error.response.text
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -80,3 +112,4 @@ def get_restaurant_recommendations(payload: RestaurantRecommendationRequest):
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"AI service request failed: {error}",
         ) from error
+
