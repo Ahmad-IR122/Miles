@@ -50,19 +50,18 @@ const apiBudgetMap: Record<
 const filterBudgetMap: Partial<
   Record<BudgetFilterLabel, "low" | "mid" | "high">
 > = {
-  "Low Budget": "low",
-  "Mid-range": "mid",
-  Upscale: "high",
-  Luxury: "high",
+  Low: "low",
+  Mid: "mid",
+  High: "high",
 };
 
 const recommendationBudgetLabels: Record<
   string,
   { price: string; priceLevel: PriceLevel }
 > = {
-  low: { price: "Low Budget", priceLevel: "$" },
-  mid: { price: "Mid-range", priceLevel: "$$" },
-  high: { price: "Upscale", priceLevel: "$$$" },
+  low: { price: "Low", priceLevel: "$" },
+  mid: { price: "Mid", priceLevel: "$$" },
+  high: { price: "High", priceLevel: "$$$" },
 };
 
 const isRecommendationPreferences = (
