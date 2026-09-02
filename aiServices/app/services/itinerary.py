@@ -19,6 +19,7 @@ from app.prompts import (
     build_regenerate_day_prompt,
     build_regenerate_itinerary_prompt,
 )
+from app.services.search import search_service
 
 client = get_client()
 
@@ -36,6 +37,49 @@ MAX_OUTPUT_TOKENS = 16000
 # count is bounded so a stubborn model can't blow the caller's timeout.
 TOP_UP_BATCH_DAYS = 4
 MAX_TOP_UP_PASSES = 6
+SEARCH_RESULTS_LIMIT = 20
+
+
+def _build_search_query(preferences: TravelPreferences) -> str:
+    destinations = ", ".join(
+        ", ".join(
+            value
+            for value in (destination.get("city"), destination.get("country"))
+            if value
+        )
+        for destination in preferences.destinations
+    )
+    interests = ", ".join(preferences.interests) or "general sightseeing"
+    return (
+        f"Travel recommendations in {destinations}; interests: {interests}; "
+        f"budget: {preferences.budget} ({preferences.budget_level or 'any level'}); "
+        f"dates: {preferences.start_date} to {preferences.end_date}"
+    )
+
+
+def _retrieve_travel_data(
+    preferences: TravelPreferences, supplied_data: list[TravelDataItem]
+) -> list[TravelDataItem]:
+    """Search for recommendations matching the user's itinerary preferences."""
+    search_results = search_service.search(
+        _build_search_query(preferences), top=SEARCH_RESULTS_LIMIT, threshold=0.025
+    )
+    retrieved_data = [
+        TravelDataItem.model_validate(result) for result in search_results
+    ]
+
+    merged_data: list[TravelDataItem] = []
+    seen: set[tuple[str, str, str]] = set()
+    for item in [*supplied_data, *retrieved_data]:
+        key = (
+            item.type.lower(),
+            item.name.casefold(),
+            (item.location or "").casefold(),
+        )
+        if key not in seen:
+            seen.add(key)
+            merged_data.append(item)
+    return merged_data
 
 
 def _day_token_budget(num_days: int) -> int:
@@ -81,6 +125,7 @@ def generate_itinerary(
         (start + timedelta(days=offset)).isoformat() for offset in range(num_days)
     ]
 
+    travel_data = _retrieve_travel_data(preferences, travel_data)
     prompt = build_itinerary_prompt(preferences, travel_data)
     first_pass = _call_model(prompt, Itinerary, _day_token_budget(num_days))
 
@@ -88,7 +133,9 @@ def generate_itinerary(
     # so those count as missing too.
     wanted = set(wanted_dates)
     days_by_date = {
-        day.date: day for day in first_pass.days if day.date in wanted and day.activities
+        day.date: day
+        for day in first_pass.days
+        if day.date in wanted and day.activities
     }
 
     # Asked for a long trip in one request the model regularly answers with
@@ -102,7 +149,9 @@ def generate_itinerary(
 
         batch = missing[:TOP_UP_BATCH_DAYS]
         planned_so_far = Itinerary(
-            days=[days_by_date[value] for value in wanted_dates if value in days_by_date]
+            days=[
+                days_by_date[value] for value in wanted_dates if value in days_by_date
+            ]
         )
         top_up = _call_model(
             build_missing_days_prompt(preferences, travel_data, planned_so_far, batch),

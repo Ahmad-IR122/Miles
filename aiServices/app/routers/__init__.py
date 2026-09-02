@@ -2,4 +2,4 @@
 
 from . import health, itinerary, rag
 
-__all__ = ["health", "itinerary", "rag"]
+__all__ = ["health", "itinerary", "rag", "recommendations"]

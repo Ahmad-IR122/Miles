@@ -2,10 +2,14 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    SearchableField,
+    HnswVectorSearchAlgorithmConfiguration,
+    SearchField,
     SearchFieldDataType,
     SearchIndex,
+    SearchableField,
     SimpleField,
+    VectorSearch,
+    VectorSearchProfile,
 )
 
 from app.config import settings
@@ -24,7 +28,29 @@ fields = [
         filterable=True,
     ),
     SimpleField(name="budget_level", type=SearchFieldDataType.String, filterable=True),
+    SearchField(
+        name="contentVector",
+        type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+        searchable=True,
+        vector_search_dimensions=1536,
+        vector_search_profile_name="default-vector-profile",
+    ),
 ]
+
+vector_search = VectorSearch(
+    algorithms=[
+        HnswVectorSearchAlgorithmConfiguration(
+            name="default-hnsw",
+            parameters={"metric": "cosine"},
+        )
+    ],
+    profiles=[
+        VectorSearchProfile(
+            name="default-vector-profile",
+            algorithm_configuration_name="default-hnsw",
+        )
+    ],
+)
 
 sample_docs = [
     {
@@ -42,7 +68,11 @@ sample_docs = [
 def run():
     index_client = SearchIndexClient(settings.AZURE_SEARCH_ENDPOINT, credential)
     index_client.create_or_update_index(
-        SearchIndex(name=settings.AZURE_SEARCH_INDEX_NAME, fields=fields)
+        SearchIndex(
+            name=settings.AZURE_SEARCH_INDEX_NAME,
+            fields=fields,
+            vector_search=vector_search,
+        )
     )
     print(f"Index '{settings.AZURE_SEARCH_INDEX_NAME}' created/updated.")
 

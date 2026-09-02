@@ -25,3 +25,17 @@ def get_client():
         azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
         api_version=settings.AZURE_OPENAI_API_VERSION,
     )
+
+
+def get_embedding_client():
+    endpoint = settings.AZURE_OPENAI_EMBEDDING_ENDPOINT or ""
+    api_key = settings.AZURE_OPENAI_EMBEDDING_API_KEY or ""
+
+    if not endpoint or not api_key:
+        raise ValueError("Azure OpenAI embedding configuration is missing.")
+
+    return AzureOpenAI(
+        api_key=api_key,
+        azure_endpoint=endpoint,
+        api_version=settings.AZURE_OPENAI_API_VERSION,
+    )
