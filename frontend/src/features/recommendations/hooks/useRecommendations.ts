@@ -13,7 +13,6 @@ import {
 import placeholderImage from "../../../assets/image.svg";
 import destinations from "../../../data/destinations.json";
 import type {
-  BudgetFilterLabel,
   PriceLevel,
   RecommendationCategoryFilter,
   RecommendationPlace,
@@ -21,7 +20,7 @@ import type {
 } from "../types/types";
 
 const latestRecommendationPreferencesKey = "latestRecommendationPreferences";
-const defaultRecommendationLimit = 5;
+const defaultRestaurantBudget = 750;
 const recommendationRequests = new Map<
   string,
   Promise<RecommendationResponse>
@@ -35,7 +34,6 @@ const mockRecommendationPayload: RecommendationRequestPayload = {
   budget_level: "high",
   travel_month: 1,
   style: "nature",
-  limit: 6,
 };
 
 const apiBudgetMap: Record<
@@ -45,15 +43,6 @@ const apiBudgetMap: Record<
   LOW: "low",
   MID: "mid",
   HIGH: "high",
-};
-
-const filterBudgetMap: Partial<
-  Record<BudgetFilterLabel, "low" | "mid" | "high">
-> = {
-  "Low Budget": "low",
-  "Mid-range": "mid",
-  Upscale: "high",
-  Luxury: "high",
 };
 
 const recommendationBudgetLabels: Record<
@@ -79,6 +68,9 @@ const isRecommendationPreferences = (
       preferences.budgetLevel === "HIGH") &&
     typeof preferences.travelMonth === "number" &&
     typeof preferences.style === "string" &&
+    (preferences.budget === undefined ||
+      (typeof preferences.budget === "number" &&
+        Number.isFinite(preferences.budget))) &&
     (preferences.destinationId === undefined ||
       typeof preferences.destinationId === "string")
   );
@@ -107,7 +99,6 @@ const toRecommendationPayload = (
   budget_level: apiBudgetMap[preferences.budgetLevel],
   travel_month: preferences.travelMonth,
   style: preferences.style,
-  limit: defaultRecommendationLimit,
 });
 
 const getBrowseRecommendationsPayload = (): RecommendationRequestPayload => ({
@@ -235,7 +226,6 @@ const toRestaurantPlace = (
 export const useRecommendations = (
   locationState: unknown,
   activeCategory: RecommendationCategoryFilter,
-  activeBudget: BudgetFilterLabel,
 ) => {
   const [destinationPlaces, setDestinationPlaces] = useState<
     RecommendationPlace[]
@@ -304,9 +294,7 @@ export const useRecommendations = (
       return;
     }
 
-    const budgetLevel =
-      filterBudgetMap[activeBudget] ??
-      (preferences ? apiBudgetMap[preferences.budgetLevel] : "mid");
+    const budget = preferences?.budget ?? defaultRestaurantBudget;
     let isMounted = true;
 
     void Promise.resolve()
@@ -318,8 +306,7 @@ export const useRecommendations = (
 
         return getCachedRestaurantRecommendations({
           destination_id: destinationId,
-          budget_level: budgetLevel,
-          limit: defaultRecommendationLimit,
+          budget,
         });
       })
       .then((data) => {
@@ -344,7 +331,7 @@ export const useRecommendations = (
     return () => {
       isMounted = false;
     };
-  }, [activeBudget, activeCategory, destinationPlaces, locationState]);
+  }, [activeCategory, destinationPlaces, locationState]);
 
   const places = useMemo(
     () =>

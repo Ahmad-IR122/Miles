@@ -5,7 +5,6 @@ export type RecommendationRequestPayload = {
   budget_level: "low" | "mid" | "high";
   travel_month: number;
   style: string;
-  limit: number;
 };
 
 export type RecommendationApiItem = {
@@ -24,8 +23,7 @@ export type RecommendationApiItem = {
 
 export type RestaurantRecommendationRequestPayload = {
   destination_id: string;
-  budget_level: "low" | "mid" | "high";
-  limit: number;
+  budget: number;
 };
 
 export type RestaurantRecommendationApiItem = {

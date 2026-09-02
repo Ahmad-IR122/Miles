@@ -30,10 +30,8 @@ class RecommendationResponse(BaseModel):
 
 
 class RestaurantRecommendationRequest(BaseModel):
-    destination_id: str = Field(min_length=1)
-    budget_level: Literal["low", "mid", "high"]
-    limit: int = Field(default=5, ge=1, le=20)
-
+    destination_id: str
+    budget: float = Field(ge=0)
 
 class RestaurantRecommendationItem(BaseModel):
     restaurant_id: str
