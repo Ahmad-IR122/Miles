@@ -3,10 +3,9 @@ export type RecommendationCategory =
 
 export type RecommendationCategoryFilter = "All" | RecommendationCategory;
 
-export type BudgetFilterLabel =
-  "Any Budget" | "Low Budget" | "Mid-range" | "Upscale" | "Luxury";
+export type BudgetFilterLabel = "Any Budget" | "Low" | "Mid" | "High";
 
-export type PriceLevel = "$" | "$$" | "$$$" | "$$$$";
+export type PriceLevel = "$" | "$$" | "$$$";
 
 export type RecommendationPlace = {
   id: string;

@@ -49,9 +49,9 @@ const recommendationBudgetLabels: Record<
   string,
   { price: string; priceLevel: PriceLevel }
 > = {
-  low: { price: "Low Budget", priceLevel: "$" },
-  mid: { price: "Mid-range", priceLevel: "$$" },
-  high: { price: "Upscale", priceLevel: "$$$" },
+  low: { price: "Low", priceLevel: "$" },
+  mid: { price: "Mid", priceLevel: "$$" },
+  high: { price: "High", priceLevel: "$$$" },
 };
 
 const isRecommendationPreferences = (
