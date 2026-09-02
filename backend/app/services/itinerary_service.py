@@ -1,3 +1,4 @@
+import re
 from datetime import date as DateType
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
@@ -25,13 +26,23 @@ def _to_decimal(value: str | None) -> Decimal | None:
     """Best-effort parse of the AI service's free-text estimated_cost field."""
     if not value:
         return None
-    cleaned = "".join(ch for ch in value if ch.isdigit() or ch == ".")
-    if not cleaned:
+
+    if value.strip().lower() == "free":
+        return Decimal("0")
+
+    matches = re.findall(r"\d[\d,]*(?:\.\d+)?", value)
+    if not matches:
         return None
+
     try:
-        return Decimal(cleaned)
+        amounts = [Decimal(match.replace(",", "")) for match in matches]
     except InvalidOperation:
         return None
+
+    if len(amounts) == 1:
+        return amounts[0]
+
+    return (min(amounts) + max(amounts)) / Decimal("2")
 
 
 def generate_itinerary_for_trip(db: Session, trip_id: int, user_id: int) -> DBItinerary:
@@ -257,11 +268,19 @@ def _regenerate_db(
     extra: dict,
     user_query: str,
 ) -> DBItinerary:
+    # The Trip's preferences (additional_notes, adults/children, interests)
+    # have to ride along so a regeneration respects the same constraints the
+    # first pass did - mirrors preferences_from_trip() in the initial flow.
+    interest_names = [
+        interest.name
+        for interest in list_trip_interests(db, itinerary.trip_id)
+    ]
     raw = post(
         path,
         {
             "itinerary": _itinerary_wire(itinerary.days),
             "user_query": user_query,
+            "preferences": preferences_from_trip(itinerary.trip, interest_names),
             **extra,
         },
     )

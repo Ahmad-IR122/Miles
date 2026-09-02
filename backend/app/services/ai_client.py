@@ -4,7 +4,7 @@ from decimal import Decimal
 import httpx
 
 from app.core import settings
-from app.schemas import Activity, DayPlan, TripRequestResponse
+from app.schemas import Activity, DayPlan
 
 TIME_FORMATS = ("%H:%M", "%H:%M:%S", "%I:%M %p")
 
@@ -93,19 +93,6 @@ def from_itinerary(days: list[DayPlan]) -> dict:
     return {"days": [from_day(day) for day in days]}
 
 
-def preferences_from(trip: TripRequestResponse) -> dict:
-    interests = list(trip.interests)
-    if trip.other_interest and trip.other_interest.strip():
-        interests.append(trip.other_interest.strip())
-    return {
-        "destination": trip.destination,
-        "start_date": str(trip.start_date),
-        "end_date": str(trip.end_date),
-        "interests": interests,
-        "budget": str(trip.budget),
-    }
-
-
 def preferences_from_trip(trip, interest_names: list[str]) -> dict:
     """Build the aiServices TravelPreferences payload from a DB Trip row."""
     return {
@@ -115,4 +102,7 @@ def preferences_from_trip(trip, interest_names: list[str]) -> dict:
         "interests": interest_names,
         "budget": str(trip.budget) if trip.budget is not None else "",
         "budget_level": map_budget_level(trip.budget),
+        "additional_notes": trip.additional_notes,
+        "adults": trip.adults,
+        "children": trip.children,
     }

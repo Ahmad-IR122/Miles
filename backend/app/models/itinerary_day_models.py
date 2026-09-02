@@ -43,7 +43,7 @@ class ItineraryDay(Base):
         Text, 
         nullable=True, 
     ) 
- 
+
     itinerary: Mapped["Itinerary"] = relationship( 
         back_populates="days", 
     ) 
@@ -51,4 +51,4 @@ class ItineraryDay(Base):
     activities: Mapped[list["Activity"]] = relationship( 
         back_populates="itinerary_day", 
         cascade="all, delete-orphan", 
-    ) 
+    )

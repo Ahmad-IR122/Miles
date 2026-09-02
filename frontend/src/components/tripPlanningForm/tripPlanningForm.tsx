@@ -32,6 +32,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
+import { api } from "../../api/api";
 import { saveTripPreferences } from "../../api/tripPreference";
 import { buildTripPrompt } from "./tripPrompt";
 import type { Trip } from "../../types/trip";
@@ -515,13 +516,29 @@ const TripPlanningForm = () => {
       const baseDays = Math.floor(tripDuration / stops.length);
       const extraDays = tripDuration % stops.length;
 
-      const tripPayload = {
-        destination: stops
-          .map((stop) =>
-            stop.city ? `${stop.city}, ${stop.country}` : stop.country,
-          )
-          .join(" • "),
+      const mergedAdditionalNotes = (() => {
+        const baseNotes = notes.trim();
+        const customOtherText = otherInterest.trim();
+        const hasOtherInterest = selectedInterests.includes("Other");
 
+        let merged = baseNotes;
+        if (hasOtherInterest && customOtherText) {
+          const otherNote = `Other interest: ${customOtherText}`;
+          merged = baseNotes ? `${otherNote}. ${baseNotes}` : otherNote;
+        }
+
+        if (!merged) {
+          return undefined;
+        }
+
+        // notes on its own is already allowed up to maxNotesLength, so
+        // prepending "Other interest: …" can push the combined string past
+        // the backend's additional_notes cap — truncate the final result,
+        // not each piece.
+        return merged.slice(0, maxNotesLength);
+      })();
+
+      const tripPayload = {
         destinations: stops.map((stop, index) => ({
           ...stop,
           days: baseDays + (index < extraDays ? 1 : 0),
@@ -531,15 +548,14 @@ const TripPlanningForm = () => {
 
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
 
-        budget_min: budgetSliderMin,
         budget_max: budgetMax,
 
         travelers_count: adults + children,
+        additional_notes: mergedAdditionalNotes,
+        adults,
+        children,
       };
-      // If a previous attempt already created this exact trip and only
-      // failed at the generation step, reuse it instead of re-creating it —
-      // otherwise a retry after a failed generation hits a 409 conflict on
-      // the same dates. If the details changed since then, create fresh.
+
       const canReusePendingTrip =
         pendingTrip !== null &&
         JSON.stringify(pendingTrip.destinations) ===
@@ -552,6 +568,65 @@ const TripPlanningForm = () => {
           : (await createTrip(tripPayload)).data;
       if (!canReusePendingTrip) {
         setPendingTrip(trip);
+      }
+
+      try {
+        const canonicalInterests = await api
+          .get<{ id: number; name: string }[]>("/interests")
+          .then((response) => response.data);
+
+        const interestIdsByName = new Map(
+          canonicalInterests.map((interest) => [
+            interest.name.trim().toLowerCase(),
+            interest.id,
+          ]),
+        );
+
+        for (const label of selectedInterests) {
+          if (label === "Other") {
+            continue;
+          }
+
+          const normalized = label.trim().toLowerCase();
+          let interestId = interestIdsByName.get(normalized);
+          if (interestId === undefined) {
+            const createdInterest = await api.post<{
+              id: number;
+              name: string;
+            }>("/interests", {
+              name: label,
+            });
+
+            interestId = createdInterest.data.id;
+            interestIdsByName.set(
+              createdInterest.data.name.trim().toLowerCase(),
+              interestId,
+            );
+          }
+
+          try {
+            await api.post(`/trips/${trip.id}/interests`, {
+              interest_id: interestId,
+            });
+          } catch (linkError) {
+            // A retried submit reuses the same trip (see pendingTrip above),
+            // so interests linked on an earlier attempt come back as 409 —
+            // that is already the desired state, not a failure.
+            if (
+              !axios.isAxiosError(linkError) ||
+              linkError.response?.status !== 409
+            ) {
+              throw linkError;
+            }
+          }
+        }
+      } catch {
+        // Unlike the brief saved below (which nothing reads back), these rows
+        // are the only source of the interest list the itinerary is generated
+        // from. Stop with a message that points at the real problem rather
+        // than generate an itinerary that ignores the traveler's interests.
+        setSubmitError(t("tripPlanningForm.validation.interestSyncError"));
+        return;
       }
 
       // Nothing here talks to a model: the brief is only written down, ready

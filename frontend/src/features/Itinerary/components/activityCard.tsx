@@ -255,7 +255,7 @@ export const ActivityCard = ({
           {normalized.cost && (
             <span className={classes.detailItem}>
               <PaidIcon className={classes.costIcon} />
-              {normalized.cost}
+              Estimated: {normalized.cost}
             </span>
           )}
           {normalized.weather && (
