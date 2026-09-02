@@ -255,10 +255,22 @@ export const useSavedTripsStyles = makeStyles({
     color: semanticColors.interactive,
     fontSize: typography.fontSize.size3,
     fontWeight: typography.fontWeight.semibold,
-    opacity: 0.55,
-    cursor: "not-allowed",
     gap: layout.gap.sm,
     minWidth: 0,
+    textDecoration: "none",
+    cursor: "pointer",
+    ":hover": {
+      textDecoration: "underline",
+      gap: layout.gap.md,
+    },
+
+    ":focus-visible": {
+      outlineColor: semanticColors.interactive,
+      outlineStyle: "solid",
+      outlineWidth: layout.borderWidth.thick,
+      outlineOffset: "2px",
+      borderRadius: layout.radius.sm,
+    },
   },
 
   cardFooterArrow: {

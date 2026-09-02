@@ -8,6 +8,12 @@ import type {
 export const getItineraries = () =>
   api.get<{ data: Itinerary[] }>("/itinerary");
 
+export const getUpcomingItinerary = () =>
+  api.get<GeneratedItinerary>("/itinerary/upcoming");
+
+export const getItineraryByTripId = (tripId: number) =>
+  api.get<GeneratedItinerary>(`/itinerary/by-trip/${tripId}`);
+
 export const generateItinerary = (tripId: number) =>
   api.post<GeneratedItinerary>("/itinerary", { trip_id: tripId });
 
