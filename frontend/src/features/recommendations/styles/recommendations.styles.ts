@@ -135,15 +135,26 @@ export const useRecommendationsStyles = makeStyles({
       semanticColors.borderDefault,
     ),
     ...shorthands.padding("0", "12px"),
-    color: semanticColors.textPrimary,
+    color: semanticColors.textTertiary,
     backgroundColor: semanticColors.bgPrimary,
     fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.semibold,
     fontFamily: typography.fontFamily.sans,
     ":focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
       outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
+    },
+    // Native <option> elements don't inherit font styling from the <select>
+    // in every browser, so restate it explicitly to keep the dropdown list
+    // matching the trigger (and the category tabs it sits next to).
+    "& option": {
+      color: semanticColors.textPrimary,
+      backgroundColor: semanticColors.bgPrimary,
+      fontSize: typography.fontSize.size3,
+      fontWeight: typography.fontWeight.semibold,
+      fontFamily: typography.fontFamily.sans,
     },
   },
   ratingWrap: {
