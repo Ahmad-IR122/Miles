@@ -32,7 +32,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
-import { api } from "../../api/api";
 import { saveTripPreferences } from "../../api/tripPreference";
 import { buildTripPrompt } from "./tripPrompt";
 import type { Trip } from "../../types/trip";
@@ -99,6 +98,16 @@ const getCitiesForCountry = (isoCode: string): ICity[] =>
     a.name.localeCompare(b.name),
   );
 
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // strip accents: Azé -> aze
+    .toLowerCase()
+    .trim();
+
+const MAX_CITY_RESULTS = 50;
+const MIN_CITY_QUERY_LENGTH = 1;
+
 const createBookedDay = (existingTrips: Trip[], bookedTooltip: string) => {
   const BookedDay = (props: PickerDayProps) => {
     const styles = useTripPlanningFormStyles();
@@ -159,6 +168,7 @@ const TripPlanningForm = () => {
   );
 
   const [destinationCities, setDestinationCities] = useState<ICity[]>([]);
+  const [cityQuery, setCityQuery] = useState("");
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
@@ -285,6 +295,38 @@ const TripPlanningForm = () => {
     [existingTrips, t],
   );
 
+  const citiesForSelectedCountry = useMemo(
+    () =>
+      destinationCountry ? getCitiesForCountry(destinationCountry.isoCode) : [],
+    [destinationCountry],
+  );
+
+  const filteredCityOptions = useMemo(() => {
+    const query = normalize(cityQuery);
+
+    if (query.length < MIN_CITY_QUERY_LENGTH) {
+      return citiesForSelectedCountry.slice(0, MAX_CITY_RESULTS);
+    }
+
+    const scoreCity = (city: ICity): number => {
+      const name = normalize(city.name);
+
+      if (name === query) return 0; // exact match
+      if (name.startsWith(query)) return 1; // starts with query
+      return 2; // contains query elsewhere
+    };
+
+    const matches = citiesForSelectedCountry
+      .filter((city) => normalize(city.name).includes(query))
+      .sort((a, b) => {
+        const scoreDiff = scoreCity(a) - scoreCity(b);
+        if (scoreDiff !== 0) return scoreDiff;
+        return a.name.localeCompare(b.name); // alphabetical within same score
+      });
+
+    return matches.slice(0, MAX_CITY_RESULTS);
+  }, [citiesForSelectedCountry, cityQuery]);
+
   const clearFieldError = (field: keyof FieldErrors) => {
     setFieldErrors((current) =>
       current[field]
@@ -321,6 +363,7 @@ const TripPlanningForm = () => {
     setDestinationCountry(value);
     // The old cities belong to the country that was just replaced.
     setDestinationCities([]);
+    setCityQuery("");
 
     if (value) {
       clearFieldError("destinations");
@@ -516,29 +559,13 @@ const TripPlanningForm = () => {
       const baseDays = Math.floor(tripDuration / stops.length);
       const extraDays = tripDuration % stops.length;
 
-      const mergedAdditionalNotes = (() => {
-        const baseNotes = notes.trim();
-        const customOtherText = otherInterest.trim();
-        const hasOtherInterest = selectedInterests.includes("Other");
-
-        let merged = baseNotes;
-        if (hasOtherInterest && customOtherText) {
-          const otherNote = `Other interest: ${customOtherText}`;
-          merged = baseNotes ? `${otherNote}. ${baseNotes}` : otherNote;
-        }
-
-        if (!merged) {
-          return undefined;
-        }
-
-        // notes on its own is already allowed up to maxNotesLength, so
-        // prepending "Other interest: …" can push the combined string past
-        // the backend's additional_notes cap — truncate the final result,
-        // not each piece.
-        return merged.slice(0, maxNotesLength);
-      })();
-
       const tripPayload = {
+        destination: stops
+          .map((stop) =>
+            stop.city ? `${stop.city}, ${stop.country}` : stop.country,
+          )
+          .join(" • "),
+
         destinations: stops.map((stop, index) => ({
           ...stop,
           days: baseDays + (index < extraDays ? 1 : 0),
@@ -548,14 +575,18 @@ const TripPlanningForm = () => {
 
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
 
+        budget_min: budgetSliderMin,
         budget_max: budgetMax,
 
-        travelers_count: adults + children,
-        additional_notes: mergedAdditionalNotes,
         adults,
         children,
-      };
 
+        travelers_count: adults + children,
+      };
+      // If a previous attempt already created this exact trip and only
+      // failed at the generation step, reuse it instead of re-creating it —
+      // otherwise a retry after a failed generation hits a 409 conflict on
+      // the same dates. If the details changed since then, create fresh.
       const canReusePendingTrip =
         pendingTrip !== null &&
         JSON.stringify(pendingTrip.destinations) ===
@@ -568,65 +599,6 @@ const TripPlanningForm = () => {
           : (await createTrip(tripPayload)).data;
       if (!canReusePendingTrip) {
         setPendingTrip(trip);
-      }
-
-      try {
-        const canonicalInterests = await api
-          .get<{ id: number; name: string }[]>("/interests")
-          .then((response) => response.data);
-
-        const interestIdsByName = new Map(
-          canonicalInterests.map((interest) => [
-            interest.name.trim().toLowerCase(),
-            interest.id,
-          ]),
-        );
-
-        for (const label of selectedInterests) {
-          if (label === "Other") {
-            continue;
-          }
-
-          const normalized = label.trim().toLowerCase();
-          let interestId = interestIdsByName.get(normalized);
-          if (interestId === undefined) {
-            const createdInterest = await api.post<{
-              id: number;
-              name: string;
-            }>("/interests", {
-              name: label,
-            });
-
-            interestId = createdInterest.data.id;
-            interestIdsByName.set(
-              createdInterest.data.name.trim().toLowerCase(),
-              interestId,
-            );
-          }
-
-          try {
-            await api.post(`/trips/${trip.id}/interests`, {
-              interest_id: interestId,
-            });
-          } catch (linkError) {
-            // A retried submit reuses the same trip (see pendingTrip above),
-            // so interests linked on an earlier attempt come back as 409 —
-            // that is already the desired state, not a failure.
-            if (
-              !axios.isAxiosError(linkError) ||
-              linkError.response?.status !== 409
-            ) {
-              throw linkError;
-            }
-          }
-        }
-      } catch {
-        // Unlike the brief saved below (which nothing reads back), these rows
-        // are the only source of the interest list the itinerary is generated
-        // from. Stop with a message that points at the real problem rather
-        // than generate an itinerary that ignores the traveler's interests.
-        setSubmitError(t("tripPlanningForm.validation.interestSyncError"));
-        return;
       }
 
       // Nothing here talks to a model: the brief is only written down, ready
@@ -683,19 +655,17 @@ const TripPlanningForm = () => {
                 {t("tripPlanningForm.header.titleAccent")}
               </span>
             </Typography>
+
+            <Typography component="p" className={styles.subtitle}>
+              {t("tripPlanningForm.header.subtitle")}
+            </Typography>
           </header>
 
           <div className={styles.steps}>
             {steps.map((item, index) => {
               const isCurrent = step === item.num;
 
-              // A step only counts as complete once the user has actually
-              // moved past it - checking completedSteps[index] alone marks
-              // a step complete purely because its fields currently pass
-              // validation, which is true by default for step 2 before the
-              // user has even reached it (adults/budget defaults already
-              // satisfy isTravelersBudgetComplete).
-              const isComplete = item.num < step && completedSteps[index];
+              const isComplete = completedSteps[index] && !isCurrent;
 
               return (
                 <div
@@ -734,7 +704,7 @@ const TripPlanningForm = () => {
                     <div
                       className={mergeClasses(
                         styles.connector,
-                        isComplete && styles.connectorComplete,
+                        completedSteps[index] && styles.connectorComplete,
                       )}
                     />
                   )}
@@ -783,12 +753,14 @@ const TripPlanningForm = () => {
                     <Autocomplete
                       multiple
                       disableCloseOnSelect
-                      options={
-                        destinationCountry
-                          ? getCitiesForCountry(destinationCountry.isoCode)
-                          : []
-                      }
+                      options={filteredCityOptions}
+                      filterOptions={(x) => x}
+                      inputValue={cityQuery}
+                      onInputChange={(_event, value) => setCityQuery(value)}
                       getOptionLabel={(option) => option.name}
+                      getOptionKey={(option) =>
+                        `${option.name}-${option.stateCode ?? ""}-${option.latitude ?? ""}-${option.longitude ?? ""}`
+                      }
                       isOptionEqualToValue={(option, value) =>
                         option.name === value.name
                       }
@@ -817,6 +789,10 @@ const TripPlanningForm = () => {
                       )}
                     />
                   </div>
+
+                  <Typography component="p" className={styles.destinationHint}>
+                    {t("tripPlanningForm.tripDetails.citiesHint")}
+                  </Typography>
 
                   {fieldErrors.destinations && (
                     <Typography
@@ -1284,6 +1260,7 @@ const TripPlanningForm = () => {
                     slotProps={{
                       htmlInput: { maxLength: maxNotesLength },
                     }}
+                    helperText={t("tripPlanningForm.notes.helper")}
                     sx={getFieldSx(!!notes.trim())}
                   />
                 </div>

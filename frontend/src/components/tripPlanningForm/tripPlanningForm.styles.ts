@@ -484,6 +484,11 @@ export const useTripPlanningFormStyles = makeStyles({
     flexWrap: "wrap",
     gap: layout.gap.sm,
   },
+  subtitle: {
+    fontSize: "0.95rem",
+    color: semanticColors.textSecondary, // or whatever token fits your theme
+    marginTop: "4px",
+  },
   hidden: { visibility: "hidden" },
   bookedDay: {
     "&.MuiPickerDay-root": {
