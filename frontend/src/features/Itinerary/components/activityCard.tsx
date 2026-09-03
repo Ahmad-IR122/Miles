@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Box,
+  CircularProgress,
   IconButton,
   Stack,
   TextField,
@@ -201,9 +202,39 @@ export const ActivityCard = ({
     onDelete(dayIndex, activityIndex);
   };
 
+  // Regeneration replaces the whole activity, not just its title, so the card
+  // shows the old content as clearly on its way out rather than leaving stale
+  // details looking current.
   return (
-    <Box className={classes.activityCard}>
-      <Box className={classes.activityContent}>
+    <Box
+      aria-busy={isRegenerating}
+      className={mergeClasses(
+        classes.activityCard,
+        isRegenerating && classes.activityCardRegenerating,
+      )}
+    >
+      {isRegenerating && (
+        <Box className={classes.regeneratingOverlay} role="status">
+          <Box className={classes.regeneratingBadge}>
+            <CircularProgress
+              className={classes.regeneratingSpinner}
+              size={16}
+              thickness={4.5}
+            />
+            <Typography className={classes.regeneratingLabel}>
+              Regenerating activity…
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      <Box
+        aria-hidden={isRegenerating}
+        className={mergeClasses(
+          classes.activityContent,
+          isRegenerating && classes.activityContentPending,
+        )}
+      >
         <Box className={classes.activityMeta}>
           <Box className={mergeClasses(classes.category, categoryClass)}>
             {normalized.category}
@@ -236,7 +267,7 @@ export const ActivityCard = ({
         ) : (
           <>
             <Typography className={classes.activityTitle} component="h3">
-              {isRegenerating ? "Regenerating..." : normalized.title}
+              {normalized.title}
             </Typography>
 
             {normalized.description && (
@@ -307,18 +338,28 @@ export const ActivityCard = ({
           </>
         ) : (
           <>
-            <Tooltip title="Edit manually">
+            <Tooltip title={isRegenerating ? "Regenerating…" : "Edit manually"}>
               <IconButton
+                aria-disabled={isRegenerating}
                 aria-label="Edit activity"
                 className={classes.iconButton}
-                onClick={startEditing}
+                onClick={() => {
+                  if (!isRegenerating) {
+                    startEditing();
+                  }
+                }}
                 size="small"
+                sx={{ opacity: isRegenerating ? 0.5 : 1 }}
               >
                 <EditIcon className={classes.editIcon} />
               </IconButton>
             </Tooltip>
             {onRegenerate && (
-              <Tooltip title="Regenerate this activity">
+              <Tooltip
+                title={
+                  isRegenerating ? "Regenerating…" : "Regenerate this activity"
+                }
+              >
                 <IconButton
                   aria-disabled={regenerateDisabled}
                   aria-label={`Regenerate ${normalized.title}`}
@@ -335,12 +376,20 @@ export const ActivityCard = ({
                 </IconButton>
               </Tooltip>
             )}
-            <Tooltip title="Delete activity">
+            <Tooltip
+              title={isRegenerating ? "Regenerating…" : "Delete activity"}
+            >
               <IconButton
+                aria-disabled={isRegenerating}
                 aria-label="Delete activity"
                 className={classes.iconButton}
-                onClick={() => setConfirmDeleteOpen(true)}
+                onClick={() => {
+                  if (!isRegenerating) {
+                    setConfirmDeleteOpen(true);
+                  }
+                }}
                 size="small"
+                sx={{ opacity: isRegenerating ? 0.5 : 1 }}
               >
                 <DeleteIcon className={classes.deleteIcon} />
               </IconButton>

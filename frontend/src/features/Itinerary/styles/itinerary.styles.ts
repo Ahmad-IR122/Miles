@@ -781,6 +781,65 @@ export const useItineraryStyles = makeStyles({
       ...shorthands.padding("18px"),
     },
   },
+  // While an activity is being regenerated the card keeps its size, so the
+  // timeline doesn't jump, and hosts the spinner overlay below.
+  activityCardRegenerating: {
+    position: "relative",
+    ":hover": {
+      transform: "none",
+      boxShadow: warmShadows.sm,
+    },
+  },
+  // The old activity is about to be replaced wholesale, so it is faded right
+  // back rather than left looking like current content.
+  activityContentPending: {
+    opacity: 0.25,
+    filter: "blur(1px)",
+    userSelect: "none",
+  },
+  regeneratingOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shorthands.borderRadius("26px"),
+    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 62%, transparent)`,
+    zIndex: 1,
+    // Purely a visual scrim — the action buttons underneath stay hoverable so
+    // their tooltips still explain why they aren't doing anything.
+    pointerEvents: "none",
+  },
+  // Spinner and label share one raised pill, so they read as a single status
+  // badge instead of floating loose over the faded activity text.
+  regeneratingBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: layout.spacing[2.5],
+    ...shorthands.padding(layout.spacing[2.5], layout.spacing[4]),
+    ...shorthands.borderRadius(layout.radius.pill),
+    ...shorthands.border(
+      layout.borderWidth.hairline,
+      "solid",
+      semanticColors.borderDefault,
+    ),
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.md,
+  },
+  regeneratingSpinner: {
+    color: warm.coralBright,
+    flexShrink: 0,
+  },
+  regeneratingLabel: {
+    "&.MuiTypography-root": {
+      margin: 0,
+      color: semanticColors.textPrimary,
+      fontSize: typography.fontSize.size3,
+      lineHeight: 1,
+      fontWeight: typography.fontWeight.semibold,
+      whiteSpace: "nowrap",
+    },
+  },
   activityContent: {
     minWidth: 0,
   },
