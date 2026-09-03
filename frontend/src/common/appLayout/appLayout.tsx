@@ -34,6 +34,7 @@ const isItineraryDetailPath = (pathname: string) =>
 const routesWithFooter = new Set<string>([
   routesPaths.home,
   routesPaths.itinerary,
+  routesPaths.savedTrips,
   ...routesWithBackNav,
 ]);
 
