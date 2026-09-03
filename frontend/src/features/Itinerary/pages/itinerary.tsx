@@ -169,7 +169,7 @@ const Itinerary = () => {
               <EmptyItineraryMessage
                 message={
                   errorMessage ||
-                  "No itinerary data was returned. Create or generate a trip to see your day-by-day plan here."
+                  "Create or generate a trip to see your day-by-day plan here."
                 }
               />
             )}
