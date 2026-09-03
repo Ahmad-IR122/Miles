@@ -57,7 +57,15 @@ export const addActivity = (
 
 export const updateActivity = (
   activityId: number,
-  updates: { name?: string; description?: string },
+  updates: {
+    name?: string;
+    description?: string | null;
+    location_name?: string | null;
+    estimated_cost?: number | null;
+    category?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+  },
 ) => api.patch(`/activities/${activityId}`, updates);
 
 export const deleteActivity = (activityId: number) =>

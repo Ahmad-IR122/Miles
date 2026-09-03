@@ -44,6 +44,7 @@ const emptyNewActivity = {
   startTime: "13:00",
   endTime: "14:00",
 };
+type ActivityDialogValues = typeof emptyNewActivity;
 
 const timeToMinutes = (value?: string) => {
   if (!value) return undefined;
@@ -57,6 +58,11 @@ const timeToMinutes = (value?: string) => {
   }
   return hours * 60 + minutes;
 };
+
+const getActivityTypeOption = (value: string) =>
+  interestOptions.find(
+    (option) => option.toLowerCase() === value.trim().toLowerCase(),
+  ) ?? "Other";
 
 const formatApiTime = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}:00`;
@@ -94,6 +100,10 @@ const Itinerary = () => {
   const [selectedDay, setSelectedDay] = useState(0);
   const [confirmRegeneratePlan, setConfirmRegeneratePlan] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<{
+    dayIndex: number;
+    activityIndex: number;
+  } | null>(null);
   const [newActivity, setNewActivity] = useState(emptyNewActivity);
   const [addActivityError, setAddActivityError] = useState("");
   const trip = itineraries[0];
@@ -137,16 +147,34 @@ const Itinerary = () => {
     : dayRegenerating
       ? "Regenerating this day..."
       : "Adding your activity...";
+  const closeActivityDialog = () => {
+    setAddDialogOpen(false);
+    setEditingActivity(null);
+    setAddActivityError("");
+  };
 
   const busyIntervals = (activeDay?.activities ?? [])
-    .filter((activity) => typeof activity !== "string")
-    .map((activity) => ({
-      start: timeToMinutes(activity.time),
-      end: timeToMinutes(activity.endTime),
-    }))
+    .map((activity, activityIndex) => ({ activity, activityIndex }))
+    .filter(
+      ({ activity, activityIndex }) =>
+        typeof activity !== "string" &&
+        (editingActivity === null ||
+          editingActivity.dayIndex !== selectedDay ||
+          editingActivity.activityIndex !== activityIndex),
+    )
+    .map(({ activity }) =>
+      typeof activity === "string"
+        ? null
+        : {
+          start: timeToMinutes(activity.time),
+          end: timeToMinutes(activity.endTime),
+        },
+    )
     .filter(
       (interval): interval is { start: number; end: number } =>
-        interval.start !== undefined && interval.end !== undefined,
+        interval !== null &&
+        interval.start !== undefined &&
+        interval.end !== undefined,
     );
   const freeStartTimes = timeOptions.filter((start) => {
     const startMinutes = timeToMinutes(start);
@@ -193,6 +221,29 @@ const Itinerary = () => {
       startTime: firstStart,
       endTime: firstEnd,
     });
+    setEditingActivity(null);
+    setAddActivityError("");
+    setAddDialogOpen(true);
+  };
+
+  const openEditDialog = (
+    dayIndex: number,
+    activityIndex: number,
+    activity: ActivityDialogValues,
+  ) => {
+    const startTime = timeToMinutes(activity.startTime);
+    const endTime = timeToMinutes(activity.endTime);
+    setNewActivity({
+      ...activity,
+      category: getActivityTypeOption(activity.category),
+      startTime:
+        startTime === undefined
+          ? "13:00"
+          : formatApiTime(startTime).slice(0, 5),
+      endTime:
+        endTime === undefined ? "14:00" : formatApiTime(endTime).slice(0, 5),
+    });
+    setEditingActivity({ dayIndex, activityIndex });
     setAddActivityError("");
     setAddDialogOpen(true);
   };
@@ -238,16 +289,29 @@ const Itinerary = () => {
       return;
     }
 
-    addActivityToDay(selectedDay, {
-      name: title,
+    const activityPayload = {
       description: newActivity.description.trim(),
       location_name: newActivity.location.trim(),
       estimated_cost: Number.isFinite(price) && price >= 0 ? price : undefined,
       category: newActivity.category,
       start_time: formatApiTime(startMinutes),
       end_time: formatApiTime(endMinutes),
-    });
+    };
+    if (editingActivity) {
+      updateActivity(editingActivity.dayIndex, editingActivity.activityIndex, {
+        title,
+        description: activityPayload.description,
+        location: activityPayload.location_name,
+        price: newActivity.price,
+        category: activityPayload.category,
+        startTime: activityPayload.start_time,
+        endTime: activityPayload.end_time,
+      });
+    } else {
+      addActivityToDay(selectedDay, { name: title, ...activityPayload });
+    }
     setAddDialogOpen(false);
+    setEditingActivity(null);
     setNewActivity(emptyNewActivity);
     setAddActivityError("");
   };
@@ -356,10 +420,10 @@ const Itinerary = () => {
                       destination={trip.destination}
                       isActivityRegenerating={isActivityRegenerating}
                       onDeleteActivity={deleteActivity}
+                      onEditActivity={openEditDialog}
                       onRegenerateActivity={
                         canRegenerate ? regenerateSingleActivity : undefined
                       }
-                      onUpdateActivity={updateActivity}
                       regenerateDisabled={regenerateBusy}
                     />
                   ) : (
@@ -400,7 +464,7 @@ const Itinerary = () => {
       <Dialog
         fullWidth
         maxWidth="sm"
-        onClose={() => setAddDialogOpen(false)}
+        onClose={closeActivityDialog}
         open={addDialogOpen}
         slotProps={{
           paper: {
@@ -422,7 +486,7 @@ const Itinerary = () => {
             pt: 3,
           }}
         >
-          Add activity
+          {editingActivity ? "Edit activity" : "Add activity"}
         </DialogTitle>
         <DialogContent
           dividers
@@ -581,7 +645,7 @@ const Itinerary = () => {
         )}
         <DialogActions sx={{ gap: 1, p: 2.5 }}>
           <Button
-            onClick={() => setAddDialogOpen(false)}
+            onClick={closeActivityDialog}
             sx={{ color: semanticColors.textSecondary, textTransform: "none" }}
           >
             Cancel
@@ -597,7 +661,7 @@ const Itinerary = () => {
             }}
             variant="contained"
           >
-            Add
+            {editingActivity ? "Save" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
