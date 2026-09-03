@@ -146,14 +146,25 @@ export const useItinerary = () => {
     );
   };
 
-  const addActivityToDay = (dayIndex: number) => {
+  const addActivityToDay = (
+    dayIndex: number,
+    activity: {
+      name: string;
+      description: string;
+      location_name: string;
+      estimated_cost?: number;
+      category: string;
+      start_time: string;
+      end_time: string;
+    },
+  ) => {
     const day = trip?.days?.[dayIndex];
     if (!trip?.id || !day) {
       return;
     }
     const tripId = trip.id;
     regenerate.run({ scope: "add", id: day.id ?? String(day.day) }, () =>
-      addActivity(Number(tripId), day.day, { name: "New Activity" }),
+      addActivity(Number(tripId), day.day, activity),
     );
   };
 

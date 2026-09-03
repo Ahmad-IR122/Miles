@@ -873,24 +873,32 @@ export const useItineraryStyles = makeStyles({
     textTransform: "uppercase",
   },
   categoryBlue: {
-    backgroundColor: `color-mix(in srgb, ${warm.coralBright} 14%, transparent)`,
-    color: warm.coralBright,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryBlue} 16%, transparent)`,
+    color: semanticColors.categoryBlue,
+  },
+  categoryPurple: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryPurple} 16%, transparent)`,
+    color: semanticColors.categoryPurple,
+  },
+  categoryCyan: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryBlue} 16%, transparent)`,
+    color: semanticColors.categoryBlue,
   },
   categoryGreen: {
-    backgroundColor: `color-mix(in srgb, ${colors.success} 14%, transparent)`,
-    color: colors.success,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryGreen} 16%, transparent)`,
+    color: semanticColors.categoryGreen,
   },
   categoryAmber: {
-    backgroundColor: `color-mix(in srgb, ${colors.warning} 14%, transparent)`,
-    color: colors.warning,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryOrange} 16%, transparent)`,
+    color: semanticColors.categoryOrange,
   },
   categoryOrange: {
-    backgroundColor: `color-mix(in srgb, ${colors.warning} 20%, transparent)`,
-    color: colors.warning,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryOrange} 20%, transparent)`,
+    color: semanticColors.categoryOrange,
   },
   categoryRed: {
-    backgroundColor: `color-mix(in srgb, ${semanticColors.textError} 14%, transparent)`,
-    color: semanticColors.textError,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryRed} 16%, transparent)`,
+    color: semanticColors.categoryRed,
   },
   activityTime: {
     "&.MuiTypography-root": {

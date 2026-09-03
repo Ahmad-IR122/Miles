@@ -69,6 +69,11 @@ export const semanticColors = {
   textDisabled: "var(--color-text-disabled)",
   textBrand: "var(--color-text-brand)",
   textError: "var(--color-text-error)",
+  categoryGreen: "var(--color-category-green)",
+  categoryPurple: "var(--color-category-purple)",
+  categoryBlue: "var(--color-category-blue)",
+  categoryOrange: "var(--color-category-orange)",
+  categoryRed: "var(--color-category-red)",
   // Sits on a coral/rose gradient, so it is white in both themes. Prefer this
   // over `colors.white` there — it distinguishes "white on an accent" from
   // "white because the surface is light", which is the distinction that breaks

@@ -150,19 +150,25 @@ export const ActivityCard = ({
     destination,
   );
   const categoryClass =
-    normalized.category === "food"
+    normalized.category === "food" || normalized.category === "adventure"
       ? classes.categoryAmber
-      : normalized.category === "dining"
+      : normalized.category === "dining" || normalized.category === "nightlife"
         ? classes.categoryRed
-        : normalized.category === "shopping"
-          ? classes.categoryBlue
-          : normalized.category === "art"
-            ? classes.categoryBlue
-            : normalized.category === "sightseeing"
-              ? classes.categoryOrange
-              : normalized.category === "nature"
-                ? classes.categoryGreen
-                : "";
+        : normalized.category === "culture" ||
+            normalized.category === "history" ||
+            normalized.category === "art & culture"
+          ? classes.categoryPurple
+          : normalized.category === "sightseeing"
+            ? classes.categoryCyan
+            : normalized.category === "shopping"
+              ? classes.categoryBlue
+              : normalized.category === "art"
+                ? classes.categoryBlue
+                : normalized.category === "sightseeing"
+                  ? classes.categoryOrange
+                  : normalized.category === "nature"
+                    ? classes.categoryGreen
+                    : "";
 
   const resolvedEndTime =
     normalized.endTime || deriveEndTime(normalized.time, normalized.duration);

@@ -60,6 +60,26 @@ const durationBetween = (start?: string | null, end?: string | null) => {
   return diff >= 0 ? diff : diff + MINUTES_PER_DAY;
 };
 
+const sortActivitiesByStartTime = <
+  T extends { start_time?: string | null; activity_order?: number },
+>(
+    activities: T[],
+  ) =>
+    [...activities].sort((left, right) => {
+      const leftTime = timeToMinutes(left.start_time);
+      const rightTime = timeToMinutes(right.start_time);
+
+      if (leftTime === undefined && rightTime === undefined) {
+        return (left.activity_order ?? 0) - (right.activity_order ?? 0);
+      }
+      if (leftTime === undefined) return 1;
+      if (rightTime === undefined) return -1;
+      return (
+        leftTime - rightTime ||
+      (left.activity_order ?? 0) - (right.activity_order ?? 0)
+      );
+    });
+
 /** Computes a formatted end time from a raw start time plus a duration. */
 const addMinutesToTime = (value: string, minutesToAdd: number) => {
   const startMinutes = timeToMinutes(value);
@@ -81,17 +101,22 @@ export const adaptItinerary = (itinerary: ApiItinerary): Trip => {
     id: day.id,
     day: day.day_number,
     date: day.date,
-    activities: day.activities.map<Activity>((activity) => ({
-      id: activity.id,
-      title: activity.name,
-      time: formatTime(activity.start_time),
-      endTime: addMinutesToTime(activity.start_time, activity.duration_minutes),
-      duration: formatDuration(activity.duration_minutes),
-      description: activity.description ?? "",
-      location: activity.location ?? undefined,
-      category: activity.category,
-      cost: activity.estimated_cost ?? undefined,
-    })),
+    activities: sortActivitiesByStartTime(day.activities).map<Activity>(
+      (activity) => ({
+        id: activity.id,
+        title: activity.name,
+        time: formatTime(activity.start_time),
+        endTime: addMinutesToTime(
+          activity.start_time,
+          activity.duration_minutes,
+        ),
+        duration: formatDuration(activity.duration_minutes),
+        description: activity.description ?? "",
+        location: activity.location ?? undefined,
+        category: activity.category,
+        cost: activity.estimated_cost ?? undefined,
+      }),
+    ),
   }));
 
   return {
@@ -124,19 +149,21 @@ export const adaptGeneratedDays = (days: GeneratedItinerary["days"]): Day[] =>
     id: String(day.id),
     day: day.day_number,
     date: day.date,
-    activities: day.activities.map<Activity>((activity) => ({
-      id: String(activity.id),
-      title: activity.name,
-      time: activity.start_time ? formatTime(activity.start_time) : undefined,
-      endTime: activity.end_time ? formatTime(activity.end_time) : undefined,
-      duration: formatDuration(
-        durationBetween(activity.start_time, activity.end_time),
-      ),
-      description: activity.description ?? "",
-      location: activity.location_name ?? undefined,
-      category: activity.category ?? undefined,
-      cost: activity.estimated_cost ?? undefined,
-    })),
+    activities: sortActivitiesByStartTime(day.activities).map<Activity>(
+      (activity) => ({
+        id: String(activity.id),
+        title: activity.name,
+        time: activity.start_time ? formatTime(activity.start_time) : undefined,
+        endTime: activity.end_time ? formatTime(activity.end_time) : undefined,
+        duration: formatDuration(
+          durationBetween(activity.start_time, activity.end_time),
+        ),
+        description: activity.description ?? "",
+        location: activity.location_name ?? undefined,
+        category: activity.category ?? undefined,
+        cost: activity.estimated_cost ?? undefined,
+      }),
+    ),
   }));
 
 /**

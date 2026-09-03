@@ -40,7 +40,15 @@ export const regenerateActivity = (
 export const addActivity = (
   itineraryId: number,
   dayNumber: number,
-  activity: { name: string },
+  activity: {
+    name: string;
+    description?: string;
+    location_name?: string;
+    estimated_cost?: number;
+    category?: string;
+    start_time?: string;
+    end_time?: string;
+  },
 ) =>
   api.post<GeneratedItinerary>(
     `/itinerary/${itineraryId}/days/${dayNumber}/activities`,
