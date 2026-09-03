@@ -23,6 +23,26 @@ type ChatMessage = {
   text: string;
 };
 
+type ChatHistoryTurn = {
+  user_query: string;
+  answer: string;
+};
+
+const MAX_HISTORY_TURNS = 3;
+
+const toHistoryTurns = (entries: ChatMessage[]): ChatHistoryTurn[] => {
+  const turns: ChatHistoryTurn[] = [];
+  for (let i = 0; i < entries.length - 1; i += 1) {
+    const current = entries[i];
+    const next = entries[i + 1];
+    if (current.role === "user" && next.role === "system") {
+      turns.push({ user_query: current.text, answer: next.text });
+      i += 1;
+    }
+  }
+  return turns.slice(-MAX_HISTORY_TURNS);
+};
+
 const ERROR_MESSAGE = "Sorry, something went wrong. Please try again later.";
 
 const ChatWidget = () => {
@@ -65,14 +85,16 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      const token = await getToken().catch(() => null);
+
+      const history = toHistoryTurns(messages);
 
       const data = await sendChatMessage(
         token,
         text,
         conversationId,
         tripId ? Number(tripId) : undefined,
+        history,
       );
 
       setConversationId(data.conversation_id);

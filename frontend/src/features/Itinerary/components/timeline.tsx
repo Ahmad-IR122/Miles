@@ -25,12 +25,20 @@ type TimelineProps = {
   destination?: string;
   isActivityRegenerating?: (activityIndex: number) => boolean;
   onDeleteActivity: (dayIndex: number, activityIndex: number) => void;
-  onRegenerateActivity?: (dayIndex: number, activityIndex: number) => void;
-  onUpdateActivity: (
+  onEditActivity: (
     dayIndex: number,
     activityIndex: number,
-    updates: { title: string; description: string },
+    activity: {
+      title: string;
+      description: string;
+      location: string;
+      price: string;
+      category: string;
+      startTime: string;
+      endTime: string;
+    },
   ) => void;
+  onRegenerateActivity?: (dayIndex: number, activityIndex: number) => void;
   regenerateDisabled?: boolean;
 };
 
@@ -78,8 +86,8 @@ export const Timeline = ({
   destination,
   isActivityRegenerating,
   onDeleteActivity,
+  onEditActivity,
   onRegenerateActivity,
-  onUpdateActivity,
   regenerateDisabled = false,
 }: TimelineProps) => {
   const classes = useItineraryStyles();
@@ -238,13 +246,15 @@ export const Timeline = ({
       {activities.map((activity, activityIndex) => {
         const category = getActivityCategory(activity);
         const markerClass =
-          category === "culture"
+          category === "culture" ||
+          category === "history" ||
+          category === "art & culture"
             ? classes.markerPurple
-            : category === "food"
+            : category === "food" || category === "adventure"
               ? classes.markerOrange
               : category === "sightseeing"
                 ? classes.markerCyan
-                : category === "dining"
+                : category === "dining" || category === "nightlife"
                   ? classes.markerRed
                   : category === "nature"
                     ? classes.markerGreen
@@ -269,8 +279,8 @@ export const Timeline = ({
               destination={destination}
               isRegenerating={isActivityRegenerating?.(activityIndex) ?? false}
               onDelete={onDeleteActivity}
+              onEdit={onEditActivity}
               onRegenerate={onRegenerateActivity}
-              onUpdate={onUpdateActivity}
               regenerateDisabled={regenerateDisabled}
             />
           </Box>

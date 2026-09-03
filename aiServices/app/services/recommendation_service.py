@@ -362,7 +362,11 @@ def calculate_final_scores(profiles: pd.DataFrame) -> pd.DataFrame:
     return profiles
 
 
-def recommend_destinations(user_preferences: dict) -> list[dict]:
+def recommend_destinations(
+    user_preferences: dict,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict], int]:
     destinations, activities, _ = load_recommendation_data()
 
     profiles = build_recommendation_profiles(
@@ -396,6 +400,18 @@ def recommend_destinations(user_preferences: dict) -> list[dict]:
         ascending=False,
     )
 
+    total = len(results)
+
+    # The scoring above has to run over every row to rank them correctly,
+    # but the caller (the Discover page) only ever renders a handful of
+    # cards at a time - slicing here, instead of shipping every ranked
+    # destination back over the wire, is what keeps that page from
+    # transferring and re-rendering hundreds of rows on every load.
+    if limit is not None:
+        results = results.iloc[offset : offset + limit]
+    elif offset:
+        results = results.iloc[offset:]
+
     recommendations = results[
         [
             "destination_id",
@@ -412,7 +428,7 @@ def recommend_destinations(user_preferences: dict) -> list[dict]:
         ]
     ]
 
-    return recommendations.to_dict(orient="records")
+    return recommendations.to_dict(orient="records"), total
 
 
 def calculate_adjusted_rating_scores(restaurants: pd.DataFrame) -> pd.DataFrame:
@@ -449,7 +465,9 @@ def calculate_adjusted_rating_scores(restaurants: pd.DataFrame) -> pd.DataFrame:
 def recommend_restaurants(
     destination_id: str,
     user_budget: float,
-) -> list[dict]:
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict], int]:
     _, _, restaurants = load_recommendation_data()
     budget_level = get_budget_level(user_budget)
     restaurants = calculate_adjusted_rating_scores(restaurants)
@@ -459,7 +477,7 @@ def recommend_restaurants(
     ].copy()
 
     if destination_restaurants.empty:
-        return []
+        return [], 0
 
     destination_restaurants["budget_score_match"] = destination_restaurants[
         "budget_level"
@@ -489,6 +507,13 @@ def recommend_restaurants(
         ascending=False,
     )
 
+    total = len(results)
+
+    if limit is not None:
+        results = results.iloc[offset : offset + limit]
+    elif offset:
+        results = results.iloc[offset:]
+
     recommendations = results[
         [
             "restaurant_id",
@@ -505,14 +530,27 @@ def recommend_restaurants(
         ]
     ]
 
-    return recommendations.to_dict(orient="records")
+    return recommendations.to_dict(orient="records"), total
 
 
-def recommend_activities() -> list[dict]:
+def recommend_activities(
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict], int]:
     _, activities, _ = load_recommendation_data()
 
     if activities.empty:
-        return []
+        return [], 0
+
+    total = len(activities)
+
+    # Unlike destinations/restaurants, activities aren't scored or ranked -
+    # they're returned as-is, so slicing can happen before column selection
+    # instead of after.
+    if limit is not None:
+        activities = activities.iloc[offset : offset + limit]
+    elif offset:
+        activities = activities.iloc[offset:]
 
     columns = [
         "activity_id",
@@ -541,4 +579,4 @@ def recommend_activities() -> list[dict]:
         None,
     )
 
-    return activities.to_dict(orient="records")
+    return activities.to_dict(orient="records"), total

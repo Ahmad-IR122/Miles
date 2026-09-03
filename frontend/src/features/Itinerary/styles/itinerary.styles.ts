@@ -36,6 +36,15 @@ export const useItineraryStyles = makeStyles({
     // scroll height — the page can be much taller than the wallpaper image.
     backgroundAttachment: "fixed",
     fontFamily: typography.fontFamily.sans,
+    // The nav is fixed and overlays the page, so clear its height plus
+    // its inset here (same amount AppLayout's navOffset used to add as
+    // a separate wrapper) - keeping it on this element instead means the
+    // wallpaper above covers the cleared area too, instead of showing
+    // navOffset's plain background color as a seam above the page.
+    paddingTop: `${layout.navHeight + 66}px`,
+    "@media (max-width: 760px)": {
+      paddingTop: `${layout.navHeight + 52}px`,
+    },
   },
   shell: {
     maxWidth: "none",
@@ -781,6 +790,65 @@ export const useItineraryStyles = makeStyles({
       ...shorthands.padding("18px"),
     },
   },
+  // While an activity is being regenerated the card keeps its size, so the
+  // timeline doesn't jump, and hosts the spinner overlay below.
+  activityCardRegenerating: {
+    position: "relative",
+    ":hover": {
+      transform: "none",
+      boxShadow: warmShadows.sm,
+    },
+  },
+  // The old activity is about to be replaced wholesale, so it is faded right
+  // back rather than left looking like current content.
+  activityContentPending: {
+    opacity: 0.25,
+    filter: "blur(1px)",
+    userSelect: "none",
+  },
+  regeneratingOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shorthands.borderRadius("26px"),
+    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 62%, transparent)`,
+    zIndex: 1,
+    // Purely a visual scrim — the action buttons underneath stay hoverable so
+    // their tooltips still explain why they aren't doing anything.
+    pointerEvents: "none",
+  },
+  // Spinner and label share one raised pill, so they read as a single status
+  // badge instead of floating loose over the faded activity text.
+  regeneratingBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: layout.spacing[2.5],
+    ...shorthands.padding(layout.spacing[2.5], layout.spacing[4]),
+    ...shorthands.borderRadius(layout.radius.pill),
+    ...shorthands.border(
+      layout.borderWidth.hairline,
+      "solid",
+      semanticColors.borderDefault,
+    ),
+    backgroundColor: semanticColors.bgPrimary,
+    boxShadow: warmShadows.md,
+  },
+  regeneratingSpinner: {
+    color: warm.coralBright,
+    flexShrink: 0,
+  },
+  regeneratingLabel: {
+    "&.MuiTypography-root": {
+      margin: 0,
+      color: semanticColors.textPrimary,
+      fontSize: typography.fontSize.size3,
+      lineHeight: 1,
+      fontWeight: typography.fontWeight.semibold,
+      whiteSpace: "nowrap",
+    },
+  },
   activityContent: {
     minWidth: 0,
   },
@@ -805,24 +873,32 @@ export const useItineraryStyles = makeStyles({
     textTransform: "uppercase",
   },
   categoryBlue: {
-    backgroundColor: `color-mix(in srgb, ${warm.coralBright} 14%, transparent)`,
-    color: warm.coralBright,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryBlue} 16%, transparent)`,
+    color: semanticColors.categoryBlue,
+  },
+  categoryPurple: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryPurple} 16%, transparent)`,
+    color: semanticColors.categoryPurple,
+  },
+  categoryCyan: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryBlue} 16%, transparent)`,
+    color: semanticColors.categoryBlue,
   },
   categoryGreen: {
-    backgroundColor: `color-mix(in srgb, ${colors.success} 14%, transparent)`,
-    color: colors.success,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryGreen} 16%, transparent)`,
+    color: semanticColors.categoryGreen,
   },
   categoryAmber: {
-    backgroundColor: `color-mix(in srgb, ${colors.warning} 14%, transparent)`,
-    color: colors.warning,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryOrange} 16%, transparent)`,
+    color: semanticColors.categoryOrange,
   },
   categoryOrange: {
-    backgroundColor: `color-mix(in srgb, ${colors.warning} 20%, transparent)`,
-    color: colors.warning,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryOrange} 20%, transparent)`,
+    color: semanticColors.categoryOrange,
   },
   categoryRed: {
-    backgroundColor: `color-mix(in srgb, ${semanticColors.textError} 14%, transparent)`,
-    color: semanticColors.textError,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.categoryRed} 16%, transparent)`,
+    color: semanticColors.categoryRed,
   },
   activityTime: {
     "&.MuiTypography-root": {

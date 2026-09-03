@@ -122,6 +122,7 @@ const TopNav = ({ homeLink = false }: TopNavProps) => {
               open={isMobileMenuOpen}
               onClose={closeMobileMenu}
               classes={{ paper: styles.mobileMenuPaper }}
+              disableScrollLock
             >
               {mobileNavItems.map((item) => {
                 const isActive = location.pathname === item.path;

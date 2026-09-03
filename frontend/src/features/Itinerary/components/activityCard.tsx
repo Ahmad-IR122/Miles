@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
   Box,
+  CircularProgress,
   IconButton,
   Stack,
-  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -11,12 +11,10 @@ import { mergeClasses } from "@griffel/react";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PaidIcon from "@mui/icons-material/Paid";
 import PlaceIcon from "@mui/icons-material/Place";
-import SaveIcon from "@mui/icons-material/Save";
 import TrainIcon from "@mui/icons-material/Train";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
@@ -32,10 +30,18 @@ type ActivityCardProps = {
   isRegenerating?: boolean;
   onDelete: (dayIndex: number, activityIndex: number) => void;
   onRegenerate?: (dayIndex: number, activityIndex: number) => void;
-  onUpdate: (
+  onEdit: (
     dayIndex: number,
     activityIndex: number,
-    updates: { title: string; description: string },
+    activity: {
+      title: string;
+      description: string;
+      location: string;
+      price: string;
+      category: string;
+      startTime: string;
+      endTime: string;
+    },
   ) => void;
   regenerateDisabled?: boolean;
 };
@@ -137,8 +143,8 @@ export const ActivityCard = ({
   destination,
   isRegenerating = false,
   onDelete,
+  onEdit,
   onRegenerate,
-  onUpdate,
   regenerateDisabled = false,
 }: ActivityCardProps) => {
   const classes = useItineraryStyles();
@@ -149,19 +155,25 @@ export const ActivityCard = ({
     destination,
   );
   const categoryClass =
-    normalized.category === "food"
+    normalized.category === "food" || normalized.category === "adventure"
       ? classes.categoryAmber
-      : normalized.category === "dining"
+      : normalized.category === "dining" || normalized.category === "nightlife"
         ? classes.categoryRed
-        : normalized.category === "shopping"
-          ? classes.categoryBlue
-          : normalized.category === "art"
-            ? classes.categoryBlue
-            : normalized.category === "sightseeing"
-              ? classes.categoryOrange
-              : normalized.category === "nature"
-                ? classes.categoryGreen
-                : "";
+        : normalized.category === "culture" ||
+            normalized.category === "history" ||
+            normalized.category === "art & culture"
+          ? classes.categoryPurple
+          : normalized.category === "sightseeing"
+            ? classes.categoryCyan
+            : normalized.category === "shopping"
+              ? classes.categoryBlue
+              : normalized.category === "art"
+                ? classes.categoryBlue
+                : normalized.category === "sightseeing"
+                  ? classes.categoryOrange
+                  : normalized.category === "nature"
+                    ? classes.categoryGreen
+                    : "";
 
   const resolvedEndTime =
     normalized.endTime || deriveEndTime(normalized.time, normalized.duration);
@@ -170,40 +182,46 @@ export const ActivityCard = ({
       ? `${normalized.time} - ${resolvedEndTime}`
       : [normalized.time, normalized.duration].filter(Boolean).join(" · ");
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftTitle, setDraftTitle] = useState(normalized.title);
-  const [draftDescription, setDraftDescription] = useState(
-    normalized.description,
-  );
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-
-  const startEditing = () => {
-    setDraftTitle(normalized.title);
-    setDraftDescription(normalized.description);
-    setIsEditing(true);
-  };
-
-  const cancelEditing = () => {
-    setIsEditing(false);
-  };
-
-  const saveEditing = () => {
-    const trimmedTitle = draftTitle.trim();
-    onUpdate(dayIndex, activityIndex, {
-      title: trimmedTitle === "" ? "Just Chilling" : trimmedTitle,
-      description: draftDescription,
-    });
-    setIsEditing(false);
-  };
 
   const confirmDelete = () => {
     setConfirmDeleteOpen(false);
     onDelete(dayIndex, activityIndex);
   };
 
+  // Regeneration replaces the whole activity, not just its title, so the card
+  // shows the old content as clearly on its way out rather than leaving stale
+  // details looking current.
   return (
-    <Box className={classes.activityCard}>
-      <Box className={classes.activityContent}>
+    <Box
+      aria-busy={isRegenerating}
+      className={mergeClasses(
+        classes.activityCard,
+        isRegenerating && classes.activityCardRegenerating,
+      )}
+    >
+      {isRegenerating && (
+        <Box className={classes.regeneratingOverlay} role="status">
+          <Box className={classes.regeneratingBadge}>
+            <CircularProgress
+              className={classes.regeneratingSpinner}
+              size={16}
+              thickness={4.5}
+            />
+            <Typography className={classes.regeneratingLabel}>
+              Regenerating activity…
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      <Box
+        aria-hidden={isRegenerating}
+        className={mergeClasses(
+          classes.activityContent,
+          isRegenerating && classes.activityContentPending,
+        )}
+      >
         <Box className={classes.activityMeta}>
           <Box className={mergeClasses(classes.category, categoryClass)}>
             {normalized.category}
@@ -215,36 +233,14 @@ export const ActivityCard = ({
           )}
         </Box>
 
-        {isEditing ? (
-          <Stack spacing={1}>
-            <TextField
-              fullWidth
-              label="Title"
-              onChange={(e) => setDraftTitle(e.target.value)}
-              size="small"
-              value={draftTitle}
-            />
-            <TextField
-              fullWidth
-              label="Description"
-              multiline
-              onChange={(e) => setDraftDescription(e.target.value)}
-              size="small"
-              value={draftDescription}
-            />
-          </Stack>
-        ) : (
-          <>
-            <Typography className={classes.activityTitle} component="h3">
-              {isRegenerating ? "Regenerating..." : normalized.title}
-            </Typography>
+        <Typography className={classes.activityTitle} component="h3">
+          {normalized.title}
+        </Typography>
 
-            {normalized.description && (
-              <Typography className={classes.activityDescription}>
-                {normalized.description}
-              </Typography>
-            )}
-          </>
+        {normalized.description && (
+          <Typography className={classes.activityDescription}>
+            {normalized.description}
+          </Typography>
         )}
 
         <Stack className={classes.detailLine} direction="row">
@@ -282,71 +278,70 @@ export const ActivityCard = ({
       </Box>
 
       <Box className={classes.cardActions}>
-        {isEditing ? (
-          <>
-            <Tooltip title="Save changes">
+        <>
+          <Tooltip title={isRegenerating ? "Regenerating…" : "Edit manually"}>
+            <IconButton
+              aria-disabled={isRegenerating}
+              aria-label="Edit activity"
+              className={classes.iconButton}
+              onClick={() => {
+                if (!isRegenerating) {
+                  onEdit(dayIndex, activityIndex, {
+                    title: normalized.title,
+                    description: normalized.description,
+                    location: normalized.location ?? "",
+                    price: normalized.cost.replace(/^[$€£¥]/, ""),
+                    category: normalized.category,
+                    startTime: normalized.time,
+                    endTime: resolvedEndTime ?? "",
+                  });
+                }
+              }}
+              size="small"
+              sx={{ opacity: isRegenerating ? 0.5 : 1 }}
+            >
+              <EditIcon className={classes.editIcon} />
+            </IconButton>
+          </Tooltip>
+          {onRegenerate && (
+            <Tooltip
+              title={
+                isRegenerating ? "Regenerating…" : "Regenerate this activity"
+              }
+            >
               <IconButton
-                aria-label="Save activity"
+                aria-disabled={regenerateDisabled}
+                aria-label={`Regenerate ${normalized.title}`}
                 className={classes.iconButton}
-                onClick={saveEditing}
+                onClick={() => {
+                  if (!regenerateDisabled) {
+                    onRegenerate(dayIndex, activityIndex);
+                  }
+                }}
                 size="small"
+                sx={{ opacity: regenerateDisabled ? 0.5 : 1 }}
               >
-                <SaveIcon className={classes.editIcon} />
+                <AutoAwesomeIcon className={classes.regenerateIcon} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Cancel editing">
-              <IconButton
-                aria-label="Cancel editing"
-                className={classes.iconButton}
-                onClick={cancelEditing}
-                size="small"
-              >
-                <CloseIcon className={classes.deleteIcon} />
-              </IconButton>
-            </Tooltip>
-          </>
-        ) : (
-          <>
-            <Tooltip title="Edit manually">
-              <IconButton
-                aria-label="Edit activity"
-                className={classes.iconButton}
-                onClick={startEditing}
-                size="small"
-              >
-                <EditIcon className={classes.editIcon} />
-              </IconButton>
-            </Tooltip>
-            {onRegenerate && (
-              <Tooltip title="Regenerate this activity">
-                <IconButton
-                  aria-disabled={regenerateDisabled}
-                  aria-label={`Regenerate ${normalized.title}`}
-                  className={classes.iconButton}
-                  onClick={() => {
-                    if (!regenerateDisabled) {
-                      onRegenerate(dayIndex, activityIndex);
-                    }
-                  }}
-                  size="small"
-                  sx={{ opacity: regenerateDisabled ? 0.5 : 1 }}
-                >
-                  <AutoAwesomeIcon className={classes.regenerateIcon} />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Tooltip title="Delete activity">
-              <IconButton
-                aria-label="Delete activity"
-                className={classes.iconButton}
-                onClick={() => setConfirmDeleteOpen(true)}
-                size="small"
-              >
-                <DeleteIcon className={classes.deleteIcon} />
-              </IconButton>
-            </Tooltip>
-          </>
-        )}
+          )}
+          <Tooltip title={isRegenerating ? "Regenerating…" : "Delete activity"}>
+            <IconButton
+              aria-disabled={isRegenerating}
+              aria-label="Delete activity"
+              className={classes.iconButton}
+              onClick={() => {
+                if (!isRegenerating) {
+                  setConfirmDeleteOpen(true);
+                }
+              }}
+              size="small"
+              sx={{ opacity: isRegenerating ? 0.5 : 1 }}
+            >
+              <DeleteIcon className={classes.deleteIcon} />
+            </IconButton>
+          </Tooltip>
+        </>
       </Box>
 
       <ConfirmDialog

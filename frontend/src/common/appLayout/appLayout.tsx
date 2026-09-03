@@ -20,10 +20,13 @@ const routesWithNav = new Set<string>([
   ...routesWithBackNav,
 ]);
 
-const routesNeedingNavOffset = new Set<string>([
-  routesPaths.itinerary,
-  routesPaths.savedTrips,
-]);
+// Pages clear the fixed nav with their own top padding (see each
+// page's own .page style) so their wallpaper background stays unbroken
+// from the very top of the page, instead of the offset wrapper below
+// showing its plain background color as a seam above the page. No
+// route currently needs the wrapper, but it stays available for a
+// future page that would rather not manage its own offset.
+const routesNeedingNavOffset = new Set<string>([]);
 
 const isItineraryDetailPath = (pathname: string) =>
   pathname.startsWith(`${routesPaths.itinerary}/`);
@@ -43,8 +46,7 @@ const AppLayout = () => {
     routesWithFooter.has(location.pathname) || isItineraryDetail;
   const homeLink =
     routesWithBackNav.has(location.pathname) || isItineraryDetail;
-  const needsNavOffset =
-    routesNeedingNavOffset.has(location.pathname) || isItineraryDetail;
+  const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
 
   return (
     <div className={styles.root}>
