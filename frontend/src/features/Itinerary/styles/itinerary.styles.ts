@@ -25,16 +25,10 @@ import { layout, typography } from "../../../common/theme/typography";
  */
 export const useItineraryStyles = makeStyles({
   page: {
+    position: "relative",
     minHeight: "100vh",
     color: semanticColors.textPrimary,
     backgroundColor: warm.bgPage,
-    backgroundImage: warm.bgImage,
-    backgroundSize: "cover",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    // Viewport-relative so "cover" sizes against the screen, not the full
-    // scroll height — the page can be much taller than the wallpaper image.
-    backgroundAttachment: "fixed",
     fontFamily: typography.fontFamily.sans,
     // The nav is fixed and overlays the page, so clear its height plus
     // its inset here (same amount AppLayout's navOffset used to add as
@@ -44,6 +38,23 @@ export const useItineraryStyles = makeStyles({
     paddingTop: `${layout.navHeight + 66}px`,
     "@media (max-width: 760px)": {
       paddingTop: `${layout.navHeight + 52}px`,
+    },
+    // Wallpaper lives on a fixed pseudo-element instead of
+    // background-attachment: fixed on the page itself - that property forces
+    // the browser to repaint the background on every scroll frame, which is
+    // what caused this page to feel sluggish while scrolling. A
+    // position: fixed layer gets its own compositor layer, so scrolling the
+    // content above it is cheap, while still sizing "cover" against the
+    // viewport rather than the full scroll height.
+    "::before": {
+      content: "\"\"",
+      position: "fixed",
+      inset: 0,
+      zIndex: -1,
+      backgroundImage: warm.bgImage,
+      backgroundSize: "cover",
+      backgroundPosition: "top center",
+      backgroundRepeat: "no-repeat",
     },
   },
   shell: {

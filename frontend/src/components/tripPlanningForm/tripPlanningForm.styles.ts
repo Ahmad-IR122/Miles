@@ -69,14 +69,27 @@ const bp = {
 
 export const useTripPlanningFormStyles = makeStyles({
   page: {
+    position: "relative",
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
-    backgroundImage: warm.bgImage,
-    backgroundSize: "cover",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    backgroundAttachment: "fixed",
     minHeight: "100dvh",
+    // Wallpaper lives on a fixed pseudo-element instead of
+    // background-attachment: fixed on the page itself - that property forces
+    // the browser to repaint the background on every scroll frame, which is
+    // what caused scroll jank. A position: fixed layer gets its own
+    // compositor layer, so scrolling the content above it is cheap, while
+    // still sizing "cover" against the viewport rather than the full
+    // scroll height.
+    "::before": {
+      content: "\"\"",
+      position: "fixed",
+      inset: 0,
+      zIndex: -1,
+      backgroundImage: warm.bgImage,
+      backgroundSize: "cover",
+      backgroundPosition: "top center",
+      backgroundRepeat: "no-repeat",
+    },
   },
   content: {
     width: "100%",
