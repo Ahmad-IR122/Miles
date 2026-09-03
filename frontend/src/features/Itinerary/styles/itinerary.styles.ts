@@ -25,16 +25,10 @@ import { layout, typography } from "../../../common/theme/typography";
  */
 export const useItineraryStyles = makeStyles({
   page: {
+    position: "relative",
     minHeight: "100vh",
     color: semanticColors.textPrimary,
     backgroundColor: warm.bgPage,
-    backgroundImage: warm.bgImage,
-    backgroundSize: "cover",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    // Viewport-relative so "cover" sizes against the screen, not the full
-    // scroll height — the page can be much taller than the wallpaper image.
-    backgroundAttachment: "fixed",
     fontFamily: typography.fontFamily.sans,
     // The nav is fixed and overlays the page, so clear its height plus
     // its inset here (same amount AppLayout's navOffset used to add as
@@ -44,6 +38,23 @@ export const useItineraryStyles = makeStyles({
     paddingTop: `${layout.navHeight + 66}px`,
     "@media (max-width: 760px)": {
       paddingTop: `${layout.navHeight + 52}px`,
+    },
+    // Wallpaper lives on a fixed pseudo-element instead of
+    // background-attachment: fixed on the page itself - that property forces
+    // the browser to repaint the background on every scroll frame, which is
+    // what caused this page to feel sluggish while scrolling. A
+    // position: fixed layer gets its own compositor layer, so scrolling the
+    // content above it is cheap, while still sizing "cover" against the
+    // viewport rather than the full scroll height.
+    "::before": {
+      content: "\"\"",
+      position: "fixed",
+      inset: 0,
+      zIndex: -1,
+      backgroundImage: warm.bgImage,
+      backgroundSize: "cover",
+      backgroundPosition: "top center",
+      backgroundRepeat: "no-repeat",
     },
   },
   shell: {
@@ -629,7 +640,7 @@ export const useItineraryStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     gap: layout.gap.sm,
-    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 85%, transparent)`,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 18%, transparent)`,
     borderRadius: layout.radius.lg,
     zIndex: 3,
   },
@@ -790,6 +801,55 @@ export const useItineraryStyles = makeStyles({
       ...shorthands.padding("18px"),
     },
   },
+  activityTimeSelect: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "16px",
+      backgroundColor: `color-mix(in srgb, ${semanticColors.interactive} 6%, ${semanticColors.bgPrimary})`,
+      transitionProperty: "background-color, box-shadow",
+      transitionDuration: layout.duration.fast,
+    },
+    "&:hover .MuiOutlinedInput-root": {
+      backgroundColor: `color-mix(in srgb, ${semanticColors.interactive} 10%, ${semanticColors.bgPrimary})`,
+    },
+    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+      ...shorthands.border(
+        layout.borderWidth.thin,
+        "solid",
+        `color-mix(in srgb, ${semanticColors.interactive} 28%, ${semanticColors.borderDefault})`,
+      ),
+    },
+    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+      ...shorthands.borderColor(semanticColors.interactive),
+    },
+    "& .MuiOutlinedInput-root.Mui-focused": {
+      backgroundColor: semanticColors.bgPrimary,
+      boxShadow: `0 0 0 3px color-mix(in srgb, ${semanticColors.interactive} 16%, transparent)`,
+    },
+    "& .MuiOutlinedInput-root.Mui-disabled": {
+      backgroundColor: semanticColors.bgDisabled,
+      opacity: 0.7,
+    },
+    "& .MuiInputLabel-root": {
+      backgroundColor: semanticColors.bgPrimary,
+      fontWeight: 700,
+      paddingLeft: "4px",
+      paddingRight: "4px",
+    },
+    "& .MuiSelect-select": {
+      minHeight: "1.4375em",
+      paddingBottom: "15px",
+      paddingTop: "15px",
+    },
+    "& .MuiNativeSelect-select": {
+      color: semanticColors.textPrimary,
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.normal,
+    },
+    "& .MuiNativeSelect-select option": {
+      fontSize: typography.fontSize.size6,
+      fontWeight: typography.fontWeight.semibold,
+    },
+  },
   // While an activity is being regenerated the card keeps its size, so the
   // timeline doesn't jump, and hosts the spinner overlay below.
   activityCardRegenerating: {
@@ -805,6 +865,9 @@ export const useItineraryStyles = makeStyles({
     opacity: 0.25,
     filter: "blur(1px)",
     userSelect: "none",
+  },
+  activitySkeleton: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.textPrimary} 18%, transparent)`,
   },
   regeneratingOverlay: {
     position: "absolute",
@@ -851,6 +914,10 @@ export const useItineraryStyles = makeStyles({
   },
   activityContent: {
     minWidth: 0,
+    flex: 1,
+  },
+  activitySkeletonStack: {
+    width: "100%",
   },
   activityMeta: {
     display: "flex",

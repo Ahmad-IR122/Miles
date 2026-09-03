@@ -39,8 +39,8 @@ const RecommendationCard = ({
         <p className={styles.description}>{shortDescription}</p>
 
         <div className={styles.tags}>
-          {place.tags.map((tag) => (
-            <span key={tag} className={styles.tag}>
+          {place.tags.map((tag, tagIndex) => (
+            <span key={`${place.id}-${tag}-${tagIndex}`} className={styles.tag}>
               {tag}
             </span>
           ))}

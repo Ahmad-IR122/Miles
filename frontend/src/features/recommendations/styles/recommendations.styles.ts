@@ -13,14 +13,27 @@ import {
 
 export const useRecommendationsStyles = makeStyles({
   page: {
+    position: "relative",
     fontFamily: typography.fontFamily.sans,
     backgroundColor: semanticColors.bgPage,
-    backgroundImage: warm.bgImage,
-    backgroundSize: "cover",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    backgroundAttachment: "fixed",
     minHeight: "100dvh",
+    // Wallpaper lives on a fixed pseudo-element instead of
+    // background-attachment: fixed on the page itself - that property forces
+    // the browser to repaint the background on every scroll frame, which is
+    // what caused the scroll jank. A position: fixed layer gets its own
+    // compositor layer, so scrolling the content above it is cheap, while
+    // still sizing "cover" against the viewport rather than the full
+    // scroll height.
+    "::before": {
+      content: "\"\"",
+      position: "fixed",
+      inset: 0,
+      zIndex: -1,
+      backgroundImage: warm.bgImage,
+      backgroundSize: "cover",
+      backgroundPosition: "top center",
+      backgroundRepeat: "no-repeat",
+    },
   },
   content: {
     width: "100%",
@@ -135,15 +148,26 @@ export const useRecommendationsStyles = makeStyles({
       semanticColors.borderDefault,
     ),
     ...shorthands.padding("0", "12px"),
-    color: semanticColors.textPrimary,
+    color: semanticColors.textTertiary,
     backgroundColor: semanticColors.bgPrimary,
     fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.semibold,
     fontFamily: typography.fontFamily.sans,
     ":focus-visible": {
       outlineColor: semanticColors.interactive,
       outlineStyle: "solid",
       outlineWidth: layout.borderWidth.thick,
       outlineOffset: "2px",
+    },
+    // Native <option> elements don't inherit font styling from the <select>
+    // in every browser, so restate it explicitly to keep the dropdown list
+    // matching the trigger (and the category tabs it sits next to).
+    "& option": {
+      color: semanticColors.textPrimary,
+      backgroundColor: semanticColors.bgPrimary,
+      fontSize: typography.fontSize.size3,
+      fontWeight: typography.fontWeight.semibold,
+      fontFamily: typography.fontFamily.sans,
     },
   },
   ratingWrap: {
