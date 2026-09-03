@@ -21,13 +21,11 @@ from app.services.conversation_service import (
 )
 
 
-def get_active_trip_detail(db: Session, trip_id: int, user_id: int) -> dict:
-    trip = db.query(Trip).filter(Trip.id == trip_id, Trip.user_id == user_id).one()
-
+def get_trip_detail(db: Session, trip: Trip) -> dict:
     days = (
         db.query(ItineraryDay)
         .join(Itinerary, Itinerary.id == ItineraryDay.itinerary_id)
-        .filter(Itinerary.trip_id == trip_id)
+        .filter(Itinerary.trip_id == trip.id)
         .order_by(ItineraryDay.day_number)
         .all()
     )
@@ -45,7 +43,15 @@ def get_active_trip_detail(db: Session, trip_id: int, user_id: int) -> dict:
             "activities": [
                 {
                     "name": a.name,
-                    "time": a.start_time.strftime("%H:%M") if a.start_time else None,
+                    "description": a.description,
+                    "location": a.location_name,
+                    "category": a.category,
+                    "start_time": (
+                        a.start_time.strftime("%H:%M") if a.start_time else None
+                    ),
+                    "end_time": (
+                        a.end_time.strftime("%H:%M") if a.end_time else None
+                    ),
                 }
                 for a in activities
             ],
@@ -54,17 +60,17 @@ def get_active_trip_detail(db: Session, trip_id: int, user_id: int) -> dict:
     interests = (
         db.query(Interest.name)
         .join(TripInterest, TripInterest.interest_id == Interest.id)
-        .filter(TripInterest.trip_id == trip_id)
+        .filter(TripInterest.trip_id == trip.id)
         .all()
     )
-
     preferences = (
         db.query(TripPreference)
-        .filter(TripPreference.trip_id == trip_id)
+        .filter(TripPreference.trip_id == trip.id)
         .one_or_none()
     )
 
     return {
+        "id": trip.id,
         "destinations": trip.destinations,
         "dates": f"{trip.start_date}–{trip.end_date}",
         "status": trip.trip_status,
@@ -88,21 +94,11 @@ def build_user_context(db: Session, user_id: int, trip_id: int | None = None) ->
 
     context = {
         "name": f"{user.first_name} {user.last_name}",
-        "trips": [
-            {
-                "destinations": t.destinations,
-                "dates": f"{t.start_date}–{t.end_date}",
-                "status": t.trip_status,
-                "budget": f"{t.budget} {t.currency}" if t.budget else None,
-                "travelers_count": t.travelers_count,
-            }
-            for t in trips
-        ],
+        "trips": [get_trip_detail(db, t) for t in trips],
     }
     if trip_id:
-        context["active_trip"] = get_active_trip_detail(db, trip_id, user_id)
+        context["active_trip_id"] = trip_id
     return context
-
 
 def get_milo_reply(
     db: Session,

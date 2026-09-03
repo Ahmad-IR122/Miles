@@ -59,6 +59,11 @@
   /* brown #6B4226 is unreadable on a dark surface; lifted to a warm tan */
   --color-text-brand: light-dark(#6b4226, #e8b99a);
   --color-text-error: light-dark(#dc2626, #f87171);
+  --color-category-green: light-dark(#237a4b, #70d49a);
+  --color-category-purple: light-dark(#9c3f65, #e59abb);
+  --color-category-blue: light-dark(#557eab, #9fc5ed);
+  --color-category-orange: light-dark(#b85f16, #f2aa6b);
+  --color-category-red: light-dark(#b42335, #f28b98);
 
   /* Backgrounds */
   --color-bg-primary: light-dark(#fffdf7, #28212a);

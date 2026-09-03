@@ -693,7 +693,13 @@ const TripPlanningForm = () => {
             {steps.map((item, index) => {
               const isCurrent = step === item.num;
 
-              const isComplete = completedSteps[index] && !isCurrent;
+              // A step only counts as complete once the user has actually
+              // moved past it - checking completedSteps[index] alone marks
+              // a step complete purely because its fields currently pass
+              // validation, which is true by default for step 2 before the
+              // user has even reached it (adults/budget defaults already
+              // satisfy isTravelersBudgetComplete).
+              const isComplete = item.num < step && completedSteps[index];
 
               return (
                 <div
@@ -732,7 +738,7 @@ const TripPlanningForm = () => {
                     <div
                       className={mergeClasses(
                         styles.connector,
-                        completedSteps[index] && styles.connectorComplete,
+                        isComplete && styles.connectorComplete,
                       )}
                     />
                   )}

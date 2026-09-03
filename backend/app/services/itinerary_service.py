@@ -22,6 +22,7 @@ from app.services.trip_interest_service import list_trip_interests
 class NotFound(LookupError):
     """Requested itinerary, day, or activity does not exist."""
 
+
 def _to_decimal(value: str | None) -> Decimal | None:
     """Best-effort parse of the AI service's free-text estimated_cost field."""
     if not value:
@@ -165,9 +166,7 @@ def _activity_duration_minutes(activity: DBActivity) -> int:
 def _activity_wire(activity: DBActivity) -> dict:
     """Serialise a stored (DB) activity into the AI service itinerary shape."""
     return {
-        "time": activity.start_time.strftime("%I:%M %p")
-        if activity.start_time
-        else "",
+        "time": activity.start_time.strftime("%I:%M %p") if activity.start_time else "",
         "duration_minutes": _activity_duration_minutes(activity),
         "activity": activity.name,
         "category": activity.category or "general",
@@ -244,20 +243,18 @@ def _apply_regenerated_days(
                         location_name=raw_activity.get("location"),
                         start_time=start_time,
                         end_time=end_time,
-                        estimated_cost=_to_decimal(
-                            raw_activity.get("estimated_cost")
-                        ),
+                        estimated_cost=_to_decimal(raw_activity.get("estimated_cost")),
                         category=raw_activity.get("category"),
                         activity_order=position + 1,
                     )
                 )
 
         # Drop activities beyond what the AI returned for this day.
-        for stale_activity in existing_activities[len(raw_activities):]:
+        for stale_activity in existing_activities[len(raw_activities) :]:
             db.delete(stale_activity)
 
     # Drop days beyond what the AI returned.
-    for stale_day in existing_days[len(raw_days):]:
+    for stale_day in existing_days[len(raw_days) :]:
         db.delete(stale_day)
 
 
@@ -272,8 +269,7 @@ def _regenerate_db(
     # have to ride along so a regeneration respects the same constraints the
     # first pass did - mirrors preferences_from_trip() in the initial flow.
     interest_names = [
-        interest.name
-        for interest in list_trip_interests(db, itinerary.trip_id)
+        interest.name for interest in list_trip_interests(db, itinerary.trip_id)
     ]
     raw = post(
         path,

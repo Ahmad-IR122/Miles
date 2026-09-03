@@ -238,13 +238,15 @@ export const Timeline = ({
       {activities.map((activity, activityIndex) => {
         const category = getActivityCategory(activity);
         const markerClass =
-          category === "culture"
+          category === "culture" ||
+          category === "history" ||
+          category === "art & culture"
             ? classes.markerPurple
-            : category === "food"
+            : category === "food" || category === "adventure"
               ? classes.markerOrange
               : category === "sightseeing"
                 ? classes.markerCyan
-                : category === "dining"
+                : category === "dining" || category === "nightlife"
                   ? classes.markerRed
                   : category === "nature"
                     ? classes.markerGreen

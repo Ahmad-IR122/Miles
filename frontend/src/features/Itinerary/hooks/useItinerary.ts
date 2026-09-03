@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { isAxiosError } from "axios";
 import {
   addActivity,
   deleteActivity as deleteActivityRequest,
@@ -21,7 +22,7 @@ import {
 } from "../utils/adaptItinerary";
 
 const itineraryLoadError =
-  "We couldn't load the itinerary. Please check that the backend is running and try again.";
+  "We couldn't load your itinerary. Please try again in a moment.";
 
 type LocationState = { trip?: ApiTrip; itinerary?: GeneratedItinerary } | null;
 
@@ -68,8 +69,17 @@ export const useItinerary = () => {
         setItineraryData([adaptGeneratedItinerary(tripData, generated)]);
         setErrorMessage("");
       } catch (error) {
-        console.error("Error fetching itinerary data:", error);
-        setErrorMessage(itineraryLoadError);
+        // A 404 here means the user simply has no trip/itinerary yet -
+        // that's a normal empty state, not an error. Leave errorMessage
+        // unset so the page falls back to the "create a trip" message
+        // instead of implying something is broken.
+        if (isAxiosError(error) && error.response?.status === 404) {
+          setItineraryData([]);
+          setErrorMessage("");
+        } else {
+          console.error("Error fetching itinerary data:", error);
+          setErrorMessage(itineraryLoadError);
+        }
       } finally {
         setLoading(false);
       }
@@ -136,14 +146,25 @@ export const useItinerary = () => {
     );
   };
 
-  const addActivityToDay = (dayIndex: number) => {
+  const addActivityToDay = (
+    dayIndex: number,
+    activity: {
+      name: string;
+      description: string;
+      location_name: string;
+      estimated_cost?: number;
+      category: string;
+      start_time: string;
+      end_time: string;
+    },
+  ) => {
     const day = trip?.days?.[dayIndex];
     if (!trip?.id || !day) {
       return;
     }
     const tripId = trip.id;
     regenerate.run({ scope: "add", id: day.id ?? String(day.day) }, () =>
-      addActivity(Number(tripId), day.day, { name: "New Activity" }),
+      addActivity(Number(tripId), day.day, activity),
     );
   };
 

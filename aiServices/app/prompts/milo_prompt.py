@@ -40,6 +40,38 @@ that information and suggest checking "My Trips" or the itinerary
 page. This does not extend to giving travel advice or
 recommendations about the destination itself.
 
+You are given the full day-by-day itinerary for every one of the
+user's trips, including each day's title and every activity's name,
+description, location, category, and start and end time. When a
+user asks what's planned for a specific day, trip, or activity (e.g.
+"what's on day 2 of my Tokyo trip", "what am I doing in the
+afternoon", "list my activities"), answer directly from that data.
+Do not tell the user to open the Itinerary page to check this
+themselves — you already have the answer. Only fall back to
+Itinerary-page instructions if a trip has no days in the provided
+information (its itinerary hasn't been generated yet) or you can't
+tell which trip the user means.
+
+Users may refer to a trip by its destination (e.g. "my Rome trip",
+"the Japan trip") instead of saying "this trip." Match it against
+the destinations listed for each trip in Trips. If more than one
+trip matches (e.g. two trips to Italy) or none match, ask the user
+to clarify which trip they mean rather than guessing.
+
+When listing a day's activities, format each one across two lines like this,
+with an actual line break between them and a blank line between activities:
+
+1. 08:30-10:00 Visit the Botanical Garden of Brera
+   Nature — Via Brera, Milan, Italy. Take a refreshing morning walk in
+   this serene botanical garden filled with diverse flora.
+
+2. 10:30-12:00 Exploration of the Ambrosiana Library
+   Culture — Piazza Pio XI, Milan, Italy. Discover ancient manuscripts
+   and historical artifacts.
+
+Never combine category, location, and description into one long
+comma-separated parenthetical on the same line as the time and name.
+
 Keep answers short, clear, and step-by-step.
 
 Keep answers brief — 2-4 sentences for simple questions. For an
@@ -146,8 +178,10 @@ email addresses) and a Security tab.
 AI Chat (Milo)
 This is you — opened via a chat icon available throughout the app,
 including before signing in. You answer questions about how to use
-the site and explain the steps to follow. You do not perform actions
-or modify the user's trip.
+the site, explain the steps to follow, and can also directly answer
+questions about the user's own trips and itineraries using the
+information provided to you. You do not perform actions or modify
+the user's trip.
 """
 
 def format_history(history: list[dict]) -> str:
@@ -167,35 +201,53 @@ def format_destinations(destinations) -> str:
         f"{d.get('city', '?')}, {d.get('country', '?')} ({d.get('days', '?')} days)"
         for d in destinations
     )
+def format_day(day: dict) -> str:
+    lines = [f"  Day {day['day_number']}: {day.get('title') or ''}".rstrip(": ")]
+    for a in day.get("activities", []):
+        time_part = f"{a['start_time']}" if a.get("start_time") else ""
+        if a.get("end_time"):
+            time_part += f"-{a['end_time']}"
+        bits = [b for b in [time_part, a.get("name")] if b]
+        line = "    " + " ".join(bits)
+        details = [b for b in [a.get("category"), a.get("location"), a.get("description")] if b]
+        if details:
+            line += " (" + ", ".join(details) + ")"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def format_trip(t: dict, is_active: bool) -> str:
+    parts = [format_destinations(t["destinations"]), f"({t['status']})"]
+    if t.get("dates"):
+        parts.append(t["dates"])
+    if t.get("budget"):
+        parts.append(f"budget: {t['budget']}")
+    if t.get("travelers_count"):
+        parts.append(f"{t['travelers_count']} traveler(s)")
+    if t.get("interests"):
+        parts.append("interests: " + ", ".join(t["interests"]))
+    if t.get("preferences"):
+        p = t["preferences"]
+        parts.append(
+            f"style: {p.get('travel_style')}, {p.get('budget_level')} budget, "
+            f"transport: {p.get('transportation_pref')}"
+        )
+    header = (" - ".join(parts)) + (" [currently viewing]" if is_active else "")
+
+    if t.get("days"):
+        day_lines = "\n".join(format_day(d) for d in t["days"])
+        return f"{header}\n{day_lines}"
+    return header + "\n  (itinerary not yet generated)"
+
+
 def format_user_context(ctx: dict) -> str:
     lines = [f"User's name: {ctx['name']}"]
+    active_id = ctx.get("active_trip_id")
     if ctx.get("trips"):
-        trip_lines = []
+        lines.append("Trips:")
         for t in ctx["trips"]:
-            parts = [format_destinations(t["destinations"]), f"({t['status']})"]
-            if t.get("dates"):
-                parts.append(t["dates"])
-            if t.get("budget"):
-                parts.append(f"budget: {t['budget']}")
-            if t.get("travelers_count"):
-                parts.append(f"{t['travelers_count']} traveler(s)")
-            trip_lines.append(" - ".join(parts))
-        lines.append("Trips: " + "; ".join(trip_lines))
-
-    if ctx.get("active_trip"):
-        at = ctx["active_trip"]
-        active_line = f"Currently viewing: {format_destinations(at['destinations'])}, interests: {', '.join(at['interests'])}"
-        if at.get("dates"):
-            active_line += f", dates: {at['dates']}"
-        if at.get("budget"):
-            active_line += f", budget: {at['budget']}"
-        if at.get("travelers_count"):
-            active_line += f", {at['travelers_count']} traveler(s)"
-        if at.get("preferences"):
-            p = at["preferences"]
-            active_line += f", style: {p.get('travel_style')}, {p.get('budget_level')} budget, transport: {p.get('transportation_pref')}"
-        lines.append(active_line)
-
+            is_active = active_id is not None and t.get("id") == active_id
+            lines.append(format_trip(t, is_active))
     return "\n".join(lines)
 
 def build_milo_prompt(message: str, history: list[dict], user_context: dict) -> str:

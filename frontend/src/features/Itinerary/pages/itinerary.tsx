@@ -1,11 +1,30 @@
 import { useMemo, useState } from "react";
 
 import { mergeClasses } from "@griffel/react";
-import { Box, Container, IconButton, Snackbar, Tooltip } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Snackbar,
+  Stack,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { interestOptions } from "../../../constants/interests";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
+import { semanticColors, warmShadows } from "../../../common/theme/colors";
 import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { DaySelector } from "../components/daySelector";
 import { EmptyItineraryMessage } from "../components/emptyItineraryMessage";
@@ -14,6 +33,44 @@ import { Timeline } from "../components/timeline";
 import { useItinerary } from "../hooks/useItinerary";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange } from "../utils/dateUtils";
+import { getFieldSx } from "../../../components/tripPlanningForm/tripPlanningForm.styles";
+
+const emptyNewActivity = {
+  title: "",
+  description: "",
+  location: "",
+  price: "",
+  category: "",
+  startTime: "13:00",
+  endTime: "14:00",
+};
+
+const timeToMinutes = (value?: string) => {
+  if (!value) return undefined;
+  const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return undefined;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (match[3]) {
+    hours %= 12;
+    if (match[3].toUpperCase() === "PM") hours += 12;
+  }
+  return hours * 60 + minutes;
+};
+
+const formatApiTime = (minutes: number) =>
+  `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}:00`;
+
+const formatTimeLabel = (value: string) => {
+  const [hours, minutes] = value.split(":").map(Number);
+  const hour = hours % 12 || 12;
+  return `${hour}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
+};
+
+const timeOptions = Array.from({ length: 47 }, (_, index) => {
+  const minutes = index * 30;
+  return formatApiTime(minutes).slice(0, 5);
+});
 
 const Itinerary = () => {
   const classes = useItineraryStyles();
@@ -36,7 +93,9 @@ const Itinerary = () => {
   } = useItinerary();
   const [selectedDay, setSelectedDay] = useState(0);
   const [confirmRegeneratePlan, setConfirmRegeneratePlan] = useState(false);
-
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newActivity, setNewActivity] = useState(emptyNewActivity);
+  const [addActivityError, setAddActivityError] = useState("");
   const trip = itineraries[0];
   const days = useMemo(() => trip?.days ?? [], [trip?.days]);
   const activeDay = days[selectedDay] ?? days[0];
@@ -79,9 +138,118 @@ const Itinerary = () => {
       ? "Regenerating this day..."
       : "Adding your activity...";
 
+  const busyIntervals = (activeDay?.activities ?? [])
+    .filter((activity) => typeof activity !== "string")
+    .map((activity) => ({
+      start: timeToMinutes(activity.time),
+      end: timeToMinutes(activity.endTime),
+    }))
+    .filter(
+      (interval): interval is { start: number; end: number } =>
+        interval.start !== undefined && interval.end !== undefined,
+    );
+  const freeStartTimes = timeOptions.filter((start) => {
+    const startMinutes = timeToMinutes(start);
+    return (
+      startMinutes !== undefined &&
+      !busyIntervals.some(
+        (interval) =>
+          startMinutes >= interval.start && startMinutes < interval.end,
+      )
+    );
+  });
+  const freeEndTimes = timeOptions.filter((end) => {
+    const startMinutes = timeToMinutes(newActivity.startTime);
+    const endMinutes = timeToMinutes(end);
+    if (
+      startMinutes === undefined ||
+      endMinutes === undefined ||
+      endMinutes <= startMinutes
+    ) {
+      return false;
+    }
+    return !busyIntervals.some(
+      (interval) => startMinutes < interval.end && endMinutes > interval.start,
+    );
+  });
+
+  const openAddDialog = () => {
+    const firstStart = freeStartTimes[0] ?? "13:00";
+    const firstStartMinutes = timeToMinutes(firstStart) ?? 0;
+    const firstEnd =
+      timeOptions.find((time) => {
+        const end = timeToMinutes(time);
+        return (
+          end !== undefined &&
+          end > firstStartMinutes &&
+          !busyIntervals.some(
+            (interval) =>
+              firstStartMinutes < interval.end && end > interval.start,
+          )
+        );
+      }) ?? "14:00";
+    setNewActivity({
+      ...emptyNewActivity,
+      startTime: firstStart,
+      endTime: firstEnd,
+    });
+    setAddActivityError("");
+    setAddDialogOpen(true);
+  };
+
   const acceptRegeneratePlan = () => {
     setConfirmRegeneratePlan(false);
     regenerateWholeTrip();
+  };
+
+  const submitNewActivity = () => {
+    const startMinutes = timeToMinutes(newActivity.startTime);
+    const endMinutes = timeToMinutes(newActivity.endTime);
+    const price = Number(newActivity.price);
+    const title = newActivity.title.trim();
+
+    if (!title) {
+      setAddActivityError("Title is required.");
+      return;
+    }
+
+    if (
+      startMinutes === undefined ||
+      endMinutes === undefined ||
+      endMinutes <= startMinutes
+    ) {
+      setAddActivityError("Choose a valid start and end time.");
+      return;
+    }
+
+    const isBusy = (activeDay?.activities ?? []).some((activity) => {
+      if (typeof activity === "string") return false;
+      const activityStart = timeToMinutes(activity.time);
+      const activityEnd = timeToMinutes(activity.endTime);
+      if (activityStart === undefined || activityEnd === undefined)
+        return false;
+      return startMinutes < activityEnd && endMinutes > activityStart;
+    });
+
+    if (isBusy) {
+      setAddActivityError(
+        "That time overlaps an existing activity on this day.",
+      );
+      return;
+    }
+
+    addActivityToDay(selectedDay, {
+      name: title,
+      description: newActivity.description.trim(),
+      location_name: newActivity.location.trim(),
+      estimated_cost: Number.isFinite(price) && price >= 0 ? price : undefined,
+      category: newActivity.category,
+      start_time: formatApiTime(startMinutes),
+      end_time: formatApiTime(endMinutes),
+    });
+    setAddDialogOpen(false);
+    setNewActivity(emptyNewActivity);
+    setAddActivityError("");
   };
 
   if (loading) {
@@ -131,7 +299,9 @@ const Itinerary = () => {
                         aria-label="Add activity"
                         className={classes.dayActionButton}
                         disabled={!canRegenerate || regenerateBusy}
-                        onClick={() => addActivityToDay(selectedDay)}
+                        onClick={() => {
+                          openAddDialog();
+                        }}
                       >
                         <AddIcon />
                       </IconButton>
@@ -169,7 +339,7 @@ const Itinerary = () => {
               <EmptyItineraryMessage
                 message={
                   errorMessage ||
-                  "No itinerary data was returned. Create or generate a trip to see your day-by-day plan here."
+                  "Create or generate a trip to see your day-by-day plan here."
                 }
               />
             )}
@@ -177,20 +347,37 @@ const Itinerary = () => {
             {trip && (
               <>
                 {activeDay ? (
-                  <Timeline
-                    busy={timelineBusy}
-                    busyLabel={timelineBusyLabel}
-                    day={activeDay}
-                    dayIndex={selectedDay}
-                    destination={trip.destination}
-                    isActivityRegenerating={isActivityRegenerating}
-                    onDeleteActivity={deleteActivity}
-                    onRegenerateActivity={
-                      canRegenerate ? regenerateSingleActivity : undefined
-                    }
-                    onUpdateActivity={updateActivity}
-                    regenerateDisabled={regenerateBusy}
-                  />
+                  activeDay.activities.length > 0 ? (
+                    <Timeline
+                      busy={timelineBusy}
+                      busyLabel={timelineBusyLabel}
+                      day={activeDay}
+                      dayIndex={selectedDay}
+                      destination={trip.destination}
+                      isActivityRegenerating={isActivityRegenerating}
+                      onDeleteActivity={deleteActivity}
+                      onRegenerateActivity={
+                        canRegenerate ? regenerateSingleActivity : undefined
+                      }
+                      onUpdateActivity={updateActivity}
+                      regenerateDisabled={regenerateBusy}
+                    />
+                  ) : (
+                    <Box sx={{ py: 8, textAlign: "center" }}>
+                      <Box sx={{ color: "text.secondary", mb: 2 }}>
+                        No activities planned for this day yet.
+                      </Box>
+                      <Button
+                        startIcon={<AddIcon />}
+                        onClick={() => {
+                          openAddDialog();
+                        }}
+                        variant="contained"
+                      >
+                        Add activity
+                      </Button>
+                    </Box>
+                  )
                 ) : (
                   <EmptyItineraryMessage message="This itinerary does not include any days yet. Add trip days to display activities here." />
                 )}
@@ -209,6 +396,211 @@ const Itinerary = () => {
         onConfirm={acceptRegeneratePlan}
         onCancel={() => setConfirmRegeneratePlan(false)}
       />
+
+      <Dialog
+        fullWidth
+        maxWidth="sm"
+        onClose={() => setAddDialogOpen(false)}
+        open={addDialogOpen}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: semanticColors.bgPrimary,
+              border: `1px solid ${semanticColors.borderLight}`,
+              borderRadius: "24px",
+              boxShadow: warmShadows.lg,
+              overflow: "hidden",
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: semanticColors.textPrimary,
+            fontWeight: 800,
+            pb: 1,
+            pt: 3,
+          }}
+        >
+          Add activity
+        </DialogTitle>
+        <DialogContent
+          dividers
+          sx={{
+            borderColor: semanticColors.borderLight,
+            p: { sm: 3, xs: 2.5 },
+          }}
+        >
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <FormControl fullWidth required sx={getFieldSx(false)}>
+              <InputLabel id="activity-type-label" required>
+                Activity type
+              </InputLabel>
+              <Select
+                label="Activity type"
+                labelId="activity-type-label"
+                onChange={(event) =>
+                  setNewActivity((current) => ({
+                    ...current,
+                    category: event.target.value,
+                  }))
+                }
+                value={newActivity.category}
+              >
+                {interestOptions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              autoFocus
+              fullWidth
+              label="Title"
+              onChange={(event) =>
+                setNewActivity((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+              required
+              sx={getFieldSx(false)}
+              value={newActivity.title}
+            />
+            <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
+              <FormControl fullWidth required sx={getFieldSx(false)}>
+                <InputLabel id="activity-start-time-label" required>
+                  Start time
+                </InputLabel>
+                <Select
+                  label="Start time"
+                  labelId="activity-start-time-label"
+                  onChange={(event) => {
+                    const startTime = event.target.value;
+                    const start = timeToMinutes(startTime) ?? 0;
+                    const endTime =
+                      timeOptions.find(
+                        (time) => (timeToMinutes(time) ?? 0) > start,
+                      ) ?? "14:00";
+                    setNewActivity((current) => ({
+                      ...current,
+                      startTime,
+                      endTime,
+                    }));
+                    setAddActivityError("");
+                  }}
+                  value={
+                    freeStartTimes.includes(newActivity.startTime)
+                      ? newActivity.startTime
+                      : ""
+                  }
+                >
+                  {freeStartTimes.map((time) => (
+                    <MenuItem key={time} value={time}>
+                      {formatTimeLabel(time)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth required sx={getFieldSx(false)}>
+                <InputLabel id="activity-end-time-label" required>
+                  End time
+                </InputLabel>
+                <Select
+                  label="End time"
+                  labelId="activity-end-time-label"
+                  onChange={(event) =>
+                    setNewActivity((current) => ({
+                      ...current,
+                      endTime: event.target.value,
+                    }))
+                  }
+                  value={
+                    freeEndTimes.includes(newActivity.endTime)
+                      ? newActivity.endTime
+                      : ""
+                  }
+                >
+                  {freeEndTimes.map((time) => (
+                    <MenuItem key={time} value={time}>
+                      {formatTimeLabel(time)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+            <TextField
+              fullWidth
+              label="Description"
+              multiline
+              onChange={(event) =>
+                setNewActivity((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+              sx={getFieldSx(false)}
+              value={newActivity.description}
+            />
+            <TextField
+              fullWidth
+              label="Location"
+              onChange={(event) =>
+                setNewActivity((current) => ({
+                  ...current,
+                  location: event.target.value,
+                }))
+              }
+              sx={getFieldSx(false)}
+              value={newActivity.location}
+            />
+            <TextField
+              fullWidth
+              label="Cost ($)"
+              onChange={(event) =>
+                setNewActivity((current) => ({
+                  ...current,
+                  price: event.target.value,
+                }))
+              }
+              slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+              sx={getFieldSx(false)}
+              type="number"
+              value={newActivity.price}
+            />
+          </Stack>
+        </DialogContent>
+        {addActivityError && (
+          <Box
+            role="alert"
+            sx={{ color: semanticColors.textError, px: 2.5, pb: 1 }}
+          >
+            {addActivityError}
+          </Box>
+        )}
+        <DialogActions sx={{ gap: 1, p: 2.5 }}>
+          <Button
+            onClick={() => setAddDialogOpen(false)}
+            sx={{ color: semanticColors.textSecondary, textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={!newActivity.category || !newActivity.title.trim()}
+            onClick={submitNewActivity}
+            sx={{
+              borderRadius: "999px",
+              color: semanticColors.textOnAccent,
+              px: 2.5,
+              textTransform: "none",
+            }}
+            variant="contained"
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         autoHideDuration={6000}

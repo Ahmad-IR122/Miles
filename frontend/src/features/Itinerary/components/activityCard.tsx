@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Box, IconButton, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { mergeClasses } from "@griffel/react";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -12,6 +20,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import SaveIcon from "@mui/icons-material/Save";
 import TrainIcon from "@mui/icons-material/Train";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
+import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import type { Activity } from "../types/itinerary.types";
 
@@ -141,19 +150,25 @@ export const ActivityCard = ({
     destination,
   );
   const categoryClass =
-    normalized.category === "food"
+    normalized.category === "food" || normalized.category === "adventure"
       ? classes.categoryAmber
-      : normalized.category === "dining"
+      : normalized.category === "dining" || normalized.category === "nightlife"
         ? classes.categoryRed
-        : normalized.category === "shopping"
-          ? classes.categoryBlue
-          : normalized.category === "art"
-            ? classes.categoryBlue
-            : normalized.category === "sightseeing"
-              ? classes.categoryOrange
-              : normalized.category === "nature"
-                ? classes.categoryGreen
-                : "";
+        : normalized.category === "culture" ||
+            normalized.category === "history" ||
+            normalized.category === "art & culture"
+          ? classes.categoryPurple
+          : normalized.category === "sightseeing"
+            ? classes.categoryCyan
+            : normalized.category === "shopping"
+              ? classes.categoryBlue
+              : normalized.category === "art"
+                ? classes.categoryBlue
+                : normalized.category === "sightseeing"
+                  ? classes.categoryOrange
+                  : normalized.category === "nature"
+                    ? classes.categoryGreen
+                    : "";
 
   const resolvedEndTime =
     normalized.endTime || deriveEndTime(normalized.time, normalized.duration);
@@ -167,6 +182,7 @@ export const ActivityCard = ({
   const [draftDescription, setDraftDescription] = useState(
     normalized.description,
   );
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const startEditing = () => {
     setDraftTitle(normalized.title);
@@ -187,9 +203,44 @@ export const ActivityCard = ({
     setIsEditing(false);
   };
 
+  const confirmDelete = () => {
+    setConfirmDeleteOpen(false);
+    onDelete(dayIndex, activityIndex);
+  };
+
+  // Regeneration replaces the whole activity, not just its title, so the card
+  // shows the old content as clearly on its way out rather than leaving stale
+  // details looking current.
   return (
-    <Box className={classes.activityCard}>
-      <Box className={classes.activityContent}>
+    <Box
+      aria-busy={isRegenerating}
+      className={mergeClasses(
+        classes.activityCard,
+        isRegenerating && classes.activityCardRegenerating,
+      )}
+    >
+      {isRegenerating && (
+        <Box className={classes.regeneratingOverlay} role="status">
+          <Box className={classes.regeneratingBadge}>
+            <CircularProgress
+              className={classes.regeneratingSpinner}
+              size={16}
+              thickness={4.5}
+            />
+            <Typography className={classes.regeneratingLabel}>
+              Regenerating activity…
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      <Box
+        aria-hidden={isRegenerating}
+        className={mergeClasses(
+          classes.activityContent,
+          isRegenerating && classes.activityContentPending,
+        )}
+      >
         <Box className={classes.activityMeta}>
           <Box className={mergeClasses(classes.category, categoryClass)}>
             {normalized.category}
@@ -222,7 +273,7 @@ export const ActivityCard = ({
         ) : (
           <>
             <Typography className={classes.activityTitle} component="h3">
-              {isRegenerating ? "Regenerating..." : normalized.title}
+              {normalized.title}
             </Typography>
 
             {normalized.description && (
@@ -270,55 +321,98 @@ export const ActivityCard = ({
       <Box className={classes.cardActions}>
         {isEditing ? (
           <>
-            <IconButton
-              aria-label="Save activity"
-              className={classes.iconButton}
-              onClick={saveEditing}
-              size="small"
-            >
-              <SaveIcon className={classes.editIcon} />
-            </IconButton>
-            <IconButton
-              aria-label="Cancel editing"
-              className={classes.iconButton}
-              onClick={cancelEditing}
-              size="small"
-            >
-              <CloseIcon className={classes.deleteIcon} />
-            </IconButton>
+            <Tooltip title="Save changes">
+              <IconButton
+                aria-label="Save activity"
+                className={classes.iconButton}
+                onClick={saveEditing}
+                size="small"
+              >
+                <SaveIcon className={classes.editIcon} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Cancel editing">
+              <IconButton
+                aria-label="Cancel editing"
+                className={classes.iconButton}
+                onClick={cancelEditing}
+                size="small"
+              >
+                <CloseIcon className={classes.deleteIcon} />
+              </IconButton>
+            </Tooltip>
           </>
         ) : (
           <>
-            <IconButton
-              aria-label="Edit activity"
-              className={classes.iconButton}
-              onClick={startEditing}
-              size="small"
-            >
-              <EditIcon className={classes.editIcon} />
-            </IconButton>
-            {onRegenerate && (
+            <Tooltip title={isRegenerating ? "Regenerating…" : "Edit manually"}>
               <IconButton
-                aria-label={`Regenerate ${normalized.title}`}
+                aria-disabled={isRegenerating}
+                aria-label="Edit activity"
                 className={classes.iconButton}
-                disabled={regenerateDisabled}
-                onClick={() => onRegenerate(dayIndex, activityIndex)}
+                onClick={() => {
+                  if (!isRegenerating) {
+                    startEditing();
+                  }
+                }}
                 size="small"
+                sx={{ opacity: isRegenerating ? 0.5 : 1 }}
               >
-                <AutoAwesomeIcon className={classes.regenerateIcon} />
+                <EditIcon className={classes.editIcon} />
               </IconButton>
+            </Tooltip>
+            {onRegenerate && (
+              <Tooltip
+                title={
+                  isRegenerating ? "Regenerating…" : "Regenerate this activity"
+                }
+              >
+                <IconButton
+                  aria-disabled={regenerateDisabled}
+                  aria-label={`Regenerate ${normalized.title}`}
+                  className={classes.iconButton}
+                  onClick={() => {
+                    if (!regenerateDisabled) {
+                      onRegenerate(dayIndex, activityIndex);
+                    }
+                  }}
+                  size="small"
+                  sx={{ opacity: regenerateDisabled ? 0.5 : 1 }}
+                >
+                  <AutoAwesomeIcon className={classes.regenerateIcon} />
+                </IconButton>
+              </Tooltip>
             )}
-            <IconButton
-              aria-label="Delete activity"
-              className={classes.iconButton}
-              onClick={() => onDelete(dayIndex, activityIndex)}
-              size="small"
+            <Tooltip
+              title={isRegenerating ? "Regenerating…" : "Delete activity"}
             >
-              <DeleteIcon className={classes.deleteIcon} />
-            </IconButton>
+              <IconButton
+                aria-disabled={isRegenerating}
+                aria-label="Delete activity"
+                className={classes.iconButton}
+                onClick={() => {
+                  if (!isRegenerating) {
+                    setConfirmDeleteOpen(true);
+                  }
+                }}
+                size="small"
+                sx={{ opacity: isRegenerating ? 0.5 : 1 }}
+              >
+                <DeleteIcon className={classes.deleteIcon} />
+              </IconButton>
+            </Tooltip>
           </>
         )}
       </Box>
+
+      <ConfirmDialog
+        cancelLabel="Cancel"
+        confirmLabel="Delete activity"
+        description={`This action cannot be undone. "${normalized.title}" will be permanently removed from this day.`}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        open={confirmDeleteOpen}
+        title="Delete this activity?"
+      />
     </Box>
   );
 };
