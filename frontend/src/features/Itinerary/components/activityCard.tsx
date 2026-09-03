@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Box, IconButton, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { mergeClasses } from "@griffel/react";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -12,6 +19,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import SaveIcon from "@mui/icons-material/Save";
 import TrainIcon from "@mui/icons-material/Train";
 import WbCloudyIcon from "@mui/icons-material/WbCloudy";
+import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import type { Activity } from "../types/itinerary.types";
 
@@ -167,6 +175,7 @@ export const ActivityCard = ({
   const [draftDescription, setDraftDescription] = useState(
     normalized.description,
   );
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const startEditing = () => {
     setDraftTitle(normalized.title);
@@ -185,6 +194,11 @@ export const ActivityCard = ({
       description: draftDescription,
     });
     setIsEditing(false);
+  };
+
+  const confirmDelete = () => {
+    setConfirmDeleteOpen(false);
+    onDelete(dayIndex, activityIndex);
   };
 
   return (
@@ -270,55 +284,80 @@ export const ActivityCard = ({
       <Box className={classes.cardActions}>
         {isEditing ? (
           <>
-            <IconButton
-              aria-label="Save activity"
-              className={classes.iconButton}
-              onClick={saveEditing}
-              size="small"
-            >
-              <SaveIcon className={classes.editIcon} />
-            </IconButton>
-            <IconButton
-              aria-label="Cancel editing"
-              className={classes.iconButton}
-              onClick={cancelEditing}
-              size="small"
-            >
-              <CloseIcon className={classes.deleteIcon} />
-            </IconButton>
+            <Tooltip title="Save changes">
+              <IconButton
+                aria-label="Save activity"
+                className={classes.iconButton}
+                onClick={saveEditing}
+                size="small"
+              >
+                <SaveIcon className={classes.editIcon} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Cancel editing">
+              <IconButton
+                aria-label="Cancel editing"
+                className={classes.iconButton}
+                onClick={cancelEditing}
+                size="small"
+              >
+                <CloseIcon className={classes.deleteIcon} />
+              </IconButton>
+            </Tooltip>
           </>
         ) : (
           <>
-            <IconButton
-              aria-label="Edit activity"
-              className={classes.iconButton}
-              onClick={startEditing}
-              size="small"
-            >
-              <EditIcon className={classes.editIcon} />
-            </IconButton>
-            {onRegenerate && (
+            <Tooltip title="Edit manually">
               <IconButton
-                aria-label={`Regenerate ${normalized.title}`}
+                aria-label="Edit activity"
                 className={classes.iconButton}
-                disabled={regenerateDisabled}
-                onClick={() => onRegenerate(dayIndex, activityIndex)}
+                onClick={startEditing}
                 size="small"
               >
-                <AutoAwesomeIcon className={classes.regenerateIcon} />
+                <EditIcon className={classes.editIcon} />
               </IconButton>
+            </Tooltip>
+            {onRegenerate && (
+              <Tooltip title="Regenerate this activity">
+                <IconButton
+                  aria-disabled={regenerateDisabled}
+                  aria-label={`Regenerate ${normalized.title}`}
+                  className={classes.iconButton}
+                  onClick={() => {
+                    if (!regenerateDisabled) {
+                      onRegenerate(dayIndex, activityIndex);
+                    }
+                  }}
+                  size="small"
+                  sx={{ opacity: regenerateDisabled ? 0.5 : 1 }}
+                >
+                  <AutoAwesomeIcon className={classes.regenerateIcon} />
+                </IconButton>
+              </Tooltip>
             )}
-            <IconButton
-              aria-label="Delete activity"
-              className={classes.iconButton}
-              onClick={() => onDelete(dayIndex, activityIndex)}
-              size="small"
-            >
-              <DeleteIcon className={classes.deleteIcon} />
-            </IconButton>
+            <Tooltip title="Delete activity">
+              <IconButton
+                aria-label="Delete activity"
+                className={classes.iconButton}
+                onClick={() => setConfirmDeleteOpen(true)}
+                size="small"
+              >
+                <DeleteIcon className={classes.deleteIcon} />
+              </IconButton>
+            </Tooltip>
           </>
         )}
       </Box>
+
+      <ConfirmDialog
+        cancelLabel="Cancel"
+        confirmLabel="Delete activity"
+        description={`This action cannot be undone. "${normalized.title}" will be permanently removed from this day.`}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={confirmDelete}
+        open={confirmDeleteOpen}
+        title="Delete this activity?"
+      />
     </Box>
   );
 };
