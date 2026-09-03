@@ -1,14 +1,7 @@
 import { useMemo, useState } from "react";
-import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import { addTrip, getTrips } from "../../../api/trip";
-import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
-import type {
-  Trip,
-  TripCreatePayload,
-  TripDestination,
-} from "../../../types/trip";
+import { routesPaths } from "../../../routes/routesPaths";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters, {
   ANY_COUNTRY,
@@ -43,128 +36,6 @@ const budgetMap: Record<
   High: "$$$",
 };
 
-const formatDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-const addDays = (date: Date, days: number) => {
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + days);
-  return nextDate;
-};
-
-const getNextAvailableTripDate = (
-  trips: Trip[],
-  fromDate = addDays(new Date(), 1),
-) => {
-  let candidate = fromDate;
-
-  while (
-    trips.some((trip) => {
-      const candidateTime = new Date(
-        `${formatDate(candidate)}T00:00:00`,
-      ).getTime();
-      const startTime = new Date(`${trip.start_date}T00:00:00`).getTime();
-      const endTime = new Date(`${trip.end_date}T00:00:00`).getTime();
-      return candidateTime >= startTime && candidateTime <= endTime;
-    })
-  ) {
-    candidate = addDays(candidate, 1);
-  }
-
-  return formatDate(candidate);
-};
-
-const splitLocationParts = (value: string) =>
-  value
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-const getTripDestination = (place: RecommendationPlace) => {
-  const titleParts = splitLocationParts(place.title);
-  const locationParts = splitLocationParts(place.location);
-  const country =
-    place.country || titleParts.at(-1) || locationParts.at(-1) || "Destination";
-  const city =
-    titleParts.length > 1
-      ? titleParts[0]
-      : locationParts.at(-1) === country
-        ? locationParts[0]
-        : "";
-
-  return {
-    country,
-    city,
-    days: 1,
-  };
-};
-
-const normalizeLocationPart = (value?: string) =>
-  (value ?? "").trim().toLowerCase();
-
-const isSameDestination = (left: TripDestination, right: TripDestination) =>
-  normalizeLocationPart(left.country) ===
-    normalizeLocationPart(right.country) &&
-  normalizeLocationPart(left.city) === normalizeLocationPart(right.city);
-
-const hasTripForPlace = (trips: Trip[], place: RecommendationPlace) => {
-  const destination = getTripDestination(place);
-
-  return trips.some((trip) =>
-    trip.destinations.some((tripDestination) =>
-      isSameDestination(tripDestination, destination),
-    ),
-  );
-};
-
-const createDiscoverTrip = async (place: RecommendationPlace) => {
-  const { data: existingTrips } = await getTrips();
-
-  if (hasTripForPlace(existingTrips, place)) {
-    return { alreadyExists: true };
-  }
-
-  let trips = existingTrips;
-  let candidate = addDays(new Date(), 1);
-
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    const tripDate = getNextAvailableTripDate(trips, candidate);
-    const payload: TripCreatePayload = {
-      destinations: [getTripDestination(place)],
-      start_date: tripDate,
-      end_date: tripDate,
-      budget_max: 100,
-      travelers_count: 1,
-      adults: 1,
-      children: 0,
-      additional_notes: `Added from Discover: ${place.title}. ${place.desc}`,
-    };
-
-    try {
-      return { alreadyExists: false, response: await addTrip(payload) };
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 409) {
-        throw error;
-      }
-
-      trips = (await getTrips()).data;
-
-      if (hasTripForPlace(trips, place)) {
-        return { alreadyExists: true };
-      }
-
-      candidate = addDays(new Date(`${tripDate}T00:00:00`), 1);
-    }
-  }
-
-  throw new Error("No available trip date found.");
-};
-
 const getResultSetKey = (
   places: { id: string }[],
   activeCategory: RecommendationCategoryFilter,
@@ -181,6 +52,7 @@ const getResultSetKey = (
 const Recommendations = () => {
   const styles = useRecommendationsStyles();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] =
     useState<RecommendationCategoryFilter>("All");
   const [activeBudget, setActiveBudget] =
@@ -190,14 +62,6 @@ const Recommendations = () => {
     page: 1,
     resultSetKey: "",
   });
-  const [addingPlaceId, setAddingPlaceId] = useState<string | null>(null);
-  const [addedPlaceIds, setAddedPlaceIds] = useState<string[]>([]);
-  const [addTripError, setAddTripError] = useState("");
-  const [addTripSuccess, setAddTripSuccess] = useState("");
-  const [duplicateTripDialogOpen, setDuplicateTripDialogOpen] = useState(false);
-  const [pendingPlace, setPendingPlace] = useState<RecommendationPlace | null>(
-    null,
-  );
   const { places, isLoading, errorMessage } = useRecommendations(
     location.state,
     activeCategory,
@@ -258,48 +122,10 @@ const Recommendations = () => {
     });
   };
 
-  const closeAddTripDialog = () => {
-    if (addingPlaceId) {
-      return;
-    }
-
-    setPendingPlace(null);
-  };
-
   const handleAddToTrip = (place: RecommendationPlace) => {
-    setAddTripError("");
-    setAddTripSuccess("");
-    setPendingPlace(place);
-  };
-
-  const handleConfirmAddTrip = async () => {
-    if (!pendingPlace) {
-      return;
-    }
-
-    const place = pendingPlace;
-    setAddTripError("");
-    setAddTripSuccess("");
-    setPendingPlace(null);
-    setAddingPlaceId(place.id);
-
-    try {
-      const result = await createDiscoverTrip(place);
-
-      setAddedPlaceIds((currentIds) =>
-        currentIds.includes(place.id) ? currentIds : [...currentIds, place.id],
-      );
-
-      if (result.alreadyExists) {
-        setDuplicateTripDialogOpen(true);
-      } else {
-        setAddTripSuccess("Trip added successfully");
-      }
-    } catch {
-      setAddTripError("We couldn't add that recommendation to My Trips.");
-    } finally {
-      setAddingPlaceId(null);
-    }
+    navigate(routesPaths.itinerary, {
+      state: { pendingActivity: place },
+    });
   };
 
   return (
@@ -336,26 +162,12 @@ const Recommendations = () => {
           </div>
         )}
 
-        {!isLoading && !errorMessage && addTripError && (
-          <div className={styles.inlineError} role="alert">
-            {addTripError}
-          </div>
-        )}
-
-        {!isLoading && !errorMessage && addTripSuccess && (
-          <div className={styles.inlineSuccess} role="status">
-            {addTripSuccess}
-          </div>
-        )}
-
         {!isLoading && !errorMessage && (
           <div className={styles.grid}>
             {visiblePlaces.map((place) => (
               <RecommendationCard
                 key={place.id}
                 place={place}
-                isAdding={addingPlaceId === place.id}
-                isAdded={addedPlaceIds.includes(place.id)}
                 onAddToTrip={handleAddToTrip}
               />
             ))}
@@ -396,25 +208,6 @@ const Recommendations = () => {
           <RecommendationsEmptyState />
         )}
       </main>
-
-      <ConfirmDialog
-        open={pendingPlace !== null}
-        title="Are you sure to add this trip"
-        confirmLabel="Add Trip"
-        confirmingLabel="Adding..."
-        isConfirming={addingPlaceId !== null}
-        onConfirm={handleConfirmAddTrip}
-        onCancel={closeAddTripDialog}
-      />
-
-      <ConfirmDialog
-        open={duplicateTripDialogOpen}
-        title="You are already have this trip"
-        confirmLabel="OK"
-        cancelLabel="Close"
-        onConfirm={() => setDuplicateTripDialogOpen(false)}
-        onCancel={() => setDuplicateTripDialogOpen(false)}
-      />
     </div>
   );
 };

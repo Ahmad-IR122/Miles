@@ -58,6 +58,9 @@ const itineraryLoadError =
 
 type LocationState = { trip?: ApiTrip; itinerary?: GeneratedItinerary } | null;
 
+export type AddActivityResult =
+  "added" | "duplicate" | "missing-day" | "failed";
+
 export const useItinerary = () => {
   const location = useLocation();
   const { itineraryId } = useParams<{ itineraryId: string }>();
@@ -178,7 +181,7 @@ export const useItinerary = () => {
     );
   };
 
-  const addActivityToDay = (
+  const addActivityToDay = async (
     dayIndex: number,
     activity: {
       name: string;
@@ -186,18 +189,38 @@ export const useItinerary = () => {
       location_name: string;
       estimated_cost?: number;
       category: string;
-      start_time: string;
-      end_time: string;
+      start_time?: string;
+      end_time?: string;
     },
-  ) => {
+  ): Promise<AddActivityResult> => {
     const day = trip?.days?.[dayIndex];
     if (!trip?.id || !day) {
-      return;
+      return "missing-day";
     }
+
+    const normalizedName = activity.name.trim().toLowerCase();
+    const normalizedLocation = activity.location_name.trim().toLowerCase();
+    const alreadyAdded = day.activities.some((current) => {
+      if (typeof current === "string") {
+        return current.trim().toLowerCase() === normalizedName;
+      }
+
+      return (
+        current.title.trim().toLowerCase() === normalizedName &&
+        (current.location ?? "").trim().toLowerCase() === normalizedLocation
+      );
+    });
+
+    if (alreadyAdded) {
+      return "duplicate";
+    }
+
     const tripId = trip.id;
-    regenerate.run({ scope: "add", id: day.id ?? String(day.day) }, () =>
-      addActivity(Number(tripId), day.day, activity),
+    const added = await regenerate.run(
+      { scope: "add", id: day.id ?? String(day.day) },
+      () => addActivity(Number(tripId), day.day, activity),
     );
+    return added ? "added" : "failed";
   };
 
   // Applies an activity-level change (edit or delete) to local state and
