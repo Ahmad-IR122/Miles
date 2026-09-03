@@ -191,6 +191,10 @@ const getDestinationRegion = (destinationId: string) =>
   destinations.find((item) => item.destination_id === destinationId)?.region ??
   "Selected destination";
 
+const getDestinationCountry = (destinationId: string) =>
+  destinations.find((item) => item.destination_id === destinationId)?.country ??
+  "";
+
 const getRecommendationCategory = (
   item: RecommendationApiItem,
 ): "Attractions" | "Activities" => {
@@ -216,6 +220,7 @@ const toRecommendationPlace = (
     price: budgetLabel.price,
     priceLevel: budgetLabel.priceLevel,
     location: item.region,
+    country: item.country,
     desc: `Recommended for ${item.style} travel based on your selected trip preferences.`,
     img: placeholderImage,
     tags: [item.style, item.budget_level],
@@ -238,6 +243,7 @@ const toRestaurantPlace = (
     price: `Avg. $${Math.round(item.average_price)}`,
     priceLevel: budgetLabel.priceLevel,
     location: getDestinationLabel(item.destination_id),
+    country: getDestinationCountry(item.destination_id),
     desc: `${item.cuisines} restaurant in ${getDestinationRegion(
       item.destination_id,
     )}.`,
@@ -285,6 +291,9 @@ const toActivityPlace = (item: ActivityApiItem): RecommendationPlace => {
     price: duration,
     priceLevel: "$$",
     location: destinationLabel,
+    country:
+      item.country ||
+      (item.destination_id ? getDestinationCountry(item.destination_id) : ""),
     desc: item.description ?? item.category ?? "Activity recommendation.",
     img: placeholderImage,
     tags,

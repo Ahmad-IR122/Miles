@@ -1,11 +1,18 @@
 from pydantic import BaseModel, Field
 
+DEFAULT_RECOMMENDATION_LIMIT = 100
+MAX_RECOMMENDATION_LIMIT = 500
+
 
 class RecommendationRequest(BaseModel):
     interests: list[str] = Field(default_factory=list)
     budget: float = Field(ge=0)
     travel_month: int = Field(ge=1, le=12)
     style: str
+    limit: int = Field(
+        default=DEFAULT_RECOMMENDATION_LIMIT, ge=1, le=MAX_RECOMMENDATION_LIMIT
+    )
+    offset: int = Field(default=0, ge=0)
 
 
 class RecommendationItem(BaseModel):
@@ -24,11 +31,16 @@ class RecommendationItem(BaseModel):
 
 class RecommendationResponse(BaseModel):
     recommendations: list[RecommendationItem]
+    total: int = 0
 
 
 class RestaurantRecommendationRequest(BaseModel):
     destination_id: str = Field(min_length=1)
     budget: float = Field(ge=0)
+    limit: int = Field(
+        default=DEFAULT_RECOMMENDATION_LIMIT, ge=1, le=MAX_RECOMMENDATION_LIMIT
+    )
+    offset: int = Field(default=0, ge=0)
 
 
 class RestaurantRecommendationItem(BaseModel):
@@ -47,6 +59,7 @@ class RestaurantRecommendationItem(BaseModel):
 
 class RestaurantRecommendationResponse(BaseModel):
     recommendations: list[RestaurantRecommendationItem]
+    total: int = 0
 
 
 class ActivityItem(BaseModel):
@@ -70,3 +83,4 @@ class ActivityItem(BaseModel):
 
 class ActivityResponse(BaseModel):
     activities: list[ActivityItem]
+    total: int = 0

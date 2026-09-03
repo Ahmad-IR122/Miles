@@ -187,6 +187,13 @@ export const useRecommendationsStyles = makeStyles({
     gap: layout.gap.md,
   },
   card: {
+    display: "flex",
+    flexDirection: "column",
+    // The grid stretches every card in a row to match the tallest one -
+    // filling that height and laying the card out as a column is what lets
+    // the actions row anchor to the bottom instead of trailing right after
+    // a short description.
+    height: "100%",
     backgroundColor: semanticColors.bgPrimary,
     ...shorthands.border(
       layout.borderWidth.thin,
@@ -256,6 +263,9 @@ export const useRecommendationsStyles = makeStyles({
     color: semanticColors.interactive,
   },
   cardBody: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
     padding: "16px 18px 18px",
   },
   titleRow: {
@@ -332,6 +342,8 @@ export const useRecommendationsStyles = makeStyles({
     display: "flex",
     gap: layout.gap.xs,
     flexWrap: "wrap",
+    marginTop: "auto",
+    paddingTop: layout.spacing[3],
   },
   actionButton: {
     flex: 1,
