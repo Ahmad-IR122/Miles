@@ -36,6 +36,15 @@ export const useItineraryStyles = makeStyles({
     // scroll height — the page can be much taller than the wallpaper image.
     backgroundAttachment: "fixed",
     fontFamily: typography.fontFamily.sans,
+    // The nav is fixed and overlays the page, so clear its height plus
+    // its inset here (same amount AppLayout's navOffset used to add as
+    // a separate wrapper) - keeping it on this element instead means the
+    // wallpaper above covers the cleared area too, instead of showing
+    // navOffset's plain background color as a seam above the page.
+    paddingTop: `${layout.navHeight + 66}px`,
+    "@media (max-width: 760px)": {
+      paddingTop: `${layout.navHeight + 52}px`,
+    },
   },
   shell: {
     maxWidth: "none",

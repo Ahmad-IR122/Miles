@@ -21,6 +21,14 @@ export const useSavedTripsStyles = makeStyles({
     backgroundRepeat: "no-repeat",
     backgroundAttachment: "fixed",
     minHeight: "100dvh",
+    // The nav is fixed and overlays the page, so clear its height plus
+    // its inset here rather than in a separate wrapper, so the wallpaper
+    // above covers the cleared area too instead of a seam showing above
+    // the page (see appLayout.tsx / itinerary.styles.ts for the same fix).
+    paddingTop: `${layout.navHeight + 66}px`,
+    "@media (max-width: 760px)": {
+      paddingTop: `${layout.navHeight + 52}px`,
+    },
   },
 
   content: {
