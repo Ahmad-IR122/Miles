@@ -36,8 +36,6 @@ const en = {
       header: {
         titlePrefix: "Plan your",
         titleAccent: "perfect trip",
-        subtitle:
-          "Tell us about your trip and we'll create a personalized itinerary in seconds.",
       },
       steps: {
         tripDetails: "Trip Details",
@@ -62,10 +60,7 @@ const en = {
       },
       notes: {
         label: "Additional Notes",
-        placeholder:
-          "Add any notes for your trip... e.g. 3 days in Bratislava and the rest in Košice, we travel with a toddler, prefer trains over flights.",
-        helper:
-          "Anything you write here is passed along with your trip when the itinerary is put together.",
+        placeholder: "e.g. prefer trains, travelling with a toddler",
       },
       travelers: {
         adults: "Adults",
@@ -116,9 +111,8 @@ const en = {
         otherLabel: "Tell us your interest",
         otherPlaceholder: "e.g. Photography or local markets",
         selectAll: "Select all that apply",
-        chooseMinimum_one: "Choose at least {{count}} to personalize your trip",
-        chooseMinimum_other:
-          "Choose at least {{count}} to personalize your trip",
+        chooseMinimum_one: "Pick at least {{count}}",
+        chooseMinimum_other: "Pick at least {{count}}",
         selectedCount_one: "{{count}} interest selected",
         selectedCount_other: "{{count}} interests selected",
         selectionNotice_one:
