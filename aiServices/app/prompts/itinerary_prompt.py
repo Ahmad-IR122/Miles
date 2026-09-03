@@ -578,8 +578,8 @@ Rules:
 - Keep the same number of days as the current itinerary unless the request explicitly asks
   to add or remove days.
 - Keep everything the user did not ask to change as close to the original as possible.
-- Every day in the itinerary must contain at least 4 activities. A day with only 1-3 activities is not accepted.
-- Expand sparse days so the itinerary meets the minimum activity requirement without forcing an arbitrary maximum.
+- Every day in the itinerary must contain between 4 and 5 activities. A day with only 1-3 activities is not accepted, and days must not exceed 5 activities.
+- Expand sparse days so the itinerary meets the minimum activity requirement, but do not exceed the 5-activity maximum.
 - Maintain a realistic daily structure: breakfast, 1-2 activities, lunch, 1-2 activities, dinner.
 - Keep the itinerary within the user's budget. Include a realistic estimated_cost for every
   activity for the full traveler group.
@@ -659,8 +659,8 @@ invent places that are not in this list or already in the current itinerary):
 Rules:
 - Only regenerate day {day_number}. Do not repeat or return the other days.
 - Apply the user's requested change to that day.
-- This day must contain at least 4 activities. A day with only 1-3 activities is not accepted.
-- If the current day is too sparse, expand it with realistic meals/attractions/experiences until it reaches at least 4 activities.
+- This day must contain between 4 and 5 activities. A day with only 1-3 activities is not accepted, and it must not exceed 5 activities.
+- If the current day is too sparse, expand it with realistic meals/attractions/experiences until it reaches 4-5 activities, but do not exceed 5.
 - Maintain a realistic day structure: breakfast, 1-2 activities, lunch, 1-2 activities, dinner.
 - Include a realistic estimated_cost for every activity for the full traveler group, and keep
   the combined estimates appropriate for the user's total trip budget.

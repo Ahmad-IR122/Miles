@@ -33,7 +33,7 @@ const getTripDays = (startDate: string, endDate: string) => {
 
   const difference = end.getTime() - start.getTime();
 
-  return Math.max(1, Math.ceil(difference / (1000 * 60 * 60 * 24)));
+  return Math.max(1, Math.ceil(difference / (1000 * 60 * 60 * 24)) + 1);
 };
 
 const TripCard = ({ trip, isDeleting = false, onDelete }: TripCardProps) => {
