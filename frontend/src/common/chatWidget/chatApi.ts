@@ -4,22 +4,33 @@ type ChatResponse = {
   conversation_id: string;
 };
 
+type ChatHistoryTurn = {
+  user_query: string;
+  answer: string;
+};
+
 export async function sendChatMessage(
-  token: string,
+  token: string | null | undefined,
   message: string,
   conversationId?: string,
   tripId?: number,
+  history?: ChatHistoryTurn[],
 ): Promise<ChatResponse> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/chat/message`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({
       message,
       conversation_id: conversationId ?? null,
       trip_id: tripId ?? null,
+      history: history && history.length > 0 ? history : null,
     }),
   });
 
