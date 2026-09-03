@@ -66,6 +66,7 @@ const AccountMenu = () => {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
+        disableScrollLock
         slotProps={{
           paper: {
             className: styles.paper,
