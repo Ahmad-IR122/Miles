@@ -2,6 +2,8 @@ import logging
 
 import pandas as pd
 from app.models.recommendation import (
+    DEFAULT_RECOMMENDATION_LIMIT,
+    MAX_RECOMMENDATION_LIMIT,
     ActivityResponse,
     RecommendationRequest,
     RecommendationResponse,
@@ -20,7 +22,7 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +51,13 @@ def get_recommendations(
             "style": request.style,
         }
 
-        recommendations = recommend_destinations(
+        recommendations, total = recommend_destinations(
             user_preferences=user_preferences,
+            limit=request.limit,
+            offset=request.offset,
         )
 
-        return {"recommendations": recommendations}
+        return {"recommendations": recommendations, "total": total}
 
     except ValueError as error:
         logger.warning(
@@ -95,9 +99,11 @@ def get_restaurant_recommendations(
     request: RestaurantRecommendationRequest,
 ):
     try:
-        recommendations = recommend_restaurants(
+        recommendations, total = recommend_restaurants(
             destination_id=request.destination_id,
             user_budget=request.budget,
+            limit=request.limit,
+            offset=request.offset,
         )
 
         if not recommendations:
@@ -106,7 +112,7 @@ def get_restaurant_recommendations(
                 detail="No restaurants found for the selected destination.",
             )
 
-        return {"recommendations": recommendations}
+        return {"recommendations": recommendations, "total": total}
 
     except HTTPException:
         raise
@@ -171,9 +177,14 @@ def get_restaurant_recommendations(
     "/activities",
     response_model=ActivityResponse,
 )
-def get_activities_endpoint():
+def get_activities_endpoint(
+    limit: int = Query(
+        default=DEFAULT_RECOMMENDATION_LIMIT, ge=1, le=MAX_RECOMMENDATION_LIMIT
+    ),
+    offset: int = Query(default=0, ge=0),
+):
     try:
-        activities = recommend_activities()
+        activities, total = recommend_activities(limit=limit, offset=offset)
 
         if not activities:
             raise HTTPException(
@@ -183,6 +194,7 @@ def get_activities_endpoint():
 
         return {
             "activities": activities,
+            "total": total,
         }
 
     except HTTPException:

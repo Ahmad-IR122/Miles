@@ -16,6 +16,38 @@ import { useRegenerate } from "../../../hooks/useRegenerate";
 import type { GeneratedItinerary } from "../../../types/itinerary";
 import type { Trip as ApiTrip } from "../../../types/trip";
 import type { Activity, Trip } from "../types/itinerary.types";
+
+const formatActivityTime = (value: string) => {
+  const [hours, minutes] = value.split(":").map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return value;
+  const hour = hours % 12 || 12;
+  return `${hour}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
+};
+
+const activityTimeToMinutes = (value?: string) => {
+  if (!value) return undefined;
+  const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return undefined;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (match[3]) {
+    hours %= 12;
+    if (match[3].toUpperCase() === "PM") hours += 12;
+  }
+  return hours * 60 + minutes;
+};
+
+const sortActivitiesByTime = (activities: Activity[]) =>
+  [...activities].sort((left, right) => {
+    const leftTime =
+      typeof left === "string" ? undefined : activityTimeToMinutes(left.time);
+    const rightTime =
+      typeof right === "string" ? undefined : activityTimeToMinutes(right.time);
+    if (leftTime === undefined && rightTime === undefined) return 0;
+    if (leftTime === undefined) return 1;
+    if (rightTime === undefined) return -1;
+    return leftTime - rightTime;
+  });
 import {
   adaptGeneratedDays,
   adaptGeneratedItinerary,
@@ -218,24 +250,40 @@ export const useItinerary = () => {
   const updateActivity = async (
     dayIndex: number,
     activityIndex: number,
-    updates: { title: string; description: string },
+    updates: {
+      title: string;
+      description: string;
+      location: string;
+      price: string;
+      category: string;
+      startTime: string;
+      endTime: string;
+    },
   ) => {
     const day = trip?.days?.[dayIndex];
     const activity = day?.activities?.[activityIndex];
     const activityId = typeof activity === "string" ? undefined : activity?.id;
 
     const previousActivities = applyActivityChange(dayIndex, (activities) =>
-      activities.map((current, aIdx) => {
-        if (aIdx !== activityIndex) {
-          return current;
-        }
-        const base = typeof current === "string" ? { title: current } : current;
-        return {
-          ...base,
-          title: updates.title,
-          description: updates.description,
-        };
-      }),
+      sortActivitiesByTime(
+        activities.map((current, aIdx) => {
+          if (aIdx !== activityIndex) {
+            return current;
+          }
+          const base =
+            typeof current === "string" ? { title: current } : current;
+          return {
+            ...base,
+            title: updates.title,
+            description: updates.description,
+            location: updates.location,
+            cost: updates.price,
+            category: updates.category,
+            time: formatActivityTime(updates.startTime),
+            endTime: formatActivityTime(updates.endTime),
+          };
+        }),
+      ),
     );
 
     if (!activityId) {
@@ -247,6 +295,11 @@ export const useItinerary = () => {
       await updateActivityRequest(Number(activityId), {
         name: updates.title,
         description: updates.description,
+        location_name: updates.location || null,
+        estimated_cost: updates.price === "" ? null : Number(updates.price),
+        category: updates.category || null,
+        start_time: updates.startTime || null,
+        end_time: updates.endTime || null,
       });
       setActivityError("");
     } catch (error) {

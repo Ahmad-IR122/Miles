@@ -78,3 +78,24 @@ def get_current_user(
     if user is None:
         raise _unauthorized("No local account linked to this Clerk user")
     return user
+
+
+def get_optional_clerk_claims(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> ClerkClaims | None:
+   
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        return None
+    return _decode_clerk_token(credentials.credentials)
+
+
+def get_current_user_optional(
+    claims: ClerkClaims | None = Depends(get_optional_clerk_claims),
+    db: Session = Depends(get_db),
+) -> User | None:
+    if claims is None:
+        return None
+    user = db.query(User).filter(User.auth_provider_id == claims.user_id).one_or_none()
+    if user is None:
+        raise _unauthorized("No local account linked to this Clerk user")
+    return user

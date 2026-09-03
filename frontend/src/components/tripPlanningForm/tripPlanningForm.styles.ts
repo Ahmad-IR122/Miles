@@ -109,15 +109,6 @@ export const useTripPlanningFormStyles = makeStyles({
     WebkitTextFillColor: "transparent",
     color: colors.transparent,
   },
-  subtitle: {
-    fontSize: typography.fontSize.size5,
-    color: semanticColors.textSecondary,
-    margin: 0,
-    lineHeight: typography.lineHeight.relaxed,
-    [`@media ${bp.tablet}`]: {
-      fontSize: typography.fontSize.size4,
-    },
-  },
   steps: {
     display: "flex",
     alignItems: "center",
@@ -322,7 +313,7 @@ export const useTripPlanningFormStyles = makeStyles({
     ...typographyPresets.caption,
     color: semanticColors.textTertiary,
   },
-  interestHeader: { marginBottom: layout.gap.lg },
+  interestHeader: { marginBottom: layout.gap.md },
   interestHeaderRow: {
     display: "flex",
     alignItems: "center",
@@ -332,10 +323,12 @@ export const useTripPlanningFormStyles = makeStyles({
     flexWrap: "wrap",
   },
   interestTitle: {
-    fontSize: typography.fontSize.size7,
-    fontWeight: typography.fontWeight.bold,
-    color: semanticColors.textPrimary,
-    margin: `0 0 ${layout.gap.sm}`,
+    "&.MuiTypography-root": {
+      fontSize: typography.fontSize.size7,
+      fontWeight: typography.fontWeight.bold,
+      color: semanticColors.textPrimary,
+      margin: `0 0 ${layout.spacing[1]}`,
+    },
   },
   interestCounter: {
     flexShrink: 0,
@@ -350,7 +343,7 @@ export const useTripPlanningFormStyles = makeStyles({
     ),
     borderRadius: layout.radius.full,
     padding: `${layout.spacing[1]} ${layout.gap.md}`,
-    marginBottom: layout.gap.sm,
+    marginBottom: layout.spacing[1],
     transitionProperty: "background-color, color",
     transitionDuration: layout.duration.normal,
   },
@@ -359,9 +352,11 @@ export const useTripPlanningFormStyles = makeStyles({
     backgroundImage: gradients.primary,
   },
   interestText: {
-    fontSize: typography.fontSize.size3,
-    color: semanticColors.textSecondary,
-    margin: 0,
+    "&.MuiTypography-root": {
+      ...typographyPresets.caption,
+      color: semanticColors.textTertiary,
+      margin: 0,
+    },
   },
   chips: {
     display: "flex",
@@ -422,13 +417,16 @@ export const useTripPlanningFormStyles = makeStyles({
       semanticColors.borderAccentStrong,
     ),
     borderRadius: layout.radius.lg,
-    padding: `${layout.gap.lg} ${layout.gap.md}`,
+    padding: layout.gap.md,
   },
   summaryTitle: {
-    fontSize: typography.fontSize.size6,
-    fontWeight: typography.fontWeight.bold,
-    color: semanticColors.textPrimary,
-    marginBottom: layout.gap.lg,
+    "&.MuiTypography-root": {
+      fontSize: typography.fontSize.size6,
+      fontWeight: typography.fontWeight.bold,
+      lineHeight: typography.lineHeight.tight,
+      color: semanticColors.textPrimary,
+      margin: `0 0 ${layout.gap.md}`,
+    },
   },
   summaryGrid: {
     display: "grid",
@@ -441,16 +439,21 @@ export const useTripPlanningFormStyles = makeStyles({
     },
   },
   summaryKey: {
-    fontSize: typography.fontSize.size2,
-    color: semanticColors.textSecondary,
-    fontWeight: typography.fontWeight.medium,
-    marginBottom: layout.gap.sm,
+    "&.MuiTypography-root": {
+      fontSize: typography.fontSize.size2,
+      color: semanticColors.textTertiary,
+      fontWeight: typography.fontWeight.medium,
+      margin: `0 0 ${layout.spacing[1]}`,
+    },
   },
   summaryValue: {
-    fontSize: typography.fontSize.size4,
-    color: semanticColors.textPrimary,
-    fontWeight: typography.fontWeight.bold,
-    overflowWrap: "anywhere",
+    "&.MuiTypography-root": {
+      fontSize: typography.fontSize.size3,
+      color: semanticColors.textPrimary,
+      fontWeight: typography.fontWeight.semibold,
+      overflowWrap: "anywhere",
+      margin: 0,
+    },
   },
   error: {
     color: semanticColors.textError,

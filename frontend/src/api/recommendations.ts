@@ -61,14 +61,17 @@ export type ActivityApiItem = {
 
 export type RecommendationResponse = {
   recommendations: RecommendationApiItem[];
+  total: number;
 };
 
 export type RestaurantRecommendationResponse = {
   recommendations: RestaurantRecommendationApiItem[];
+  total: number;
 };
 
 export type ActivityResponse = {
   activities: ActivityApiItem[];
+  total: number;
 };
 
 export const getRecommendations = (payload: RecommendationRequestPayload) =>

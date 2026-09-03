@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
-import RecommendationsFilters from "../components/recommendationsFilters";
+import RecommendationsFilters, {
+  ANY_COUNTRY,
+} from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";
 import RecommendationCard from "../components/recommendationCard";
 import { useRecommendations } from "../hooks/useRecommendations";
@@ -36,10 +38,12 @@ const getResultSetKey = (
   places: { id: string }[],
   activeCategory: RecommendationCategoryFilter,
   activeBudget: BudgetFilterLabel,
+  activeCountry: string,
 ) =>
   JSON.stringify({
     activeCategory,
     activeBudget,
+    activeCountry,
     ids: places.map((place) => place.id),
   });
 
@@ -50,6 +54,7 @@ const Recommendations = () => {
     useState<RecommendationCategoryFilter>("All");
   const [activeBudget, setActiveBudget] =
     useState<BudgetFilterLabel>("Any Budget");
+  const [activeCountry, setActiveCountry] = useState<string>(ANY_COUNTRY);
   const [pagination, setPagination] = useState({
     page: 1,
     resultSetKey: "",
@@ -71,10 +76,13 @@ const Recommendations = () => {
             return false;
           }
         }
+        if (activeCountry !== ANY_COUNTRY && place.country !== activeCountry) {
+          return false;
+        }
 
         return true;
       }),
-    [activeCategory, activeBudget, places],
+    [activeCategory, activeBudget, activeCountry, places],
   );
 
   const totalPages = Math.max(
@@ -85,6 +93,7 @@ const Recommendations = () => {
     filteredPlaces,
     activeCategory,
     activeBudget,
+    activeCountry,
   );
   const currentPage =
     pagination.resultSetKey === resultSetKey ? pagination.page : 1;
@@ -126,8 +135,10 @@ const Recommendations = () => {
           budgets={budgets}
           activeCategory={activeCategory}
           activeBudget={activeBudget}
+          activeCountry={activeCountry}
           onCategoryChange={setActiveCategory}
           onBudgetChange={setActiveBudget}
+          onCountryChange={setActiveCountry}
         />
 
         {isLoading && (
@@ -152,6 +163,10 @@ const Recommendations = () => {
 
         {!isLoading && !errorMessage && filteredPlaces.length > 0 && (
           <nav className={styles.pagination} aria-label="Recommendations pages">
+            <span className={styles.paginationStatus}>
+              Page {currentPage} of {totalPages}
+            </span>
+
             <div className={styles.paginationActions}>
               <button
                 className={styles.paginationButton}

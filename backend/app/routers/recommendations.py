@@ -1,7 +1,9 @@
 import httpx
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from app.schemas.recommendation import (
+    DEFAULT_RECOMMENDATION_LIMIT,
+    MAX_RECOMMENDATION_LIMIT,
     ActivityResponse,
     RecommendationRequest,
     RecommendationResponse,
@@ -51,9 +53,17 @@ def get_recommendations(payload: RecommendationRequest):
 
 @router.get("/activities", response_model=ActivityResponse)
 @router.get("/activities/", response_model=ActivityResponse)
-def get_activities():
+def get_activities(
+    limit: int = Query(
+        default=DEFAULT_RECOMMENDATION_LIMIT, ge=1, le=MAX_RECOMMENDATION_LIMIT
+    ),
+    offset: int = Query(default=0, ge=0),
+):
     try:
-        return ai_client.get("/api/recommendations/activities")
+        return ai_client.get(
+            "/api/recommendations/activities",
+            params={"limit": limit, "offset": offset},
+        )
     except httpx.HTTPStatusError as error:
         if error.response.status_code in {
             status.HTTP_400_BAD_REQUEST,

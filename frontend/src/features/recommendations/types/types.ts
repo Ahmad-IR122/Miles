@@ -17,6 +17,7 @@ export type RecommendationPlace = {
   price: string;
   priceLevel: PriceLevel;
   location: string;
+  country: string;
   desc: string;
   img: string;
   tags: string[];

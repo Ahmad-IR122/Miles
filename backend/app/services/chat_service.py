@@ -102,11 +102,15 @@ def build_user_context(db: Session, user_id: int, trip_id: int | None = None) ->
 
 def get_milo_reply(
     db: Session,
-    user_id: int,
+    user_id: int | None,
     message: str,
     conversation_id: uuid.UUID | None = None,
     trip_id: int | None = None,
+    guest_history: list | None = None,
 ) -> dict:
+    if user_id is None:
+        return _get_milo_reply_guest(message, guest_history)
+
     conversation = (
         get_conversation(db, conversation_id, user_id) if conversation_id else None
     )
@@ -134,3 +138,24 @@ def get_milo_reply(
         MessageCreate(user_query=message, answer=reply),
     )
     return {"reply": reply, "conversation_id": conversation.id}
+
+
+def _get_milo_reply_guest(message: str, guest_history: list | None = None) -> dict:
+    
+    history = (
+        [
+            {"user_query": turn.user_query, "answer": turn.answer}
+            for turn in guest_history
+        ]
+        if guest_history
+        else []
+    )
+    raw = post(
+        "/chat/message",
+        {
+            "message": message,
+            "history": history,
+            "user_context": {"name": "Guest", "trips": []},
+        },
+    )
+    return {"reply": raw["reply"], "conversation_id": uuid.uuid4()}

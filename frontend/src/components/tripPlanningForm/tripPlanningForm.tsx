@@ -683,10 +683,6 @@ const TripPlanningForm = () => {
                 {t("tripPlanningForm.header.titleAccent")}
               </span>
             </Typography>
-
-            <Typography component="p" className={styles.subtitle}>
-              {t("tripPlanningForm.header.subtitle")}
-            </Typography>
           </header>
 
           <div className={styles.steps}>
@@ -1288,7 +1284,6 @@ const TripPlanningForm = () => {
                     slotProps={{
                       htmlInput: { maxLength: maxNotesLength },
                     }}
-                    helperText={t("tripPlanningForm.notes.helper")}
                     sx={getFieldSx(!!notes.trim())}
                   />
                 </div>
