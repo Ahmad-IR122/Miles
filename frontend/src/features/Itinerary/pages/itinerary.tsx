@@ -12,7 +12,6 @@ import {
   FormControl,
   IconButton,
   InputLabel,
-  MenuItem,
   Select,
   Snackbar,
   Stack,
@@ -105,6 +104,7 @@ const Itinerary = () => {
     activityIndex: number;
   } | null>(null);
   const [newActivity, setNewActivity] = useState(emptyNewActivity);
+  const [pendingActivityTime, setPendingActivityTime] = useState<string>();
   const [addActivityError, setAddActivityError] = useState("");
   const trip = itineraries[0];
   const days = useMemo(() => trip?.days ?? [], [trip?.days]);
@@ -149,7 +149,6 @@ const Itinerary = () => {
       : "Adding your activity...";
   const closeActivityDialog = () => {
     setAddDialogOpen(false);
-    setEditingActivity(null);
     setAddActivityError("");
   };
 
@@ -200,26 +199,20 @@ const Itinerary = () => {
       (interval) => startMinutes < interval.end && endMinutes > interval.start,
     );
   });
+  const selectableStartTimes =
+    editingActivity && !freeStartTimes.includes(newActivity.startTime)
+      ? [newActivity.startTime, ...freeStartTimes]
+      : freeStartTimes;
+  const selectableEndTimes =
+    editingActivity && !freeEndTimes.includes(newActivity.endTime)
+      ? [newActivity.endTime, ...freeEndTimes]
+      : freeEndTimes;
 
   const openAddDialog = () => {
-    const firstStart = freeStartTimes[0] ?? "13:00";
-    const firstStartMinutes = timeToMinutes(firstStart) ?? 0;
-    const firstEnd =
-      timeOptions.find((time) => {
-        const end = timeToMinutes(time);
-        return (
-          end !== undefined &&
-          end > firstStartMinutes &&
-          !busyIntervals.some(
-            (interval) =>
-              firstStartMinutes < interval.end && end > interval.start,
-          )
-        );
-      }) ?? "14:00";
     setNewActivity({
       ...emptyNewActivity,
-      startTime: firstStart,
-      endTime: firstEnd,
+      startTime: "",
+      endTime: "",
     });
     setEditingActivity(null);
     setAddActivityError("");
@@ -273,14 +266,9 @@ const Itinerary = () => {
       return;
     }
 
-    const isBusy = (activeDay?.activities ?? []).some((activity) => {
-      if (typeof activity === "string") return false;
-      const activityStart = timeToMinutes(activity.time);
-      const activityEnd = timeToMinutes(activity.endTime);
-      if (activityStart === undefined || activityEnd === undefined)
-        return false;
-      return startMinutes < activityEnd && endMinutes > activityStart;
-    });
+    const isBusy = busyIntervals.some(
+      (interval) => startMinutes < interval.end && endMinutes > interval.start,
+    );
 
     if (isBusy) {
       setAddActivityError(
@@ -308,6 +296,7 @@ const Itinerary = () => {
         endTime: activityPayload.end_time,
       });
     } else {
+      setPendingActivityTime(formatTimeLabel(newActivity.startTime));
       addActivityToDay(selectedDay, { name: title, ...activityPayload });
     }
     setAddDialogOpen(false);
@@ -413,12 +402,16 @@ const Itinerary = () => {
                 {activeDay ? (
                   activeDay.activities.length > 0 ? (
                     <Timeline
-                      busy={timelineBusy}
+                      busy={timelineBusy && !addingActivity}
                       busyLabel={timelineBusyLabel}
                       day={activeDay}
                       dayIndex={selectedDay}
                       destination={trip.destination}
                       isActivityRegenerating={isActivityRegenerating}
+                      showLoadingSkeletons={!addingActivity}
+                      pendingActivityTime={
+                        addingActivity ? pendingActivityTime : undefined
+                      }
                       onDeleteActivity={deleteActivity}
                       onEditActivity={openEditDialog}
                       onRegenerateActivity={
@@ -496,13 +489,19 @@ const Itinerary = () => {
           }}
         >
           <Stack spacing={2} sx={{ pt: 1 }}>
-            <FormControl fullWidth required sx={getFieldSx(false)}>
-              <InputLabel id="activity-type-label" required>
+            <FormControl
+              className={classes.activityTimeSelect}
+              fullWidth
+              required
+              sx={getFieldSx(false)}
+            >
+              <InputLabel id="activity-type-label" required shrink>
                 Activity type
               </InputLabel>
               <Select
                 label="Activity type"
                 labelId="activity-type-label"
+                native
                 onChange={(event) =>
                   setNewActivity((current) => ({
                     ...current,
@@ -512,9 +511,9 @@ const Itinerary = () => {
                 value={newActivity.category}
               >
                 {interestOptions.map((option) => (
-                  <MenuItem key={option} value={option}>
+                  <option key={option} value={option}>
                     {option}
-                  </MenuItem>
+                  </option>
                 ))}
               </Select>
             </FormControl>
@@ -533,47 +532,55 @@ const Itinerary = () => {
               value={newActivity.title}
             />
             <Stack direction={{ sm: "row", xs: "column" }} spacing={2}>
-              <FormControl fullWidth required sx={getFieldSx(false)}>
-                <InputLabel id="activity-start-time-label" required>
+              <FormControl
+                className={classes.activityTimeSelect}
+                fullWidth
+                required
+                sx={getFieldSx(false)}
+              >
+                <InputLabel id="activity-start-time-label" required shrink>
                   Start time
                 </InputLabel>
                 <Select
                   label="Start time"
                   labelId="activity-start-time-label"
+                  native
                   onChange={(event) => {
                     const startTime = event.target.value;
-                    const start = timeToMinutes(startTime) ?? 0;
-                    const endTime =
-                      timeOptions.find(
-                        (time) => (timeToMinutes(time) ?? 0) > start,
-                      ) ?? "14:00";
                     setNewActivity((current) => ({
                       ...current,
                       startTime,
-                      endTime,
+                      endTime: "",
                     }));
                     setAddActivityError("");
                   }}
                   value={
-                    freeStartTimes.includes(newActivity.startTime)
+                    selectableStartTimes.includes(newActivity.startTime)
                       ? newActivity.startTime
                       : ""
                   }
                 >
-                  {freeStartTimes.map((time) => (
-                    <MenuItem key={time} value={time}>
+                  {selectableStartTimes.map((time) => (
+                    <option key={time} value={time}>
                       {formatTimeLabel(time)}
-                    </MenuItem>
+                    </option>
                   ))}
                 </Select>
               </FormControl>
-              <FormControl fullWidth required sx={getFieldSx(false)}>
-                <InputLabel id="activity-end-time-label" required>
+              <FormControl
+                className={classes.activityTimeSelect}
+                fullWidth
+                required
+                sx={getFieldSx(false)}
+              >
+                <InputLabel id="activity-end-time-label" required shrink>
                   End time
                 </InputLabel>
                 <Select
+                  disabled={!newActivity.startTime}
                   label="End time"
                   labelId="activity-end-time-label"
+                  native
                   onChange={(event) =>
                     setNewActivity((current) => ({
                       ...current,
@@ -581,15 +588,15 @@ const Itinerary = () => {
                     }))
                   }
                   value={
-                    freeEndTimes.includes(newActivity.endTime)
+                    selectableEndTimes.includes(newActivity.endTime)
                       ? newActivity.endTime
                       : ""
                   }
                 >
-                  {freeEndTimes.map((time) => (
-                    <MenuItem key={time} value={time}>
+                  {selectableEndTimes.map((time) => (
+                    <option key={time} value={time}>
                       {formatTimeLabel(time)}
-                    </MenuItem>
+                    </option>
                   ))}
                 </Select>
               </FormControl>

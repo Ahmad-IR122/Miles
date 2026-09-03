@@ -130,9 +130,7 @@ def _call_model(
             f"(reason: {reason}); try a shorter trip or fewer cities"
         )
 
-    raise ValueError(
-        f"the model returned no usable {schema.__name__}"
-    )
+    raise ValueError(f"the model returned no usable {schema.__name__}")
 
 
 def generate_itinerary(
@@ -141,9 +139,7 @@ def generate_itinerary(
 ) -> Itinerary:
     # Resolve explicit destination-day instructions from additional_notes
     # before building the required destination-day plan.
-    preferences = resolve_preferences_from_additional_notes(
-        preferences
-    )
+    preferences = resolve_preferences_from_additional_notes(preferences)
 
     start = date.fromisoformat(preferences.start_date)
     end = date.fromisoformat(preferences.end_date)
@@ -151,8 +147,7 @@ def generate_itinerary(
     num_days = (end - start).days + 1
 
     wanted_dates = [
-        (start + timedelta(days=offset)).isoformat()
-        for offset in range(num_days)
+        (start + timedelta(days=offset)).isoformat() for offset in range(num_days)
     ]
 
     # Search Azure AI Search for dataset entries matching these preferences
@@ -187,11 +182,7 @@ def generate_itinerary(
 
     # Fill dates that were either completely missing or returned incomplete.
     for _ in range(MAX_TOP_UP_PASSES):
-        missing = [
-            value
-            for value in wanted_dates
-            if value not in days_by_date
-        ]
+        missing = [value for value in wanted_dates if value not in days_by_date]
 
         if not missing:
             break
@@ -200,9 +191,7 @@ def generate_itinerary(
 
         planned_so_far = Itinerary(
             days=[
-                days_by_date[value]
-                for value in wanted_dates
-                if value in days_by_date
+                days_by_date[value] for value in wanted_dates if value in days_by_date
             ]
         )
 
@@ -233,11 +222,7 @@ def generate_itinerary(
         if not filled_any:
             break
 
-    missing = [
-        value
-        for value in wanted_dates
-        if value not in days_by_date
-    ]
+    missing = [value for value in wanted_dates if value not in days_by_date]
 
     if missing:
         raise ValueError(
@@ -246,12 +231,7 @@ def generate_itinerary(
             f"still missing or incomplete: {', '.join(missing)}"
         )
 
-    final_itinerary = Itinerary(
-        days=[
-            days_by_date[value]
-            for value in wanted_dates
-        ]
-    )
+    final_itinerary = Itinerary(days=[days_by_date[value] for value in wanted_dates])
     return final_itinerary
 
 
@@ -261,6 +241,13 @@ def regenerate_itinerary(
     travel_data: list[TravelDataItem],
     preferences: TravelPreferences,
 ) -> Itinerary:
+    start = date.fromisoformat(preferences.start_date)
+    end = date.fromisoformat(preferences.end_date)
+    wanted_dates = [
+        (start + timedelta(days=offset)).isoformat()
+        for offset in range((end - start).days + 1)
+    ]
+
     prompt = build_regenerate_itinerary_prompt(
         existing_itinerary,
         user_query,
@@ -268,13 +255,68 @@ def regenerate_itinerary(
         preferences,
     )
 
-    return _call_model(
+    regenerated = _call_model(
         prompt,
         Itinerary,
-        _day_token_budget(
-            len(existing_itinerary.days)
-        ),
+        _day_token_budget(len(wanted_dates)),
     )
+
+    wanted = set(wanted_dates)
+    days_by_date = {
+        day.date: day
+        for day in regenerated.days
+        if day.date in wanted and _is_complete_day(day)
+    }
+
+    for _ in range(MAX_TOP_UP_PASSES):
+        missing = [
+            trip_date for trip_date in wanted_dates if trip_date not in days_by_date
+        ]
+
+        if not missing:
+            break
+
+        batch = missing[:TOP_UP_BATCH_DAYS]
+        planned_so_far = Itinerary(
+            days=[
+                days_by_date[trip_date]
+                for trip_date in wanted_dates
+                if trip_date in days_by_date
+            ]
+        )
+        top_up = _call_model(
+            build_missing_days_prompt(
+                preferences,
+                travel_data,
+                planned_so_far,
+                batch,
+            ),
+            Itinerary,
+            _day_token_budget(len(batch)),
+        )
+
+        filled_any = False
+        for day in top_up.days:
+            if (
+                day.date in batch
+                and day.date not in days_by_date
+                and _is_complete_day(day)
+            ):
+                days_by_date[day.date] = day
+                filled_any = True
+
+        if not filled_any:
+            break
+
+    missing = [trip_date for trip_date in wanted_dates if trip_date not in days_by_date]
+    if missing:
+        raise ValueError(
+            f"the regenerated itinerary only contains "
+            f"{len(days_by_date)} complete day(s) out of "
+            f"{len(wanted_dates)}; still missing: {', '.join(missing)}"
+        )
+
+    return Itinerary(days=[days_by_date[trip_date] for trip_date in wanted_dates])
 
 
 def regenerate_day(
@@ -286,10 +328,7 @@ def regenerate_day(
 ) -> Itinerary:
     day_index = day_number - 1
 
-    if (
-        day_index < 0
-        or day_index >= len(existing_itinerary.days)
-    ):
+    if day_index < 0 or day_index >= len(existing_itinerary.days):
         raise ValueError(
             f"day_number {day_number} is out of range for "
             f"an itinerary with "
@@ -326,10 +365,7 @@ def regenerate_activity(
 ) -> Itinerary:
     day_index = day_number - 1
 
-    if (
-        day_index < 0
-        or day_index >= len(existing_itinerary.days)
-    ):
+    if day_index < 0 or day_index >= len(existing_itinerary.days):
         raise ValueError(
             f"day_number {day_number} is out of range for "
             f"an itinerary with "
@@ -338,10 +374,7 @@ def regenerate_activity(
 
     target_day = existing_itinerary.days[day_index]
 
-    if (
-        activity_index < 0
-        or activity_index >= len(target_day.activities)
-    ):
+    if activity_index < 0 or activity_index >= len(target_day.activities):
         raise ValueError(
             f"activity_index {activity_index} is out of range "
             f"for day {day_number} with "
@@ -371,8 +404,6 @@ def regenerate_activity(
     updated_day_data = target_day.model_dump()
     updated_day_data["activities"] = updated_activities
 
-    updated_days[day_index] = ItineraryDay(
-        **updated_day_data
-    )
+    updated_days[day_index] = ItineraryDay(**updated_day_data)
 
     return Itinerary(days=updated_days)

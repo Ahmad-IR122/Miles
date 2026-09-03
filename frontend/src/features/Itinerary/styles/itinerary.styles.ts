@@ -640,7 +640,7 @@ export const useItineraryStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     gap: layout.gap.sm,
-    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 85%, transparent)`,
+    backgroundColor: `color-mix(in srgb, ${semanticColors.bgPrimary} 18%, transparent)`,
     borderRadius: layout.radius.lg,
     zIndex: 3,
   },
@@ -801,6 +801,55 @@ export const useItineraryStyles = makeStyles({
       ...shorthands.padding("18px"),
     },
   },
+  activityTimeSelect: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "16px",
+      backgroundColor: `color-mix(in srgb, ${semanticColors.interactive} 6%, ${semanticColors.bgPrimary})`,
+      transitionProperty: "background-color, box-shadow",
+      transitionDuration: layout.duration.fast,
+    },
+    "&:hover .MuiOutlinedInput-root": {
+      backgroundColor: `color-mix(in srgb, ${semanticColors.interactive} 10%, ${semanticColors.bgPrimary})`,
+    },
+    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+      ...shorthands.border(
+        layout.borderWidth.thin,
+        "solid",
+        `color-mix(in srgb, ${semanticColors.interactive} 28%, ${semanticColors.borderDefault})`,
+      ),
+    },
+    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+      ...shorthands.borderColor(semanticColors.interactive),
+    },
+    "& .MuiOutlinedInput-root.Mui-focused": {
+      backgroundColor: semanticColors.bgPrimary,
+      boxShadow: `0 0 0 3px color-mix(in srgb, ${semanticColors.interactive} 16%, transparent)`,
+    },
+    "& .MuiOutlinedInput-root.Mui-disabled": {
+      backgroundColor: semanticColors.bgDisabled,
+      opacity: 0.7,
+    },
+    "& .MuiInputLabel-root": {
+      backgroundColor: semanticColors.bgPrimary,
+      fontWeight: 700,
+      paddingLeft: "4px",
+      paddingRight: "4px",
+    },
+    "& .MuiSelect-select": {
+      minHeight: "1.4375em",
+      paddingBottom: "15px",
+      paddingTop: "15px",
+    },
+    "& .MuiNativeSelect-select": {
+      color: semanticColors.textPrimary,
+      fontSize: typography.fontSize.size4,
+      fontWeight: typography.fontWeight.normal,
+    },
+    "& .MuiNativeSelect-select option": {
+      fontSize: typography.fontSize.size6,
+      fontWeight: typography.fontWeight.semibold,
+    },
+  },
   // While an activity is being regenerated the card keeps its size, so the
   // timeline doesn't jump, and hosts the spinner overlay below.
   activityCardRegenerating: {
@@ -816,6 +865,9 @@ export const useItineraryStyles = makeStyles({
     opacity: 0.25,
     filter: "blur(1px)",
     userSelect: "none",
+  },
+  activitySkeleton: {
+    backgroundColor: `color-mix(in srgb, ${semanticColors.textPrimary} 18%, transparent)`,
   },
   regeneratingOverlay: {
     position: "absolute",
@@ -862,6 +914,10 @@ export const useItineraryStyles = makeStyles({
   },
   activityContent: {
     minWidth: 0,
+    flex: 1,
+  },
+  activitySkeletonStack: {
+    width: "100%",
   },
   activityMeta: {
     display: "flex",
