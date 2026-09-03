@@ -4,9 +4,17 @@ import type { RecommendationPlace } from "../types/types";
 
 type RecommendationCardProps = {
   place: RecommendationPlace;
+  isAdding?: boolean;
+  isAdded?: boolean;
+  onAddToTrip?: (place: RecommendationPlace) => void;
 };
 
-const RecommendationCard = ({ place }: RecommendationCardProps) => {
+const RecommendationCard = ({
+  place,
+  isAdding = false,
+  isAdded = false,
+  onAddToTrip,
+}: RecommendationCardProps) => {
   const styles = useRecommendationsStyles();
   const shortDescription =
     place.desc.length > 110 ? `${place.desc.slice(0, 110)}...` : place.desc;
@@ -42,17 +50,10 @@ const RecommendationCard = ({ place }: RecommendationCardProps) => {
           <button
             className={mergeClasses(styles.actionButton, styles.primaryButton)}
             type="button"
+            onClick={() => onAddToTrip?.(place)}
+            disabled={!onAddToTrip || isAdding || isAdded}
           >
-            Add to Trip
-          </button>
-          <button
-            className={mergeClasses(
-              styles.actionButton,
-              styles.secondaryButton,
-            )}
-            type="button"
-          >
-            View Details
+            {isAdding ? "Adding..." : isAdded ? "Added" : "Add to Trip"}
           </button>
         </div>
       </div>
