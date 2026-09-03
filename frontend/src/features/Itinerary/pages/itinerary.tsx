@@ -18,7 +18,9 @@ import { formatDateRange } from "../utils/dateUtils";
 const Itinerary = () => {
   const classes = useItineraryStyles();
   const {
+    activityError,
     addActivityToDay,
+    clearActivityError,
     clearRegenerateError,
     deleteActivity,
     errorMessage,
@@ -210,9 +212,12 @@ const Itinerary = () => {
 
       <Snackbar
         autoHideDuration={6000}
-        message={regenerateError}
-        onClose={clearRegenerateError}
-        open={regenerateError !== ""}
+        message={regenerateError || activityError}
+        onClose={() => {
+          clearRegenerateError();
+          clearActivityError();
+        }}
+        open={regenerateError !== "" || activityError !== ""}
       />
     </Box>
   );
