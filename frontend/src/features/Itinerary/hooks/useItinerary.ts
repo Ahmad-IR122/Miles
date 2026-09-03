@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import {
   addActivity,
+  deleteActivity as deleteActivityRequest,
   getItineraryByTripId,
   getUpcomingItinerary,
   regenerateActivity,
   regenerateDay,
   regenerateTrip,
+  updateActivity as updateActivityRequest,
 } from "../../../api/itinerary";
 import { getTripById } from "../../../api/trip";
 import { useRegenerate } from "../../../hooks/useRegenerate";
@@ -36,6 +38,7 @@ export const useItinerary = () => {
   );
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(!hasGenerated);
+  const [activityError, setActivityError] = useState("");
 
   useEffect(() => {
     if (hasGenerated) {
@@ -144,71 +147,125 @@ export const useItinerary = () => {
     );
   };
 
-  const updateActivity = (
+  // Applies an activity-level change (edit or delete) to local state and
+  // returns the previous day's activities, so callers can roll back if the
+  // backend request that's supposed to persist the change fails.
+  const applyActivityChange = (
+    dayIndex: number,
+    transform: (activities: Activity[]) => Activity[],
+  ): Activity[] | undefined => {
+    let previousActivities: Activity[] | undefined;
+
+    setItineraryData((prev) => {
+      if (prev.length === 0) {
+        return prev;
+      }
+
+      const [first, ...rest] = prev;
+      const days = first.days ?? [];
+      const updatedDays = days.map((day, dIdx) => {
+        if (dIdx !== dayIndex) {
+          return day;
+        }
+
+        previousActivities = day.activities;
+        return { ...day, activities: transform(day.activities) };
+      });
+
+      return [{ ...first, days: updatedDays }, ...rest];
+    });
+
+    return previousActivities;
+  };
+
+  const restoreActivities = (dayIndex: number, activities: Activity[]) => {
+    setItineraryData((prev) => {
+      if (prev.length === 0) {
+        return prev;
+      }
+
+      const [first, ...rest] = prev;
+      const days = first.days ?? [];
+      const updatedDays = days.map((day, dIdx) =>
+        dIdx === dayIndex ? { ...day, activities } : day,
+      );
+
+      return [{ ...first, days: updatedDays }, ...rest];
+    });
+  };
+
+  const updateActivity = async (
     dayIndex: number,
     activityIndex: number,
     updates: { title: string; description: string },
   ) => {
-    setItineraryData((prev) => {
-      if (prev.length === 0) {
-        return prev;
-      }
+    const day = trip?.days?.[dayIndex];
+    const activity = day?.activities?.[activityIndex];
+    const activityId = typeof activity === "string" ? undefined : activity?.id;
 
-      const [first, ...rest] = prev;
-      const days = first.days ?? [];
-      const updatedDays = days.map((day, dIdx) => {
-        if (dIdx !== dayIndex) {
-          return day;
+    const previousActivities = applyActivityChange(dayIndex, (activities) =>
+      activities.map((current, aIdx) => {
+        if (aIdx !== activityIndex) {
+          return current;
         }
+        const base = typeof current === "string" ? { title: current } : current;
+        return {
+          ...base,
+          title: updates.title,
+          description: updates.description,
+        };
+      }),
+    );
 
-        const activities: Activity[] = day.activities.map((activity, aIdx) => {
-          if (aIdx !== activityIndex) {
-            return activity;
-          }
+    if (!activityId) {
+      // No backend id (e.g. fixture data) - nothing to persist.
+      return;
+    }
 
-          const base =
-            typeof activity === "string" ? { title: activity } : activity;
-          return {
-            ...base,
-            title: updates.title,
-            description: updates.description,
-          };
-        });
-
-        return { ...day, activities };
+    try {
+      await updateActivityRequest(Number(activityId), {
+        name: updates.title,
+        description: updates.description,
       });
-
-      return [{ ...first, days: updatedDays }, ...rest];
-    });
+      setActivityError("");
+    } catch (error) {
+      console.error("Error saving activity:", error);
+      if (previousActivities) {
+        restoreActivities(dayIndex, previousActivities);
+      }
+      setActivityError("We couldn't save that change. Please try again.");
+    }
   };
 
-  const deleteActivity = (dayIndex: number, activityIndex: number) => {
-    setItineraryData((prev) => {
-      if (prev.length === 0) {
-        return prev;
+  const deleteActivity = async (dayIndex: number, activityIndex: number) => {
+    const day = trip?.days?.[dayIndex];
+    const activity = day?.activities?.[activityIndex];
+    const activityId = typeof activity === "string" ? undefined : activity?.id;
+
+    const previousActivities = applyActivityChange(dayIndex, (activities) =>
+      activities.filter((_, aIdx) => aIdx !== activityIndex),
+    );
+
+    if (!activityId) {
+      return;
+    }
+
+    try {
+      await deleteActivityRequest(Number(activityId));
+      setActivityError("");
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      if (previousActivities) {
+        restoreActivities(dayIndex, previousActivities);
       }
-
-      const [first, ...rest] = prev;
-      const days = first.days ?? [];
-      const updatedDays = days.map((day, dIdx) => {
-        if (dIdx !== dayIndex) {
-          return day;
-        }
-
-        return {
-          ...day,
-          activities: day.activities.filter(
-            (_, aIdx) => aIdx !== activityIndex,
-          ),
-        };
-      });
-
-      return [{ ...first, days: updatedDays }, ...rest];
-    });
+      setActivityError("We couldn't delete that activity. Please try again.");
+    }
   };
 
   return {
+    activityError,
     addActivityToDay,
+    clearActivityError: () => setActivityError(""),
     clearRegenerateError: regenerate.clearError,
     deleteActivity,
     errorMessage,

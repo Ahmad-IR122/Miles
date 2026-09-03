@@ -47,6 +47,14 @@ export const addActivity = (
     activity,
   );
 
+export const updateActivity = (
+  activityId: number,
+  updates: { name?: string; description?: string },
+) => api.patch(`/activities/${activityId}`, updates);
+
+export const deleteActivity = (activityId: number) =>
+  api.delete<void>(`/activities/${activityId}`);
+
 export const updateInterests = (
   requestId: string,
   interests: string[],
