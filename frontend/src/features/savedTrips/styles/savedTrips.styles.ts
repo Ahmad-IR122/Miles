@@ -104,7 +104,6 @@ export const useSavedTripsStyles = makeStyles({
   },
 
   card: {
-    display: "flex",
     flexDirection: "column",
     textAlign: "left",
     ...shorthands.padding("0"),
@@ -115,6 +114,9 @@ export const useSavedTripsStyles = makeStyles({
       "solid",
       semanticColors.borderDefault,
     ),
+    textDecoration: "none",
+    color: "inherit",
+    display: "block", 
     ...shorthands.borderRadius(layout.radius.xl),
     overflow: "hidden",
     boxShadow: semanticColors.shadowLight,
