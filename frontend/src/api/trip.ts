@@ -19,9 +19,10 @@ export const createTrip = async (payload: TripCreatePayload) => {
 
 export const deleteTrip = async (payload: { tripId: number }) => {
   const response = await api.delete<void>(`/trips/${payload.tripId}`);
-
   return response;
 };
 
 export const getTripById = (tripId: number) =>
   api.get<Trip>(`/trips/${tripId}`);
+
+export const addTrip = (payload: TripCreatePayload) => createTrip(payload);

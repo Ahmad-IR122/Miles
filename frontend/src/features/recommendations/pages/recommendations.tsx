@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
+import { routesPaths } from "../../../routes/routesPaths";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters, {
   ANY_COUNTRY,
@@ -13,6 +14,7 @@ import type {
   BudgetFilterLabel,
   PriceLevel,
   RecommendationCategoryFilter,
+  RecommendationPlace,
 } from "../types/types";
 
 const categories = ["All", "Attractions", "Restaurants", "Activities"] as const;
@@ -50,6 +52,7 @@ const getResultSetKey = (
 const Recommendations = () => {
   const styles = useRecommendationsStyles();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] =
     useState<RecommendationCategoryFilter>("All");
   const [activeBudget, setActiveBudget] =
@@ -119,6 +122,12 @@ const Recommendations = () => {
     });
   };
 
+  const handleAddToTrip = (place: RecommendationPlace) => {
+    navigate(routesPaths.itinerary, {
+      state: { pendingActivity: place },
+    });
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.content}>
@@ -156,7 +165,11 @@ const Recommendations = () => {
         {!isLoading && !errorMessage && (
           <div className={styles.grid}>
             {visiblePlaces.map((place) => (
-              <RecommendationCard key={place.id} place={place} />
+              <RecommendationCard
+                key={place.id}
+                place={place}
+                onAddToTrip={handleAddToTrip}
+              />
             ))}
           </div>
         )}

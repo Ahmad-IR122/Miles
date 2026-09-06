@@ -383,6 +383,10 @@ export const useRecommendationsStyles = makeStyles({
     backgroundImage: gradients.primary,
     color: semanticColors.bgPrimary,
     border: "none",
+    ":disabled": {
+      cursor: "not-allowed",
+      opacity: 0.7,
+    },
   },
   secondaryButton: {
     backgroundColor: semanticColors.bgPrimary,
@@ -452,5 +456,23 @@ export const useRecommendationsStyles = makeStyles({
   emptySubtitle: {
     fontSize: typography.fontSize.size4,
     color: semanticColors.textTertiary,
+  },
+  inlineError: {
+    ...shorthands.border(layout.borderWidth.thin, "solid", colors.error),
+    ...shorthands.borderRadius(layout.radius.md),
+    ...shorthands.padding(layout.spacing[3], layout.spacing[4]),
+    backgroundColor: semanticColors.bgPrimary,
+    color: semanticColors.textError,
+    fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.medium,
+  },
+  inlineSuccess: {
+    ...shorthands.border(layout.borderWidth.thin, "solid", colors.success),
+    ...shorthands.borderRadius(layout.radius.md),
+    ...shorthands.padding(layout.spacing[3], layout.spacing[4]),
+    backgroundColor: semanticColors.bgPrimary,
+    color: colors.success,
+    fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.medium,
   },
 });

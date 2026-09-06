@@ -7,10 +7,8 @@ from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
-CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER")
 
@@ -27,11 +25,6 @@ def _get_blob_service_client() -> BlobServiceClient:
     DefaultAzureCredential can use Azure CLI credentials locally
     and Managed Identity when deployed to Azure App Service.
     """
-
-    if CONNECTION_STRING:
-        return BlobServiceClient.from_connection_string(
-            CONNECTION_STRING
-        )
 
     if ACCOUNT_URL:
         credential = DefaultAzureCredential()
@@ -55,9 +48,7 @@ def load_csv(blob_name: str) -> pd.DataFrame:
     """
 
     if not CONTAINER_NAME:
-        raise ValueError(
-            "AZURE_STORAGE_CONTAINER is not configured."
-        )
+        raise ValueError("AZURE_STORAGE_CONTAINER is not configured.")
 
     blob_client = _get_blob_service_client().get_blob_client(
         container=CONTAINER_NAME,
@@ -75,16 +66,10 @@ def load_recommendation_data():
     Load all datasets required by the recommendation system.
     """
 
-    destinations = load_csv(
-        "destinations/destinations.csv"
-    )
+    destinations = load_csv("destinations/destinations.csv")
 
-    activities = load_csv(
-        "activities/activities.csv"
-    )
+    activities = load_csv("activities/activities.csv")
 
-    restaurants = load_csv(
-        "restaurants/restaurants.csv"
-    )
+    restaurants = load_csv("restaurants/restaurants.csv")
 
     return destinations, activities, restaurants

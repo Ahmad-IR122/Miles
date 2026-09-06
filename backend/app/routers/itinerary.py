@@ -209,21 +209,21 @@ def get_itinerary_by_trip(trip_id: int, db: Session = Depends(get_db)):
     return itinerary
 
 
-@router.get("/upcoming", response_model=ItineraryDetailResponse)
+@router.get("/upcoming", response_model=ItineraryDetailResponse | None)
 def get_upcoming_itinerary(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    trip = (
-        db.query(Trip)
+    """Return the nearest upcoming itinerary, or null when none is available."""
+    return (
+        db.query(Itinerary)
+        .join(Trip, Trip.id == Itinerary.trip_id)
         .filter(Trip.user_id == current_user.id, Trip.start_date >= date.today())
-        .order_by(Trip.start_date.asc())
+        .order_by(
+            Trip.start_date.asc(),
+            Trip.id.asc(),
+            Itinerary.version.desc(),
+            Itinerary.id.desc(),
+        )
         .first()
     )
-    if not trip:
-        raise HTTPException(status_code=404, detail="No upcoming trips")
-
-    itinerary = db.query(Itinerary).filter(Itinerary.trip_id == trip.id).first()
-    if not itinerary:
-        raise HTTPException(status_code=404, detail="No itinerary found for this trip")
-    return itinerary
