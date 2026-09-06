@@ -1,6 +1,6 @@
 ---
 name: create-component
-description: Scaffold a new frontend React component the repo's way — folder/file layout, a Griffel use<Name>Styles hook built from common/theme/ tokens, copy routed through i18next's t(), and correct placement under common/, components/, or features/<x>/components/. Use whenever asked to create, add, or scaffold a frontend component.
+description: Scaffold a new frontend React component the repo's way — folder/file layout, a Griffel use<Name>Styles hook built from common/theme/ tokens, copy routed through i18next's t(), a shallow reusable interface, and correct placement under common/, components/, or features/<x>/components/. Use whenever asked to create, add, or scaffold a frontend component.
 ---
 
 # Create Component
@@ -8,6 +8,10 @@ description: Scaffold a new frontend React component the repo's way — folder/f
 Scaffolds a new component under `frontend/src/`, matching the conventions already
 used by `common/AppButton`, `common/footer`, `components/tripPlanningForm`, and the
 files under `features/*/components/`.
+
+See `anatomy.md` in this same folder for a fully labeled, worked example of every
+file/part this skill produces — this file says *when* and *where*, `anatomy.md`
+shows exactly *what* the result looks like.
 
 ## 1. Get the inputs
 
@@ -22,7 +26,22 @@ Before writing anything, know:
 If any of these is unclear or the guess is expensive to undo (e.g. which existing
 feature it belongs to), ask rather than assume.
 
-## 2. Decide placement
+## 2. Check whether it already exists
+
+Before scaffolding anything, look for a component that already serves the same
+purpose — in `common/`, `components/`, and the relevant `features/<x>/components/`.
+Search by what it does, not by the name you had in mind (e.g. a "confirmation
+banner" you want to build might already exist as `confirmDialog`).
+
+- **Fully covers the need** — use it directly. Don't create anything.
+- **Covers most of the need** — extend it: add an optional prop, a new variant, or
+  forward extra props through, the same way `common/AppButton` wraps MUI's
+  `Button` instead of rebuilding a button from scratch. Don't fork it into a
+  near-duplicate file.
+- **Nothing reasonably covers it, even after extension** — only then scaffold a
+  new component, continuing with step 3.
+
+## 3. Decide placement
 
 Pick exactly one:
 
@@ -44,7 +63,7 @@ files with no own folder, and they share one styles module,
 styles file inside a `features/` folder — extend the shared one instead (or
 create it, named after the feature, if this is that feature's first component).
 
-## 3. Write the styles
+## 4. Write the styles
 
 **`common/` or `components/` scope** — create
 `<componentName>/<componentName>.styles.ts`:
@@ -75,7 +94,7 @@ raw `border` property, matching `appButton.styles.ts`.
 new file/hook. Only scaffold a new `features/<x>/styles/<x>.styles.ts` (same
 token-based shape as above) if the feature has no styles file yet.
 
-## 4. Write the component
+## 5. Write the component
 
 ```tsx
 import { useTranslation } from "react-i18next";
@@ -103,7 +122,17 @@ export default <PascalName>;
 Rules, from the existing components:
 
 - Default export, PascalCase identifier, camelCase file name.
-- Every user-facing string goes through `t("namespace.key")` — see step 5 for the
+- **Keep the props interface shallow.** Expose the fewest, most generic props
+  that cover every real caller — not one prop per caller's special case. A
+  component should have a simple interface that hides real work behind it,
+  rather than a sprawling interface that pushes complexity onto whoever uses
+  it (this is the same "deep module" idea from software design generally —
+  simple to call, meaningful work done inside; background reading:
+  https://medium.com/@mrtkrkrt/understanding-shallow-and-deep-modules-in-software-architecture-fa7515eec7bf).
+  If you're adding a prop just to special-case one screen, stop and re-check
+  step 2 — either something like this already exists, or the component should
+  be split differently.
+- Every user-facing string goes through `t("namespace.key")` — see step 6 for the
   key namespace. This includes labels, aria-labels, alt text, tooltips, and
   placeholders. Non-text values (route paths, test ids) are not translated.
   If wrapping an existing base component (like `AppButton` wraps MUI's
@@ -112,7 +141,10 @@ Rules, from the existing components:
 - Use `mergeClasses` when combining a base style class with a conditional
   variant class; don't concatenate class name strings by hand.
 
-## 5. Add the copy to `locales/en.ts`
+See `anatomy.md` for a fully worked, annotated example of this file and its
+styles file side by side.
+
+## 6. Add the copy to `locales/en.ts`
 
 - **`common/` or `components/` scope**: add a new top-level key named after the
   component (camelCase), e.g. `tripCard: { ... }`, alongside `topNav`,
@@ -124,12 +156,14 @@ Rules, from the existing components:
 Use `{{placeholder}}` interpolation for dynamic values (see `itinerary.dayLabel:
 "Day {{number}}"` for the pattern), not string concatenation in the component.
 
-## 6. Verify before handing it back
+## 7. Verify before handing it back
 
 - `npm --prefix frontend run lint` and `npm --prefix frontend exec tsc -b --noEmit`
   (or the closest equivalent) come back clean.
 - No raw hex colors, raw px font sizes, or hardcoded English strings were
   introduced — everything traces back to `theme/colors.ts`, `theme/typography.ts`,
   or `locales/en.ts`.
-- The new files sit in exactly one of the three scopes from step 2 — never a
+- The new files sit in exactly one of the three scopes from step 3 — never a
   per-component styles file inside `features/`.
+- Nothing here duplicates a component that already existed (step 2) — if it
+  turns out one did, extend/reuse it instead and delete the new one.
