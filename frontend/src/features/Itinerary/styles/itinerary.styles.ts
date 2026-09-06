@@ -467,6 +467,37 @@ export const useItineraryStyles = makeStyles({
     marginTop: layout.spacing[1.5],
     marginBottom: layout.spacing[8],
   },
+  unsavedOrderBar: {
+    // Plain in-flow block, right under the day-actions buttons (add/
+    // regenerate/reset) and above the timeline - no sticky/fixed
+    // positioning, it just stays put where it renders.
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: layout.gap.md,
+    flexWrap: "wrap",
+    backgroundColor: colors.warningTint,
+    ...shorthands.border(layout.borderWidth.thin, "solid", colors.warning),
+    ...shorthands.borderRadius(layout.radius.lg),
+    ...shorthands.padding(layout.spacing[3], layout.spacing[4]),
+    marginBottom: layout.spacing[4],
+    // Lines up with the timeline's own left padding (its marker rail), so
+    // the bar starts where the cards start instead of over the markers.
+    marginLeft: "58px",
+    "@media (max-width: 560px)": {
+      marginLeft: "42px",
+    },
+  },
+  unsavedOrderText: {
+    fontSize: typography.fontSize.size3,
+    fontWeight: typography.fontWeight.medium,
+    color: semanticColors.textPrimary,
+  },
+  unsavedOrderActions: {
+    display: "flex",
+    gap: layout.gap.xs,
+    flexWrap: "wrap",
+  },
   dayTabs: {
     display: "flex",
     alignItems: "flex-end",
@@ -1045,6 +1076,17 @@ export const useItineraryStyles = makeStyles({
     ":hover": {
       backgroundColor: semanticColors.bgInteractiveSubtle,
     },
+  },
+  dragHandle: {
+    cursor: "grab",
+    touchAction: "none",
+    ":active": {
+      cursor: "grabbing",
+    },
+  },
+  dragHandleIcon: {
+    color: semanticColors.textTertiary,
+    fontSize: typography.fontSize.size7,
   },
   editIcon: { color: warm.coralBright, fontSize: typography.fontSize.size7 },
   deleteIcon: {

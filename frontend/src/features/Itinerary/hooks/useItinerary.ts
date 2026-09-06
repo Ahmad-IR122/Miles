@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { isAxiosError } from "axios";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
   addActivity,
   deleteActivity as deleteActivityRequest,
@@ -16,6 +17,7 @@ import { useRegenerate } from "../../../hooks/useRegenerate";
 import type { GeneratedItinerary } from "../../../types/itinerary";
 import type { Trip as ApiTrip } from "../../../types/trip";
 import type { Activity, Trip } from "../types/itinerary.types";
+import { repackActivities } from "../utils/repackActivities";
 
 const formatActivityTime = (value: string) => {
   const [hours, minutes] = value.split(":").map(Number);
@@ -48,6 +50,17 @@ const sortActivitiesByTime = (activities: Activity[]) =>
     if (rightTime === undefined) return -1;
     return leftTime - rightTime;
   });
+
+// Reverses formatActivityTime/activityTimeToMinutes: the backend wants
+// "HH:MM:SS" 24h time, while activities are held in local state as
+// display-formatted "h:mm AM/PM" strings.
+const minutesToApiTime = (minutes?: number) => {
+  if (minutes === undefined) return undefined;
+  const wrapped = ((minutes % 1440) + 1440) % 1440;
+  const hours = Math.floor(wrapped / 60);
+  const mins = wrapped % 60;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:00`;
+};
 import {
   adaptGeneratedDays,
   adaptGeneratedItinerary,
@@ -72,6 +85,16 @@ export const useItinerary = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(!hasGenerated);
   const [activityError, setActivityError] = useState("");
+  // Reordering a day's activities is a local, deferred edit - nothing is
+  // sent to the backend until saveDayOrder() is called. `dirtyDay` snapshots
+  // that day's activities as they were before the first drag, so
+  // discardDayOrder() can revert cleanly.
+  const [dirtyDay, setDirtyDay] = useState<{
+    dayIndex: number;
+    original: Activity[];
+  } | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
   useEffect(() => {
     if (hasGenerated) {
@@ -336,21 +359,99 @@ export const useItinerary = () => {
     }
   };
 
+  // Reorders one day's activities locally and re-times each one against the
+  // start time its new slot held before this drag, cascading a shift onto
+  // later activities only where it's actually needed (see
+  // repackActivities). Nothing is persisted yet; that only happens when
+  // saveDayOrder() is called.
+  const reorderDayActivities = (
+    dayIndex: number,
+    fromIndex: number,
+    toIndex: number,
+  ) => {
+    if (fromIndex === toIndex) return;
+
+    if (!dirtyDay || dirtyDay.dayIndex !== dayIndex) {
+      const day = trip?.days?.[dayIndex];
+      if (day) {
+        setDirtyDay({ dayIndex, original: day.activities });
+      }
+    }
+
+    applyActivityChange(dayIndex, (activities) =>
+      repackActivities(activities, arrayMove(activities, fromIndex, toIndex)),
+    );
+    setOrderError("");
+  };
+
+  // Persists every activity's recalculated time (and order) for the dirty
+  // day. Runs as one batch of requests rather than an endpoint per drag, so
+  // the backend only ever sees the final, deliberate result of an editing
+  // session - not every intermediate position while dragging.
+  const saveDayOrder = async (): Promise<boolean> => {
+    if (!dirtyDay) return true;
+    const day = trip?.days?.[dirtyDay.dayIndex];
+    if (!day) {
+      setDirtyDay(null);
+      return true;
+    }
+
+    setSavingOrder(true);
+    setOrderError("");
+
+    try {
+      await Promise.all(
+        day.activities.map((activity, index) => {
+          if (typeof activity === "string" || !activity.id) {
+            return Promise.resolve();
+          }
+          return updateActivityRequest(Number(activity.id), {
+            start_time: minutesToApiTime(activityTimeToMinutes(activity.time)),
+            end_time: minutesToApiTime(activityTimeToMinutes(activity.endTime)),
+            activity_order: index + 1,
+          });
+        }),
+      );
+      setDirtyDay(null);
+      return true;
+    } catch (error) {
+      console.error("Error saving activity order:", error);
+      setOrderError("We couldn't save the new schedule. Please try again.");
+      return false;
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  const discardDayOrder = () => {
+    if (!dirtyDay) return;
+    restoreActivities(dirtyDay.dayIndex, dirtyDay.original);
+    setDirtyDay(null);
+    setOrderError("");
+  };
+
   return {
     activityError,
     addActivityToDay,
     clearActivityError: () => setActivityError(""),
+    clearOrderError: () => setOrderError(""),
     clearRegenerateError: regenerate.clearError,
     deleteActivity,
+    discardDayOrder,
+    dirtyDayIndex: dirtyDay?.dayIndex ?? null,
     errorMessage,
     isRegenerating: regenerate.isRegenerating,
     itineraries,
     loading,
+    orderError,
     regenerateBusy: regenerate.isBusy,
     regenerateError: regenerate.error,
     regenerateSingleActivity,
     regenerateSingleDay,
     regenerateWholeTrip,
+    reorderDayActivities,
+    saveDayOrder,
+    savingOrder,
     updateActivity,
   };
 };

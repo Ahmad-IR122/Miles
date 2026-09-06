@@ -9,10 +9,15 @@ import {
   Typography,
 } from "@mui/material";
 import { mergeClasses } from "@griffel/react";
+import type {
+  DraggableAttributes,
+  DraggableSyntheticListeners,
+} from "@dnd-kit/core";
 
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import EditIcon from "@mui/icons-material/Edit";
 import PaidIcon from "@mui/icons-material/Paid";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -28,6 +33,13 @@ type ActivityCardProps = {
   dayIndex: number;
   dayNumber: number;
   destination?: string;
+  // Passed as three separate values rather than one bundled object - eslint's
+  // react-hooks/refs rule treats any object holding a ref-setter function as
+  // ref-like and flags every property read off it, even unrelated ones like
+  // `attributes`/`listeners` alongside it.
+  dragHandleAttributes?: DraggableAttributes;
+  dragHandleListeners?: DraggableSyntheticListeners;
+  setDragHandleRef?: (element: HTMLElement | null) => void;
   isRegenerating?: boolean;
   isLoading?: boolean;
   loadingLabel?: string;
@@ -144,6 +156,9 @@ export const ActivityCard = ({
   dayIndex,
   dayNumber,
   destination,
+  dragHandleAttributes,
+  dragHandleListeners,
+  setDragHandleRef,
   isRegenerating = false,
   isLoading = false,
   loadingLabel,
@@ -315,6 +330,20 @@ export const ActivityCard = ({
 
       <Box className={classes.cardActions}>
         <>
+          {setDragHandleRef && (
+            <Tooltip title="Drag to reorder">
+              <IconButton
+                aria-label={`Reorder ${normalized.title}`}
+                className={mergeClasses(classes.iconButton, classes.dragHandle)}
+                ref={setDragHandleRef}
+                size="small"
+                {...dragHandleAttributes}
+                {...dragHandleListeners}
+              >
+                <DragIndicatorIcon className={classes.dragHandleIcon} />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title={isRegenerating ? "Regenerating…" : "Edit manually"}>
             <IconButton
               aria-disabled={isRegenerating}

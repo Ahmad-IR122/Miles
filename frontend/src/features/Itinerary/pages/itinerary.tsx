@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useBlocker } from "react-router-dom";
 
 import { mergeClasses } from "@griffel/react";
 import {
@@ -83,17 +84,24 @@ const Itinerary = () => {
     activityError,
     addActivityToDay,
     clearActivityError,
+    clearOrderError,
     clearRegenerateError,
     deleteActivity,
+    dirtyDayIndex,
+    discardDayOrder,
     errorMessage,
     isRegenerating,
     itineraries,
     loading,
+    orderError,
     regenerateBusy,
     regenerateError,
     regenerateSingleActivity,
     regenerateSingleDay,
     regenerateWholeTrip,
+    reorderDayActivities,
+    saveDayOrder,
+    savingOrder,
     updateActivity,
   } = useItinerary();
   const [selectedDay, setSelectedDay] = useState(0);
@@ -127,6 +135,42 @@ const Itinerary = () => {
   // Regeneration is driven by ids that only come from the backend, so the
   // controls stay disabled when the page is showing fixture data.
   const canRegenerate = !!trip?.id;
+  const isSelectedDayDirty = dirtyDayIndex === selectedDay;
+
+  // Reordering only ever touches one day at a time - while a different day
+  // has unsaved changes, dragging on this one is blocked rather than
+  // juggling two in-flight drafts.
+  const reorderDisabledForSelectedDay =
+    regenerateBusy ||
+    savingOrder ||
+    (dirtyDayIndex !== null && dirtyDayIndex !== selectedDay);
+
+  // Warn before an in-app navigation (clicking to another page) discards an
+  // unsaved reorder.
+  const orderBlocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirtyDayIndex !== null &&
+      currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  // Warn before a full page unload (reload/close tab) does the same - the
+  // browser shows its own generic prompt here, the message text is ignored.
+  useEffect(() => {
+    if (dirtyDayIndex === null) return undefined;
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirtyDayIndex]);
+
+  const confirmSaveAndLeave = async () => {
+    const saved = await saveDayOrder();
+    if (saved) {
+      orderBlocker.proceed?.();
+    }
+  };
 
   const isActivityRegenerating = (activityIndex: number) => {
     const activity = activeDay?.activities?.[activityIndex];
@@ -401,24 +445,64 @@ const Itinerary = () => {
               <>
                 {activeDay ? (
                   activeDay.activities.length > 0 ? (
-                    <Timeline
-                      busy={timelineBusy && !addingActivity}
-                      busyLabel={timelineBusyLabel}
-                      day={activeDay}
-                      dayIndex={selectedDay}
-                      destination={trip.destination}
-                      isActivityRegenerating={isActivityRegenerating}
-                      showLoadingSkeletons={!addingActivity}
-                      pendingActivityTime={
-                        addingActivity ? pendingActivityTime : undefined
-                      }
-                      onDeleteActivity={deleteActivity}
-                      onEditActivity={openEditDialog}
-                      onRegenerateActivity={
-                        canRegenerate ? regenerateSingleActivity : undefined
-                      }
-                      regenerateDisabled={regenerateBusy}
-                    />
+                    <>
+                      {isSelectedDayDirty && (
+                        <Box className={classes.unsavedOrderBar}>
+                          <span className={classes.unsavedOrderText}>
+                            You reordered this day but haven&apos;t saved it
+                            yet.
+                          </span>
+                          <Box className={classes.unsavedOrderActions}>
+                            <Button
+                              disabled={savingOrder}
+                              onClick={discardDayOrder}
+                              sx={{
+                                color: semanticColors.textSecondary,
+                                textTransform: "none",
+                              }}
+                            >
+                              Discard
+                            </Button>
+                            <Button
+                              disabled={savingOrder}
+                              onClick={saveDayOrder}
+                              sx={{
+                                borderRadius: "999px",
+                                color: semanticColors.textOnAccent,
+                                px: 2.5,
+                                textTransform: "none",
+                              }}
+                              variant="contained"
+                            >
+                              {savingOrder ? "Saving…" : "Save changes"}
+                            </Button>
+                          </Box>
+                        </Box>
+                      )}
+
+                      <Timeline
+                        busy={timelineBusy && !addingActivity}
+                        busyLabel={timelineBusyLabel}
+                        day={activeDay}
+                        dayIndex={selectedDay}
+                        destination={trip.destination}
+                        isActivityRegenerating={isActivityRegenerating}
+                        showLoadingSkeletons={!addingActivity}
+                        pendingActivityTime={
+                          addingActivity ? pendingActivityTime : undefined
+                        }
+                        onDeleteActivity={deleteActivity}
+                        onEditActivity={openEditDialog}
+                        onRegenerateActivity={
+                          canRegenerate ? regenerateSingleActivity : undefined
+                        }
+                        onReorderActivity={
+                          canRegenerate ? reorderDayActivities : undefined
+                        }
+                        reorderDisabled={reorderDisabledForSelectedDay}
+                        regenerateDisabled={regenerateBusy}
+                      />
+                    </>
                   ) : (
                     <Box sx={{ py: 8, textAlign: "center" }}>
                       <Box sx={{ color: "text.secondary", mb: 2 }}>
@@ -673,14 +757,29 @@ const Itinerary = () => {
         </DialogActions>
       </Dialog>
 
+      <ConfirmDialog
+        cancelLabel="Keep editing"
+        confirmLabel="Save and leave"
+        confirmingLabel="Saving…"
+        description="You reordered this day's activities but haven't saved yet. Save now, or the changes will be lost."
+        isConfirming={savingOrder}
+        onCancel={() => orderBlocker.reset?.()}
+        onConfirm={confirmSaveAndLeave}
+        open={orderBlocker.state === "blocked"}
+        title="Save your schedule changes?"
+      />
+
       <Snackbar
         autoHideDuration={6000}
-        message={regenerateError || activityError}
+        message={regenerateError || activityError || orderError}
         onClose={() => {
           clearRegenerateError();
           clearActivityError();
+          clearOrderError();
         }}
-        open={regenerateError !== "" || activityError !== ""}
+        open={
+          regenerateError !== "" || activityError !== "" || orderError !== ""
+        }
       />
     </Box>
   );

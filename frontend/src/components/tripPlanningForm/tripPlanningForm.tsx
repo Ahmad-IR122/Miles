@@ -790,10 +790,6 @@ const TripPlanningForm = () => {
                     />
                   </div>
 
-                  <Typography component="p" className={styles.destinationHint}>
-                    {t("tripPlanningForm.tripDetails.citiesHint")}
-                  </Typography>
-
                   {fieldErrors.destinations && (
                     <Typography
                       component="p"
