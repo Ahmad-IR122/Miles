@@ -52,13 +52,13 @@ export const useSavedTripsStyles = makeStyles({
     maxWidth: "1240px",
     marginLeft: "auto",
     marginRight: "auto",
-    padding: `${layout.padding.lg} ${layout.padding.xl} ${layout.padding["2xl"]}`,
+    padding: `${layout.padding.lg} ${layout.padding.xl} ${layout.padding.lg}`,
     display: "flex",
     flexDirection: "column",
     rowGap: layout.gap.lg,
 
     "@media (max-width: 720px)": {
-      padding: `${layout.padding.md} ${layout.padding.md} ${layout.padding.xl}`,
+      padding: `${layout.padding.md}`,
     },
   },
 

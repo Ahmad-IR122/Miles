@@ -46,6 +46,7 @@ const AppLayout = () => {
   const showNav = routesWithNav.has(location.pathname) || isItineraryDetail;
   const showFooter =
     routesWithFooter.has(location.pathname) || isItineraryDetail;
+  const compactFooterTop = location.pathname === routesPaths.savedTrips;
   const homeLink =
     routesWithBackNav.has(location.pathname) || isItineraryDetail;
   const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
@@ -60,7 +61,7 @@ const AppLayout = () => {
         )}
       >
         <Outlet />
-        {showFooter ? <Footer /> : null}
+        {showFooter ? <Footer compactTop={compactFooterTop} /> : null}
       </div>
       {showNav ? <ChatWidget /> : null}
     </div>

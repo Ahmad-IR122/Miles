@@ -1,14 +1,21 @@
+import { mergeClasses } from "@griffel/react";
 import { Link } from "react-router-dom";
 
 import logo from "../../assets/newLogo.png";
 import { routesPaths } from "../../routes/routesPaths";
 import { useFooterStyles } from "./footer.styles";
 
-const Footer = () => {
+type FooterProps = {
+  compactTop?: boolean;
+};
+
+const Footer = ({ compactTop = false }: FooterProps) => {
   const styles = useFooterStyles();
 
   return (
-    <footer className={styles.footer}>
+    <footer
+      className={mergeClasses(styles.footer, compactTop && styles.compactTop)}
+    >
       <div className={styles.shell}>
         <div className={styles.decorHotAirBalloon} aria-hidden="true" />
         <div className={styles.decorTraveler} aria-hidden="true" />
