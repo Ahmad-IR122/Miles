@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useBlocker } from "react-router-dom";
 
 import { mergeClasses } from "@griffel/react";
 import {
@@ -22,6 +21,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import { interestOptions } from "../../../constants/interests";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { semanticColors, warmShadows } from "../../../common/theme/colors";
@@ -34,6 +34,7 @@ import { useItinerary } from "../hooks/useItinerary";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange } from "../utils/dateUtils";
 import { getFieldSx } from "../../../components/tripPlanningForm/tripPlanningForm.styles";
+import type { RecommendationPlace } from "../../recommendations/types/types";
 
 const emptyNewActivity = {
   title: "",
@@ -45,6 +46,9 @@ const emptyNewActivity = {
   endTime: "14:00",
 };
 type ActivityDialogValues = typeof emptyNewActivity;
+type PendingActivityState = {
+  pendingActivity?: RecommendationPlace;
+} | null;
 
 const timeToMinutes = (value?: string) => {
   if (!value) return undefined;
@@ -73,6 +77,11 @@ const formatTimeLabel = (value: string) => {
   return `${hour}:${String(minutes).padStart(2, "0")} ${hours >= 12 ? "PM" : "AM"}`;
 };
 
+const getDiscoverActivityCost = (price: string) => {
+  const match = price.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : undefined;
+};
+
 const timeOptions = Array.from({ length: 47 }, (_, index) => {
   const minutes = index * 30;
   return formatApiTime(minutes).slice(0, 5);
@@ -80,6 +89,10 @@ const timeOptions = Array.from({ length: 47 }, (_, index) => {
 
 const Itinerary = () => {
   const classes = useItineraryStyles();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const locationState = (location.state ?? null) as PendingActivityState;
+  const initialPendingActivity = locationState?.pendingActivity ?? null;
   const {
     activityError,
     addActivityToDay,
@@ -114,6 +127,11 @@ const Itinerary = () => {
   const [newActivity, setNewActivity] = useState(emptyNewActivity);
   const [pendingActivityTime, setPendingActivityTime] = useState<string>();
   const [addActivityError, setAddActivityError] = useState("");
+  const [pendingDiscoverActivity, setPendingDiscoverActivity] =
+    useState<RecommendationPlace | null>(initialPendingActivity);
+  const [daySelectOpen, setDaySelectOpen] = useState(!!initialPendingActivity);
+  const [discoverActivityMessage, setDiscoverActivityMessage] = useState("");
+  const [discoverActivityError, setDiscoverActivityError] = useState("");
   const trip = itineraries[0];
   const days = useMemo(() => trip?.days ?? [], [trip?.days]);
   const activeDay = days[selectedDay] ?? days[0];
@@ -171,6 +189,14 @@ const Itinerary = () => {
       orderBlocker.proceed?.();
     }
   };
+
+  useEffect(() => {
+    if (!locationState?.pendingActivity) {
+      return;
+    }
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, locationState?.pendingActivity, navigate]);
 
   const isActivityRegenerating = (activityIndex: number) => {
     const activity = activeDay?.activities?.[activityIndex];
@@ -290,7 +316,7 @@ const Itinerary = () => {
     regenerateWholeTrip();
   };
 
-  const submitNewActivity = () => {
+  const submitNewActivity = async () => {
     const startMinutes = timeToMinutes(newActivity.startTime);
     const endMinutes = timeToMinutes(newActivity.endTime);
     const price = Number(newActivity.price);
@@ -341,12 +367,61 @@ const Itinerary = () => {
       });
     } else {
       setPendingActivityTime(formatTimeLabel(newActivity.startTime));
-      addActivityToDay(selectedDay, { name: title, ...activityPayload });
+      await addActivityToDay(selectedDay, { name: title, ...activityPayload });
     }
     setAddDialogOpen(false);
     setEditingActivity(null);
     setNewActivity(emptyNewActivity);
     setAddActivityError("");
+  };
+
+  const closeDaySelectDialog = () => {
+    if (regenerateBusy) {
+      return;
+    }
+
+    setDaySelectOpen(false);
+    setPendingDiscoverActivity(null);
+  };
+
+  const addDiscoverActivityToDay = async (dayIndex: number) => {
+    if (!pendingDiscoverActivity || !days[dayIndex]) {
+      setDiscoverActivityError("Choose a valid day.");
+      return;
+    }
+
+    setSelectedDay(dayIndex);
+    setPendingActivityTime(undefined);
+    setDiscoverActivityError("");
+    setDiscoverActivityMessage("");
+
+    const result = await addActivityToDay(dayIndex, {
+      name: pendingDiscoverActivity.title,
+      description: pendingDiscoverActivity.desc,
+      location_name: pendingDiscoverActivity.location,
+      estimated_cost: getDiscoverActivityCost(pendingDiscoverActivity.price),
+      category: pendingDiscoverActivity.category,
+    });
+
+    if (result === "added") {
+      setDaySelectOpen(false);
+      setPendingDiscoverActivity(null);
+      setDiscoverActivityMessage(
+        `${pendingDiscoverActivity.title} was added to Day ${days[dayIndex].day}.`,
+      );
+      return;
+    }
+
+    if (result === "duplicate") {
+      setDiscoverActivityError(
+        "This activity is already added to the selected day.",
+      );
+      return;
+    }
+
+    setDiscoverActivityError(
+      "We couldn't add that activity. Please try again.",
+    );
   };
 
   if (loading) {
@@ -537,6 +612,80 @@ const Itinerary = () => {
         onConfirm={acceptRegeneratePlan}
         onCancel={() => setConfirmRegeneratePlan(false)}
       />
+
+      <ConfirmDialog
+        open={discoverActivityMessage !== ""}
+        variant="success"
+        title="Activity added successfully"
+        description={discoverActivityMessage}
+        confirmLabel="Done"
+        onConfirm={() => setDiscoverActivityMessage("")}
+        onCancel={() => setDiscoverActivityMessage("")}
+      />
+
+      <Dialog
+        fullWidth
+        maxWidth="xs"
+        onClose={closeDaySelectDialog}
+        open={daySelectOpen && pendingDiscoverActivity !== null && !!trip}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: semanticColors.bgPrimary,
+              border: `1px solid ${semanticColors.borderLight}`,
+              borderRadius: "24px",
+              boxShadow: warmShadows.lg,
+              overflow: "hidden",
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            color: semanticColors.textPrimary,
+            fontWeight: 800,
+            pb: 1,
+            pt: 3,
+          }}
+        >
+          Add activity to day
+        </DialogTitle>
+        <DialogContent
+          dividers
+          sx={{
+            borderColor: semanticColors.borderLight,
+            p: { sm: 3, xs: 2.5 },
+          }}
+        >
+          <Stack spacing={1.5}>
+            {days.map((day, dayIndex) => (
+              <Button
+                disabled={regenerateBusy}
+                key={day.id ?? day.day}
+                onClick={() => addDiscoverActivityToDay(dayIndex)}
+                sx={{ justifyContent: "flex-start", textTransform: "none" }}
+                variant={selectedDay === dayIndex ? "contained" : "outlined"}
+              >
+                Day {day.day}
+              </Button>
+            ))}
+          </Stack>
+          {discoverActivityError && (
+            <Box role="alert" sx={{ color: semanticColors.textError, mt: 2 }}>
+              {discoverActivityError}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ gap: 1, p: 2.5 }}>
+          <Button
+            disabled={regenerateBusy}
+            onClick={closeDaySelectDialog}
+            sx={{ color: semanticColors.textSecondary, textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         fullWidth

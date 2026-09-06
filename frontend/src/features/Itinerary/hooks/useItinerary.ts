@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -17,6 +17,10 @@ import { useRegenerate } from "../../../hooks/useRegenerate";
 import type { GeneratedItinerary } from "../../../types/itinerary";
 import type { Trip as ApiTrip } from "../../../types/trip";
 import type { Activity, Trip } from "../types/itinerary.types";
+import {
+  adaptGeneratedDays,
+  adaptGeneratedItinerary,
+} from "../utils/adaptItinerary";
 import { repackActivities } from "../utils/repackActivities";
 
 const formatActivityTime = (value: string) => {
@@ -61,15 +65,27 @@ const minutesToApiTime = (minutes?: number) => {
   const mins = wrapped % 60;
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:00`;
 };
-import {
-  adaptGeneratedDays,
-  adaptGeneratedItinerary,
-} from "../utils/adaptItinerary";
 
 const itineraryLoadError =
   "We couldn't load your itinerary. Please try again in a moment.";
 
 type LocationState = { trip?: ApiTrip; itinerary?: GeneratedItinerary } | null;
+
+const loadItinerary = async (tripId?: string): Promise<Trip[]> => {
+  // The route parameter is a trip id; the top-nav page has no parameter.
+  const response = tripId
+    ? await getItineraryByTripId(Number(tripId))
+    : await getUpcomingItinerary();
+  const generated = response.data;
+  if (generated === null) return [];
+
+  // Fetch the trip details needed by the itinerary adapter once as well.
+  const tripResponse = await getTripById(generated.trip_id);
+  return [adaptGeneratedItinerary(tripResponse.data, generated)];
+};
+
+export type AddActivityResult =
+  "added" | "duplicate" | "missing-day" | "failed";
 
 export const useItinerary = () => {
   const location = useLocation();
@@ -95,35 +111,35 @@ export const useItinerary = () => {
   } | null>(null);
   const [savingOrder, setSavingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");
+  const pendingLoad = useRef<{
+    tripId: string | undefined;
+    promise: Promise<Trip[]>;
+  } | null>(null);
 
   useEffect(() => {
     if (hasGenerated) {
       return;
     }
 
+    let cancelled = false;
+    // Strict Mode replays the effect. Both runs subscribe to the same load.
+    if (!pendingLoad.current || pendingLoad.current.tripId !== itineraryId) {
+      pendingLoad.current = {
+        tripId: itineraryId,
+        promise: loadItinerary(itineraryId),
+      };
+    }
+    const request = pendingLoad.current;
+
     const fetchItinerary = async () => {
       setLoading(true);
       try {
-        // itineraryId here is actually a trip id (see api/itinerary.ts +
-        // backend /itinerary/by-trip/{trip_id} route). When there's no
-        // param at all (top-nav "Itinerary" page), fall back to whichever
-        // trip is soonest via /itinerary/upcoming.
-        const response = itineraryId
-          ? await getItineraryByTripId(Number(itineraryId))
-          : await getUpcomingItinerary();
-
-        const generated: GeneratedItinerary = response.data;
-
-        // GeneratedItinerary only carries trip_id, not the full trip
-        // (destination, dates, travelers, budget, etc) — fetch the trip
-        // separately and reuse the same adapter the generate flow uses,
-        // so both paths build an identical Trip shape.
-        const tripResponse = await getTripById(generated.trip_id);
-        const tripData: ApiTrip = tripResponse.data;
-
-        setItineraryData([adaptGeneratedItinerary(tripData, generated)]);
+        const loaded = await request.promise;
+        if (cancelled) return;
+        setItineraryData(loaded);
         setErrorMessage("");
       } catch (error) {
+        if (cancelled) return;
         // A 404 here means the user simply has no trip/itinerary yet -
         // that's a normal empty state, not an error. Leave errorMessage
         // unset so the page falls back to the "create a trip" message
@@ -136,13 +152,18 @@ export const useItinerary = () => {
           setErrorMessage(itineraryLoadError);
         }
       } finally {
-        setLoading(false);
+        if (pendingLoad.current === request) {
+          pendingLoad.current = null;
+        }
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchItinerary();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itineraryId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [hasGenerated, itineraryId]);
 
   const regenerate = useRegenerate((updated) => {
     setItineraryData((prev) => {
@@ -201,7 +222,7 @@ export const useItinerary = () => {
     );
   };
 
-  const addActivityToDay = (
+  const addActivityToDay = async (
     dayIndex: number,
     activity: {
       name: string;
@@ -209,18 +230,38 @@ export const useItinerary = () => {
       location_name: string;
       estimated_cost?: number;
       category: string;
-      start_time: string;
-      end_time: string;
+      start_time?: string;
+      end_time?: string;
     },
-  ) => {
+  ): Promise<AddActivityResult> => {
     const day = trip?.days?.[dayIndex];
     if (!trip?.id || !day) {
-      return;
+      return "missing-day";
     }
+
+    const normalizedName = activity.name.trim().toLowerCase();
+    const normalizedLocation = activity.location_name.trim().toLowerCase();
+    const alreadyAdded = day.activities.some((current) => {
+      if (typeof current === "string") {
+        return current.trim().toLowerCase() === normalizedName;
+      }
+
+      return (
+        current.title.trim().toLowerCase() === normalizedName &&
+        (current.location ?? "").trim().toLowerCase() === normalizedLocation
+      );
+    });
+
+    if (alreadyAdded) {
+      return "duplicate";
+    }
+
     const tripId = trip.id;
-    regenerate.run({ scope: "add", id: day.id ?? String(day.day) }, () =>
-      addActivity(Number(tripId), day.day, activity),
+    const added = await regenerate.run(
+      { scope: "add", id: day.id ?? String(day.day) },
+      () => addActivity(Number(tripId), day.day, activity),
     );
+    return added ? "added" : "failed";
   };
 
   // Applies an activity-level change (edit or delete) to local state and

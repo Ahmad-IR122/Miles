@@ -16,18 +16,20 @@ export const useRegenerate = (
     next: NonNullable<Target>,
     call: () => Promise<AxiosResponse<GeneratedItinerary>>,
   ) => {
-    if (target) return;
+    if (target) return false;
     setTarget(next);
     setError("");
     try {
       const response = await call();
       onSuccess(response.data);
+      return true;
     } catch {
       setError(
         next.scope === "add"
           ? "Couldn't add the activity. Please try again."
           : "Couldn't regenerate. Please try again.",
       );
+      return false;
     } finally {
       setTarget(null);
     }

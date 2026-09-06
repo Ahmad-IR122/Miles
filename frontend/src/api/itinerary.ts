@@ -9,7 +9,7 @@ export const getItineraries = () =>
   api.get<{ data: Itinerary[] }>("/itinerary");
 
 export const getUpcomingItinerary = () =>
-  api.get<GeneratedItinerary>("/itinerary/upcoming");
+  api.get<GeneratedItinerary | null>("/itinerary/upcoming");
 
 export const getItineraryByTripId = (tripId: number) =>
   api.get<GeneratedItinerary>(`/itinerary/by-trip/${tripId}`);
