@@ -1,6 +1,14 @@
 import logging
 
 import pandas as pd
+from azure.core.exceptions import (
+    ClientAuthenticationError,
+    HttpResponseError,
+    ResourceNotFoundError,
+    ServiceRequestError,
+)
+from fastapi import APIRouter, HTTPException, Query, status
+
 from app.models.recommendation import (
     DEFAULT_RECOMMENDATION_LIMIT,
     MAX_RECOMMENDATION_LIMIT,
@@ -16,13 +24,6 @@ from app.services.recommendation_service import (
     recommend_destinations,
     recommend_restaurants,
 )
-from azure.core.exceptions import (
-    ClientAuthenticationError,
-    HttpResponseError,
-    ResourceNotFoundError,
-    ServiceRequestError,
-)
-from fastapi import APIRouter, HTTPException, Query, status
 
 logger = logging.getLogger(__name__)
 
