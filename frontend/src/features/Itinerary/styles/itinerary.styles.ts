@@ -832,6 +832,16 @@ export const useItineraryStyles = makeStyles({
       ...shorthands.padding("18px"),
     },
   },
+  // Applied only when the card is a drag target (see activityCard.tsx) -
+  // pressing anywhere on the card starts a reorder drag; touchAction: none
+  // stops touch browsers from treating the press as a page scroll instead.
+  activityCardDraggable: {
+    cursor: "grab",
+    touchAction: "none",
+    ":active": {
+      cursor: "grabbing",
+    },
+  },
   activityTimeSelect: {
     "& .MuiOutlinedInput-root": {
       borderRadius: "16px",
@@ -1076,17 +1086,6 @@ export const useItineraryStyles = makeStyles({
     ":hover": {
       backgroundColor: semanticColors.bgInteractiveSubtle,
     },
-  },
-  dragHandle: {
-    cursor: "grab",
-    touchAction: "none",
-    ":active": {
-      cursor: "grabbing",
-    },
-  },
-  dragHandleIcon: {
-    color: semanticColors.textTertiary,
-    fontSize: typography.fontSize.size7,
   },
   editIcon: { color: warm.coralBright, fontSize: typography.fontSize.size7 },
   deleteIcon: {

@@ -17,7 +17,9 @@ import {
   type DragEndEvent,
   type DraggableAttributes,
   type DraggableSyntheticListeners,
+  type PointerSensorOptions,
 } from "@dnd-kit/core";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -128,6 +130,45 @@ const MarkerIcon = ({
   }
 };
 
+// The whole card is the drag target (press anywhere on it to move it), but
+// it also contains real buttons (Edit/Regenerate/Delete). A plain
+// PointerSensor would treat a press-and-slightly-move on one of those
+// buttons as the start of a drag. This subclass just refuses to start a
+// drag at all when the press began on a button (or similar interactive
+// element) - dnd-kit's normal click handling then proceeds as if dnd-kit
+// weren't there, so those buttons stay fully clickable.
+//
+// Deliberately NOT matching `[role="button"]` here: dnd-kit's own
+// `useSortable`/`useDraggable` sets `role="button"` on the draggable card's
+// own root element (that's the whole point - it's the drag target), so
+// matching that selector made `.closest()` find the card's own root on
+// every single press anywhere on the card and block activation 100% of the
+// time. The real controls we need to exclude (Edit/Regenerate/Delete) are
+// MUI IconButtons, which render actual `<button>` tags, so plain tag
+// selectors are enough.
+const INTERACTIVE_SELECTOR = "button, a, input, textarea, select";
+
+class ActivityCardPointerSensor extends PointerSensor {
+  static activators = [
+    {
+      eventName: "onPointerDown" as const,
+      handler: (
+        { nativeEvent }: ReactPointerEvent,
+        options: PointerSensorOptions,
+      ) => {
+        const target = nativeEvent.target as HTMLElement | null;
+        if (target?.closest(INTERACTIVE_SELECTOR)) {
+          return false;
+        }
+        return PointerSensor.activators[0].handler(
+          { nativeEvent } as ReactPointerEvent,
+          options,
+        );
+      },
+    },
+  ];
+}
+
 type SortableActivityRowProps = {
   id: string;
   rowClassName: string;
@@ -142,10 +183,11 @@ type SortableActivityRowProps = {
   ) => ReactNode;
 };
 
-// Wraps one timeline row (marker + card) as a dnd-kit sortable item. Drag
-// activation is handed to a specific handle inside the card (see
-// activityCard.tsx) rather than the whole row, so dragging can't be
-// triggered by clicking the card's other buttons.
+// Wraps one timeline row (marker + card) as a dnd-kit sortable item. The
+// activator (attributes/listeners) is handed to the card itself (see
+// activityCard.tsx), not this row's own marker column, so pressing anywhere
+// on the card starts a drag - the ActivityCardPointerSensor above is what
+// keeps that from swallowing clicks on the card's own buttons.
 const SortableActivityRow = ({
   id,
   rowClassName,
@@ -213,7 +255,9 @@ export const Timeline = ({
     )
     : [];
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(ActivityCardPointerSensor, {
+      activationConstraint: { distance: 4 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -422,10 +466,13 @@ export const Timeline = ({
                       ? classes.markerGreen
                       : classes.markerBlue;
 
+          const isDraggable =
+            canReorder && typeof activity !== "string" && !!activity.id;
+
           const rowContent = (
-            dragHandleAttributes?: DraggableAttributes,
-            dragHandleListeners?: DraggableSyntheticListeners,
-            setDragHandleRef?: (element: HTMLElement | null) => void,
+            dragAttributes?: DraggableAttributes,
+            dragListeners?: DraggableSyntheticListeners,
+            setDragRef?: (element: HTMLElement | null) => void,
           ) => (
             <>
               <Box
@@ -448,9 +495,10 @@ export const Timeline = ({
                 dayIndex={dayIndex}
                 dayNumber={day.day}
                 destination={destination}
-                dragHandleAttributes={dragHandleAttributes}
-                dragHandleListeners={dragHandleListeners}
-                setDragHandleRef={setDragHandleRef}
+                dragAttributes={dragAttributes}
+                dragListeners={dragListeners}
+                setDragRef={setDragRef}
+                isDraggable={isDraggable}
                 isRegenerating={
                   activityIndex === -1 ||
                   (isActivityRegenerating?.(activityIndex) ?? false)
@@ -471,7 +519,7 @@ export const Timeline = ({
 
           const key = activityIndex === -1 ? "pending-activity" : activityIndex;
 
-          if (canReorder && typeof activity !== "string" && activity.id) {
+          if (isDraggable) {
             return (
               <SortableActivityRow
                 id={String(activity.id)}
