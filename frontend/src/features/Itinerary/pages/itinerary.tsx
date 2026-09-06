@@ -13,7 +13,6 @@ import {
   IconButton,
   InputLabel,
   Select,
-  Snackbar,
   Stack,
   TextField,
   Tooltip,
@@ -24,6 +23,7 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import { interestOptions } from "../../../constants/interests";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
+import Toast from "../../../common/toast/toast";
 import { semanticColors, warmShadows } from "../../../common/theme/colors";
 import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { DaySelector } from "../components/daySelector";
@@ -35,6 +35,7 @@ import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange } from "../utils/dateUtils";
 import { getFieldSx } from "../../../components/tripPlanningForm/tripPlanningForm.styles";
 import type { RecommendationPlace } from "../../recommendations/types/types";
+import type { Activity } from "../types/itinerary.types";
 
 const emptyNewActivity = {
   title: "",
@@ -80,6 +81,27 @@ const formatTimeLabel = (value: string) => {
 const getDiscoverActivityCost = (price: string) => {
   const match = price.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
   return match ? Number(match[0]) : undefined;
+};
+
+// Activities added from Discover don't come with a time slot of their own,
+// so they're scheduled right after whatever's already the last thing in the
+// day (9 AM if the day is still empty), running for a flat hour. Wrapped
+// with % 1440 so a day that already runs past 11 PM doesn't overflow into an
+// invalid "24:xx" time.
+const DEFAULT_DAY_START_MINUTES = 9 * 60;
+const NEW_DISCOVER_ACTIVITY_DURATION_MINUTES = 60;
+const wrapMinutes = (minutes: number) => ((minutes % 1440) + 1440) % 1440;
+
+const getDayEndMinutes = (activities: Activity[]) => {
+  let latest: number | undefined;
+  activities.forEach((activity) => {
+    if (typeof activity === "string") return;
+    const end = timeToMinutes(activity.endTime) ?? timeToMinutes(activity.time);
+    if (end !== undefined && (latest === undefined || end > latest)) {
+      latest = end;
+    }
+  });
+  return latest ?? DEFAULT_DAY_START_MINUTES;
 };
 
 const timeOptions = Array.from({ length: 47 }, (_, index) => {
@@ -130,6 +152,12 @@ const Itinerary = () => {
   const [pendingDiscoverActivity, setPendingDiscoverActivity] =
     useState<RecommendationPlace | null>(initialPendingActivity);
   const [daySelectOpen, setDaySelectOpen] = useState(!!initialPendingActivity);
+  // Picking a day just highlights it in the dialog - the actual add only
+  // happens once Confirm is pressed, so a stray click can't immediately
+  // commit before the user's sure which day they meant.
+  const [selectedDayForAdd, setSelectedDayForAdd] = useState<number | null>(
+    null,
+  );
   const [discoverActivityMessage, setDiscoverActivityMessage] = useState("");
   const [discoverActivityError, setDiscoverActivityError] = useState("");
   const trip = itineraries[0];
@@ -382,6 +410,15 @@ const Itinerary = () => {
 
     setDaySelectOpen(false);
     setPendingDiscoverActivity(null);
+    setSelectedDayForAdd(null);
+  };
+
+  const confirmAddDiscoverActivity = () => {
+    if (selectedDayForAdd === null) {
+      setDiscoverActivityError("Choose a day first.");
+      return;
+    }
+    void addDiscoverActivityToDay(selectedDayForAdd);
   };
 
   const addDiscoverActivityToDay = async (dayIndex: number) => {
@@ -395,17 +432,30 @@ const Itinerary = () => {
     setDiscoverActivityError("");
     setDiscoverActivityMessage("");
 
+    // Scheduled right after whatever's currently last in the day (or 9 AM if
+    // the day is empty), for a flat hour - a real time slot instead of a
+    // duration-only placeholder.
+    const startMinutes = wrapMinutes(
+      getDayEndMinutes(days[dayIndex].activities),
+    );
+    const endMinutes = wrapMinutes(
+      startMinutes + NEW_DISCOVER_ACTIVITY_DURATION_MINUTES,
+    );
+
     const result = await addActivityToDay(dayIndex, {
       name: pendingDiscoverActivity.title,
       description: pendingDiscoverActivity.desc,
       location_name: pendingDiscoverActivity.location,
       estimated_cost: getDiscoverActivityCost(pendingDiscoverActivity.price),
       category: pendingDiscoverActivity.category,
+      start_time: formatApiTime(startMinutes),
+      end_time: formatApiTime(endMinutes),
     });
 
     if (result === "added") {
       setDaySelectOpen(false);
       setPendingDiscoverActivity(null);
+      setSelectedDayForAdd(null);
       setDiscoverActivityMessage(
         `${pendingDiscoverActivity.title} was added to Day ${days[dayIndex].day}.`,
       );
@@ -662,9 +712,14 @@ const Itinerary = () => {
               <Button
                 disabled={regenerateBusy}
                 key={day.id ?? day.day}
-                onClick={() => addDiscoverActivityToDay(dayIndex)}
+                onClick={() => {
+                  setSelectedDayForAdd(dayIndex);
+                  setDiscoverActivityError("");
+                }}
                 sx={{ justifyContent: "flex-start", textTransform: "none" }}
-                variant={selectedDay === dayIndex ? "contained" : "outlined"}
+                variant={
+                  selectedDayForAdd === dayIndex ? "contained" : "outlined"
+                }
               >
                 Day {day.day}
               </Button>
@@ -683,6 +738,14 @@ const Itinerary = () => {
             sx={{ color: semanticColors.textSecondary, textTransform: "none" }}
           >
             Cancel
+          </Button>
+          <Button
+            disabled={regenerateBusy || selectedDayForAdd === null}
+            onClick={confirmAddDiscoverActivity}
+            sx={{ textTransform: "none" }}
+            variant="contained"
+          >
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
@@ -918,8 +981,7 @@ const Itinerary = () => {
         title="Save your schedule changes?"
       />
 
-      <Snackbar
-        autoHideDuration={6000}
+      <Toast
         message={regenerateError || activityError || orderError}
         onClose={() => {
           clearRegenerateError();
@@ -929,6 +991,7 @@ const Itinerary = () => {
         open={
           regenerateError !== "" || activityError !== "" || orderError !== ""
         }
+        variant="warning"
       />
     </Box>
   );

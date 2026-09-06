@@ -15,6 +15,11 @@ type ConfirmDialogProps = {
   cancelLabel?: string;
   variant?: "warning" | "success";
   isConfirming?: boolean;
+  // For a plain single-button notice (e.g. "heads up" messages that aren't
+  // really a choice between two actions) rather than an actual confirm/
+  // cancel decision. Success dialogs already hide the cancel button on
+  // their own; this covers the same need for a "warning"-styled notice.
+  hideCancel?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -28,6 +33,7 @@ const ConfirmDialog = ({
   cancelLabel = "Cancel",
   variant = "warning",
   isConfirming = false,
+  hideCancel = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) => {
@@ -79,7 +85,7 @@ const ConfirmDialog = ({
           {isConfirming ? confirmingLabel : confirmLabel}
         </button>
 
-        {variant !== "success" && (
+        {variant !== "success" && !hideCancel && (
           <button
             type="button"
             className={styles.cancelButton}
