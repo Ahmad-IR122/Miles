@@ -1,4 +1,6 @@
 import { useId } from "react";
+import { mergeClasses } from "@griffel/react";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import Dialog from "@mui/material/Dialog";
 
@@ -11,6 +13,7 @@ type ConfirmDialogProps = {
   confirmLabel: string;
   confirmingLabel?: string;
   cancelLabel?: string;
+  variant?: "warning" | "success";
   isConfirming?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -23,6 +26,7 @@ const ConfirmDialog = ({
   confirmLabel,
   confirmingLabel = `${confirmLabel}…`,
   cancelLabel = "Cancel",
+  variant = "warning",
   isConfirming = false,
   onConfirm,
   onCancel,
@@ -42,8 +46,17 @@ const ConfirmDialog = ({
         backdrop: { className: styles.backdrop },
       }}
     >
-      <div className={styles.iconWrap}>
-        <WarningAmberRoundedIcon className={styles.icon} />
+      <div
+        className={mergeClasses(
+          styles.iconWrap,
+          variant === "success" ? styles.successIconWrap : undefined,
+        )}
+      >
+        {variant === "success" ? (
+          <CheckCircleOutlineRoundedIcon className={styles.icon} />
+        ) : (
+          <WarningAmberRoundedIcon className={styles.icon} />
+        )}
       </div>
 
       <h2 id={titleId} className={styles.title}>
@@ -66,14 +79,16 @@ const ConfirmDialog = ({
           {isConfirming ? confirmingLabel : confirmLabel}
         </button>
 
-        <button
-          type="button"
-          className={styles.cancelButton}
-          disabled={isConfirming}
-          onClick={onCancel}
-        >
-          {cancelLabel}
-        </button>
+        {variant !== "success" && (
+          <button
+            type="button"
+            className={styles.cancelButton}
+            disabled={isConfirming}
+            onClick={onCancel}
+          >
+            {cancelLabel}
+          </button>
+        )}
       </div>
     </Dialog>
   );

@@ -41,6 +41,11 @@ export const useConfirmDialogStyles = makeStyles({
     color: semanticColors.interactive,
   },
 
+  successIconWrap: {
+    backgroundColor: `color-mix(in srgb, ${colors.success} 12%, transparent)`,
+    color: colors.success,
+  },
+
   icon: {
     fontSize: "26px",
   },

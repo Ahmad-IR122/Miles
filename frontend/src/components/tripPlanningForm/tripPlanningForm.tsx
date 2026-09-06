@@ -664,8 +664,7 @@ const TripPlanningForm = () => {
           <div className={styles.steps}>
             {steps.map((item, index) => {
               const isCurrent = step === item.num;
-
-              const isComplete = completedSteps[index] && !isCurrent;
+              const isComplete = item.num < step && completedSteps[index];
 
               return (
                 <div
@@ -704,7 +703,7 @@ const TripPlanningForm = () => {
                     <div
                       className={mergeClasses(
                         styles.connector,
-                        completedSteps[index] && styles.connectorComplete,
+                        isComplete && styles.connectorComplete,
                       )}
                     />
                   )}

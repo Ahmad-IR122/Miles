@@ -17,7 +17,6 @@ import type {
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import EditIcon from "@mui/icons-material/Edit";
 import PaidIcon from "@mui/icons-material/Paid";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -33,13 +32,20 @@ type ActivityCardProps = {
   dayIndex: number;
   dayNumber: number;
   destination?: string;
-  // Passed as three separate values rather than one bundled object - eslint's
-  // react-hooks/refs rule treats any object holding a ref-setter function as
-  // ref-like and flags every property read off it, even unrelated ones like
-  // `attributes`/`listeners` alongside it.
-  dragHandleAttributes?: DraggableAttributes;
-  dragHandleListeners?: DraggableSyntheticListeners;
-  setDragHandleRef?: (element: HTMLElement | null) => void;
+  // The whole card is the drag target (press anywhere on it to move it),
+  // not a dedicated handle - passed as three separate values rather than one
+  // bundled object because eslint's react-hooks/refs rule treats any object
+  // holding a ref-setter function as ref-like and flags every property read
+  // off it, even unrelated ones like `attributes`/`listeners` alongside it.
+  // A custom pointer sensor (see timeline.tsx) skips activation when the
+  // press starts on a button, so Edit/Regenerate/Delete stay clickable.
+  dragAttributes?: DraggableAttributes;
+  dragListeners?: DraggableSyntheticListeners;
+  setDragRef?: (element: HTMLElement | null) => void;
+  // Separate boolean rather than checking `setDragRef` for truthiness below -
+  // eslint's react-hooks/refs rule flags reading a ref-setter's value at all,
+  // including in a boolean check.
+  isDraggable?: boolean;
   isRegenerating?: boolean;
   isLoading?: boolean;
   loadingLabel?: string;
@@ -156,9 +162,10 @@ export const ActivityCard = ({
   dayIndex,
   dayNumber,
   destination,
-  dragHandleAttributes,
-  dragHandleListeners,
-  setDragHandleRef,
+  dragAttributes,
+  dragListeners,
+  setDragRef,
+  isDraggable = false,
   isRegenerating = false,
   isLoading = false,
   loadingLabel,
@@ -218,7 +225,11 @@ export const ActivityCard = ({
       className={mergeClasses(
         classes.activityCard,
         isLoading && classes.activityCardRegenerating,
+        isDraggable && classes.activityCardDraggable,
       )}
+      ref={setDragRef}
+      {...dragAttributes}
+      {...dragListeners}
     >
       {(isRegenerating || loadingLabel) && (
         <Box className={classes.regeneratingOverlay} role="status">
@@ -330,20 +341,6 @@ export const ActivityCard = ({
 
       <Box className={classes.cardActions}>
         <>
-          {setDragHandleRef && (
-            <Tooltip title="Drag to reorder">
-              <IconButton
-                aria-label={`Reorder ${normalized.title}`}
-                className={mergeClasses(classes.iconButton, classes.dragHandle)}
-                ref={setDragHandleRef}
-                size="small"
-                {...dragHandleAttributes}
-                {...dragHandleListeners}
-              >
-                <DragIndicatorIcon className={classes.dragHandleIcon} />
-              </IconButton>
-            </Tooltip>
-          )}
           <Tooltip title={isRegenerating ? "Regenerating…" : "Edit manually"}>
             <IconButton
               aria-disabled={isRegenerating}

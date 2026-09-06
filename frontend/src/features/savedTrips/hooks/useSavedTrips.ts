@@ -73,23 +73,10 @@ export const useSavedTrips = () => {
 
   const sortedTrips = useMemo(
     () =>
-      [...trips].sort((a, b) => {
-        const statusOrder = {
-          ongoing: 0,
-          upcoming: 1,
-          completed: 2,
-        } as const;
-
-        const statusDifference = statusOrder[a.status] - statusOrder[b.status];
-
-        if (statusDifference !== 0) {
-          return statusDifference;
-        }
-
-        return (
-          new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-        );
-      }),
+      [...trips].sort(
+        (a, b) =>
+          new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+      ),
     [trips],
   );
 
