@@ -26,7 +26,7 @@ import { layout, typography } from "../../../common/theme/typography";
 export const useItineraryStyles = makeStyles({
   page: {
     position: "relative",
-    minHeight: "100vh",
+    minHeight: "100dvh",
     color: semanticColors.textPrimary,
     backgroundColor: warm.bgPage,
     fontFamily: typography.fontFamily.sans,
@@ -35,9 +35,10 @@ export const useItineraryStyles = makeStyles({
     // a separate wrapper) - keeping it on this element instead means the
     // wallpaper above covers the cleared area too, instead of showing
     // navOffset's plain background color as a seam above the page.
-    paddingTop: `${layout.navHeight + 66}px`,
+    "--itinerary-nav-offset": `${layout.navHeight + 66}px`,
+    paddingTop: "var(--itinerary-nav-offset)",
     "@media (max-width: 760px)": {
-      paddingTop: `${layout.navHeight + 52}px`,
+      "--itinerary-nav-offset": `${layout.navHeight + 52}px`,
     },
     // Wallpaper lives on a fixed pseudo-element instead of
     // background-attachment: fixed on the page itself - that property forces
@@ -65,7 +66,9 @@ export const useItineraryStyles = makeStyles({
     display: "grid",
     gridTemplateAreas: "'main summary'",
     gridTemplateColumns: "minmax(0, 1fr) 304px",
-    minHeight: "100vh",
+    // The page already reserves space for the fixed nav. Let longer content
+    // grow naturally instead of adding another full viewport below that space.
+    minHeight: "calc(100dvh - var(--itinerary-nav-offset))",
     "@media (max-width: 980px)": {
       gridTemplateAreas: "'summary' 'main'",
       gridTemplateColumns: "1fr",
@@ -74,6 +77,11 @@ export const useItineraryStyles = makeStyles({
   noSummaryLayout: {
     gridTemplateAreas: "'main'",
     gridTemplateColumns: "1fr",
+    "@media (max-width: 980px)": {
+      // Override the responsive two-row layout too; an empty summary row
+      // otherwise consumes space above the destination heading.
+      gridTemplateAreas: "'main'",
+    },
   },
   mainContent: {
     gridArea: "main",
