@@ -34,6 +34,15 @@ export const LoadingScreen = ({
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     const interval = window.setInterval(() => {
       setProgress((current) =>
         current >= PROGRESS_CAP ? PROGRESS_CAP : current + PROGRESS_STEP,

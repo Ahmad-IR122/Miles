@@ -11,12 +11,14 @@ import {
   typographyPresets,
 } from "../../../common/theme/typography";
 
+const savedTripCardMinHeight = "244px";
+
 export const useSavedTripsStyles = makeStyles({
   page: {
     position: "relative",
     fontFamily: typography.fontFamily.sans,
     backgroundColor: warm.bgPage,
-    minHeight: "100dvh",
+    flex: "1 1 auto",
     // The nav is fixed and overlays the page, so clear its height plus
     // its inset here rather than in a separate wrapper, so the wallpaper
     // above covers the cleared area too instead of a seam showing above
@@ -116,7 +118,8 @@ export const useSavedTripsStyles = makeStyles({
     ),
     textDecoration: "none",
     color: "inherit",
-    display: "block", 
+    display: "flex",
+    minHeight: savedTripCardMinHeight,
     ...shorthands.borderRadius(layout.radius.xl),
     overflow: "hidden",
     boxShadow: semanticColors.shadowLight,
@@ -304,8 +307,13 @@ export const useSavedTripsStyles = makeStyles({
   },
 
   emptyState: {
+    minHeight: savedTripCardMinHeight,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     textAlign: "center",
-    ...shorthands.padding(layout.spacing[16], "40px"),
+    ...shorthands.padding(layout.padding.xl, "40px"),
     backgroundColor: semanticColors.bgPrimary,
     ...shorthands.border(
       layout.borderWidth.thin,
@@ -314,7 +322,7 @@ export const useSavedTripsStyles = makeStyles({
     ),
     ...shorthands.borderRadius(layout.radius.xl),
     "@media (max-width: 520px)": {
-      ...shorthands.padding(layout.spacing[10], layout.padding.md),
+      ...shorthands.padding(layout.padding.lg, layout.padding.md),
     },
   },
 

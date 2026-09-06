@@ -1,3 +1,4 @@
+import { mergeClasses } from "@griffel/react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
@@ -52,7 +53,12 @@ const AppLayout = () => {
   return (
     <div className={styles.root}>
       {showNav ? <TopNav homeLink={homeLink} /> : null}
-      <div className={needsNavOffset ? styles.navOffset : undefined}>
+      <div
+        className={mergeClasses(
+          styles.contentFrame,
+          needsNavOffset && styles.navOffset,
+        )}
+      >
         <Outlet />
         {showFooter ? <Footer /> : null}
       </div>
