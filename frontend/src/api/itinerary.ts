@@ -65,6 +65,7 @@ export const updateActivity = (
     category?: string | null;
     start_time?: string | null;
     end_time?: string | null;
+    activity_order?: number;
   },
 ) => api.patch(`/activities/${activityId}`, updates);
 

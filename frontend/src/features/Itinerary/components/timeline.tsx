@@ -1,6 +1,30 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { mergeClasses } from "@griffel/react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DraggableAttributes,
+  type DraggableSyntheticListeners,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -41,6 +65,16 @@ type TimelineProps = {
     },
   ) => void;
   onRegenerateActivity?: (dayIndex: number, activityIndex: number) => void;
+  /** Called with the day's array indices (not the sortable ids) once a drag
+   * ends on a new position. Reordering is only offered at all when every
+   * activity in the day has a real backend id (see `canReorder` below), so
+   * these indices always line up 1:1 with `day.activities`. */
+  onReorderActivity?: (
+    dayIndex: number,
+    fromIndex: number,
+    toIndex: number,
+  ) => void;
+  reorderDisabled?: boolean;
   regenerateDisabled?: boolean;
 };
 
@@ -94,6 +128,55 @@ const MarkerIcon = ({
   }
 };
 
+type SortableActivityRowProps = {
+  id: string;
+  rowClassName: string;
+  // Passed as three separate values rather than one bundled object, so
+  // consuming components don't do property access on an object that
+  // contains a ref-setter (which eslint's react-hooks/refs rule flags,
+  // false-positively, as a ref access).
+  children: (
+    attributes: DraggableAttributes,
+    listeners: DraggableSyntheticListeners,
+    setActivatorNodeRef: (element: HTMLElement | null) => void,
+  ) => ReactNode;
+};
+
+// Wraps one timeline row (marker + card) as a dnd-kit sortable item. Drag
+// activation is handed to a specific handle inside the card (see
+// activityCard.tsx) rather than the whole row, so dragging can't be
+// triggered by clicking the card's other buttons.
+const SortableActivityRow = ({
+  id,
+  rowClassName,
+  children,
+}: SortableActivityRowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  return (
+    <Box
+      className={rowClassName}
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.6 : 1,
+        zIndex: isDragging ? 1 : undefined,
+      }}
+    >
+      {children(attributes, listeners, setActivatorNodeRef)}
+    </Box>
+  );
+};
+
 export const Timeline = ({
   busy = false,
   busyLabel = "Updating your itinerary...",
@@ -106,10 +189,46 @@ export const Timeline = ({
   onDeleteActivity,
   onEditActivity,
   onRegenerateActivity,
+  onReorderActivity,
+  reorderDisabled = false,
   regenerateDisabled = false,
 }: TimelineProps) => {
   const classes = useItineraryStyles();
   const activities = day.activities ?? [];
+  // Reordering is only offered when every activity in the day is real
+  // (backend-persisted) data - fixture/string-only activities have no id to
+  // drag by, and mixing draggable/non-draggable rows would make the dropped
+  // index no longer line up with `day.activities`.
+  const canReorder =
+    !!onReorderActivity &&
+    !reorderDisabled &&
+    !pendingActivityTime &&
+    activities.length > 1 &&
+    activities.every(
+      (activity) => typeof activity !== "string" && !!activity.id,
+    );
+  const sortableIds = canReorder
+    ? activities.map((activity) =>
+      typeof activity === "string" ? "" : String(activity.id),
+    )
+    : [];
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !onReorderActivity) return;
+
+    const fromIndex = sortableIds.indexOf(String(active.id));
+    const toIndex = sortableIds.indexOf(String(over.id));
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    onReorderActivity(dayIndex, fromIndex, toIndex);
+  };
+
   const timelineActivities = activities.map((activity, activityIndex) => ({
     activity,
     activityIndex,
@@ -282,61 +401,118 @@ export const Timeline = ({
         />
       </Box>
 
-      {timelineActivities.map(({ activity, activityIndex }, timelineIndex) => {
-        const category = getActivityCategory(activity);
-        const markerClass =
-          category === "culture" ||
-          category === "history" ||
-          category === "art & culture"
-            ? classes.markerPurple
-            : category === "food" || category === "adventure"
-              ? classes.markerOrange
-              : category === "sightseeing"
-                ? classes.markerCyan
-                : category === "dining" || category === "nightlife"
-                  ? classes.markerRed
-                  : category === "nature"
-                    ? classes.markerGreen
-                    : classes.markerBlue;
+      {(() => {
+        const renderRow = (
+          { activity, activityIndex }: (typeof timelineActivities)[number],
+          timelineIndex: number,
+        ) => {
+          const category = getActivityCategory(activity);
+          const markerClass =
+            category === "culture" ||
+            category === "history" ||
+            category === "art & culture"
+              ? classes.markerPurple
+              : category === "food" || category === "adventure"
+                ? classes.markerOrange
+                : category === "sightseeing"
+                  ? classes.markerCyan
+                  : category === "dining" || category === "nightlife"
+                    ? classes.markerRed
+                    : category === "nature"
+                      ? classes.markerGreen
+                      : classes.markerBlue;
+
+          const rowContent = (
+            dragHandleAttributes?: DraggableAttributes,
+            dragHandleListeners?: DraggableSyntheticListeners,
+            setDragHandleRef?: (element: HTMLElement | null) => void,
+          ) => (
+            <>
+              <Box
+                className={mergeClasses(classes.marker, markerClass)}
+                ref={
+                  timelineIndex === lastActivityIndex
+                    ? lastMarkerRef
+                    : undefined
+                }
+              >
+                <MarkerIcon
+                  category={category}
+                  className={classes.markerIcon}
+                />
+              </Box>
+
+              <ActivityCard
+                activity={activity}
+                activityIndex={activityIndex}
+                dayIndex={dayIndex}
+                dayNumber={day.day}
+                destination={destination}
+                dragHandleAttributes={dragHandleAttributes}
+                dragHandleListeners={dragHandleListeners}
+                setDragHandleRef={setDragHandleRef}
+                isRegenerating={
+                  activityIndex === -1 ||
+                  (isActivityRegenerating?.(activityIndex) ?? false)
+                }
+                isLoading={
+                  activityIndex === -1 ||
+                  (busy && showLoadingSkeletons) ||
+                  (isActivityRegenerating?.(activityIndex) ?? false)
+                }
+                loadingLabel={activityIndex === -1 ? busyLabel : undefined}
+                onDelete={onDeleteActivity}
+                onEdit={onEditActivity}
+                onRegenerate={onRegenerateActivity}
+                regenerateDisabled={regenerateDisabled}
+              />
+            </>
+          );
+
+          const key = activityIndex === -1 ? "pending-activity" : activityIndex;
+
+          if (canReorder && typeof activity !== "string" && activity.id) {
+            return (
+              <SortableActivityRow
+                id={String(activity.id)}
+                key={key}
+                rowClassName={classes.activityRow}
+              >
+                {rowContent}
+              </SortableActivityRow>
+            );
+          }
+
+          return (
+            <Box className={classes.activityRow} key={key}>
+              {rowContent(undefined)}
+            </Box>
+          );
+        };
+
+        if (!canReorder) {
+          return timelineActivities.map((entry, timelineIndex) =>
+            renderRow(entry, timelineIndex),
+          );
+        }
 
         return (
-          <Box
-            className={classes.activityRow}
-            key={activityIndex === -1 ? "pending-activity" : activityIndex}
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
           >
-            <Box
-              className={mergeClasses(classes.marker, markerClass)}
-              ref={
-                timelineIndex === lastActivityIndex ? lastMarkerRef : undefined
-              }
+            <SortableContext
+              items={sortableIds}
+              strategy={verticalListSortingStrategy}
             >
-              <MarkerIcon category={category} className={classes.markerIcon} />
-            </Box>
-
-            <ActivityCard
-              activity={activity}
-              activityIndex={activityIndex}
-              dayIndex={dayIndex}
-              dayNumber={day.day}
-              destination={destination}
-              isRegenerating={
-                activityIndex === -1 ||
-                (isActivityRegenerating?.(activityIndex) ?? false)
-              }
-              isLoading={
-                activityIndex === -1 ||
-                (busy && showLoadingSkeletons) ||
-                (isActivityRegenerating?.(activityIndex) ?? false)
-              }
-              loadingLabel={activityIndex === -1 ? busyLabel : undefined}
-              onDelete={onDeleteActivity}
-              onEdit={onEditActivity}
-              onRegenerate={onRegenerateActivity}
-              regenerateDisabled={regenerateDisabled}
-            />
-          </Box>
+              {timelineActivities.map((entry, timelineIndex) =>
+                renderRow(entry, timelineIndex),
+              )}
+            </SortableContext>
+          </DndContext>
         );
-      })}
+      })()}
     </Box>
   );
 };
