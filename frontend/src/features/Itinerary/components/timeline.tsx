@@ -20,6 +20,8 @@ type TimelineProps = {
    * regenerate, which already has its own inline "Regenerating..." state. */
   busy?: boolean;
   busyLabel?: string;
+  showLoadingSkeletons?: boolean;
+  pendingActivityTime?: string;
   day: Day;
   dayIndex: number;
   destination?: string;
@@ -52,6 +54,20 @@ const getActivityCategory = (activity: Activity) =>
     ?.toLowerCase()
     .trim();
 
+const timeToMinutes = (value?: string) => {
+  if (!value) return undefined;
+  const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return undefined;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (match[3]) {
+    hours %= 12;
+    if (match[3].toUpperCase() === "PM") hours += 12;
+  }
+  return hours * 60 + minutes;
+};
+
 const MarkerIcon = ({
   category,
   className,
@@ -81,6 +97,8 @@ const MarkerIcon = ({
 export const Timeline = ({
   busy = false,
   busyLabel = "Updating your itinerary...",
+  showLoadingSkeletons = true,
+  pendingActivityTime,
   day,
   dayIndex,
   destination,
@@ -92,7 +110,28 @@ export const Timeline = ({
 }: TimelineProps) => {
   const classes = useItineraryStyles();
   const activities = day.activities ?? [];
-  const lastActivityIndex = activities.length - 1;
+  const timelineActivities = activities.map((activity, activityIndex) => ({
+    activity,
+    activityIndex,
+  }));
+  if (pendingActivityTime) {
+    const pendingMinutes = timeToMinutes(pendingActivityTime);
+    const insertAt = timelineActivities.findIndex(({ activity }) => {
+      if (typeof activity === "string") return false;
+      const activityMinutes = timeToMinutes(activity.time);
+      return (
+        pendingMinutes !== undefined &&
+        activityMinutes !== undefined &&
+        pendingMinutes < activityMinutes
+      );
+    });
+    timelineActivities.splice(
+      insertAt === -1 ? timelineActivities.length : insertAt,
+      0,
+      { activity: "", activityIndex: -1 },
+    );
+  }
+  const lastActivityIndex = timelineActivities.length - 1;
 
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const lastMarkerRef = useRef<HTMLDivElement | null>(null);
@@ -120,7 +159,7 @@ export const Timeline = ({
     const observer = new ResizeObserver(measure);
     observer.observe(timelineEl);
     return () => observer.disconnect();
-  }, [activities.length]);
+  }, [timelineActivities.length]);
 
   // Keep the plane locked to the wavy connector: read the sticky track's
   // real on-screen position, then sample the ACTUAL rendered <path> at that
@@ -189,7 +228,7 @@ export const Timeline = ({
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [activities.length]);
+  }, [timelineActivities.length]);
 
   return (
     <Box className={classes.timeline} ref={timelineRef}>
@@ -243,7 +282,7 @@ export const Timeline = ({
         />
       </Box>
 
-      {activities.map((activity, activityIndex) => {
+      {timelineActivities.map(({ activity, activityIndex }, timelineIndex) => {
         const category = getActivityCategory(activity);
         const markerClass =
           category === "culture" ||
@@ -261,11 +300,14 @@ export const Timeline = ({
                     : classes.markerBlue;
 
         return (
-          <Box className={classes.activityRow} key={activityIndex}>
+          <Box
+            className={classes.activityRow}
+            key={activityIndex === -1 ? "pending-activity" : activityIndex}
+          >
             <Box
               className={mergeClasses(classes.marker, markerClass)}
               ref={
-                activityIndex === lastActivityIndex ? lastMarkerRef : undefined
+                timelineIndex === lastActivityIndex ? lastMarkerRef : undefined
               }
             >
               <MarkerIcon category={category} className={classes.markerIcon} />
@@ -277,7 +319,16 @@ export const Timeline = ({
               dayIndex={dayIndex}
               dayNumber={day.day}
               destination={destination}
-              isRegenerating={isActivityRegenerating?.(activityIndex) ?? false}
+              isRegenerating={
+                activityIndex === -1 ||
+                (isActivityRegenerating?.(activityIndex) ?? false)
+              }
+              isLoading={
+                activityIndex === -1 ||
+                (busy && showLoadingSkeletons) ||
+                (isActivityRegenerating?.(activityIndex) ?? false)
+              }
+              loadingLabel={activityIndex === -1 ? busyLabel : undefined}
               onDelete={onDeleteActivity}
               onEdit={onEditActivity}
               onRegenerate={onRegenerateActivity}

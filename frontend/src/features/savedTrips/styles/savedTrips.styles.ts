@@ -13,13 +13,9 @@ import {
 
 export const useSavedTripsStyles = makeStyles({
   page: {
+    position: "relative",
     fontFamily: typography.fontFamily.sans,
     backgroundColor: warm.bgPage,
-    backgroundImage: warm.bgImage,
-    backgroundSize: "cover",
-    backgroundPosition: "top center",
-    backgroundRepeat: "no-repeat",
-    backgroundAttachment: "fixed",
     minHeight: "100dvh",
     // The nav is fixed and overlays the page, so clear its height plus
     // its inset here rather than in a separate wrapper, so the wallpaper
@@ -28,6 +24,23 @@ export const useSavedTripsStyles = makeStyles({
     paddingTop: `${layout.navHeight + 66}px`,
     "@media (max-width: 760px)": {
       paddingTop: `${layout.navHeight + 52}px`,
+    },
+    // Wallpaper lives on a fixed pseudo-element instead of
+    // background-attachment: fixed on the page itself - that property forces
+    // the browser to repaint the background on every scroll frame, which is
+    // what caused scroll jank. A position: fixed layer gets its own
+    // compositor layer, so scrolling the content above it is cheap, while
+    // still sizing "cover" against the viewport rather than the full
+    // scroll height.
+    "::before": {
+      content: "\"\"",
+      position: "fixed",
+      inset: 0,
+      zIndex: -1,
+      backgroundImage: warm.bgImage,
+      backgroundSize: "cover",
+      backgroundPosition: "top center",
+      backgroundRepeat: "no-repeat",
     },
   },
 
@@ -91,7 +104,6 @@ export const useSavedTripsStyles = makeStyles({
   },
 
   card: {
-    display: "flex",
     flexDirection: "column",
     textAlign: "left",
     ...shorthands.padding("0"),
@@ -102,6 +114,9 @@ export const useSavedTripsStyles = makeStyles({
       "solid",
       semanticColors.borderDefault,
     ),
+    textDecoration: "none",
+    color: "inherit",
+    display: "block", 
     ...shorthands.borderRadius(layout.radius.xl),
     overflow: "hidden",
     boxShadow: semanticColors.shadowLight,

@@ -202,6 +202,7 @@ def _apply_regenerated_days(
     for index, raw_day in enumerate(raw_days):
         if index < len(existing_days):
             day = existing_days[index]
+            day.day_number = index + 1
             day.date = DateType.fromisoformat(raw_day["date"])
         else:
             day = DBItineraryDay(

@@ -3,6 +3,7 @@ import {
   Box,
   CircularProgress,
   IconButton,
+  Skeleton,
   Stack,
   Tooltip,
   Typography,
@@ -28,6 +29,8 @@ type ActivityCardProps = {
   dayNumber: number;
   destination?: string;
   isRegenerating?: boolean;
+  isLoading?: boolean;
+  loadingLabel?: string;
   onDelete: (dayIndex: number, activityIndex: number) => void;
   onRegenerate?: (dayIndex: number, activityIndex: number) => void;
   onEdit: (
@@ -142,6 +145,8 @@ export const ActivityCard = ({
   dayNumber,
   destination,
   isRegenerating = false,
+  isLoading = false,
+  loadingLabel,
   onDelete,
   onEdit,
   onRegenerate,
@@ -194,13 +199,13 @@ export const ActivityCard = ({
   // details looking current.
   return (
     <Box
-      aria-busy={isRegenerating}
+      aria-busy={isLoading}
       className={mergeClasses(
         classes.activityCard,
-        isRegenerating && classes.activityCardRegenerating,
+        isLoading && classes.activityCardRegenerating,
       )}
     >
-      {isRegenerating && (
+      {(isRegenerating || loadingLabel) && (
         <Box className={classes.regeneratingOverlay} role="status">
           <Box className={classes.regeneratingBadge}>
             <CircularProgress
@@ -209,72 +214,103 @@ export const ActivityCard = ({
               thickness={4.5}
             />
             <Typography className={classes.regeneratingLabel}>
-              Regenerating activity…
+              {loadingLabel ?? "Regenerating activity…"}
             </Typography>
           </Box>
         </Box>
       )}
 
       <Box
-        aria-hidden={isRegenerating}
+        aria-hidden={isLoading}
         className={mergeClasses(
           classes.activityContent,
-          isRegenerating && classes.activityContentPending,
+          isRegenerating && !isLoading && classes.activityContentPending,
         )}
       >
-        <Box className={classes.activityMeta}>
-          <Box className={mergeClasses(classes.category, categoryClass)}>
-            {normalized.category}
-          </Box>
-          {timeLabel && (
-            <Typography className={classes.activityTime}>
-              {timeLabel}
+        {isLoading ? (
+          <Stack className={classes.activitySkeletonStack} spacing={1}>
+            <Skeleton
+              className={classes.activitySkeleton}
+              height={18}
+              variant="rounded"
+              width="30%"
+            />
+            <Skeleton
+              className={classes.activitySkeleton}
+              height={30}
+              variant="text"
+              width="62%"
+            />
+            <Skeleton
+              className={classes.activitySkeleton}
+              height={20}
+              variant="text"
+              width="92%"
+            />
+            <Skeleton
+              className={classes.activitySkeleton}
+              height={20}
+              variant="text"
+              width="76%"
+            />
+          </Stack>
+        ) : (
+          <>
+            <Box className={classes.activityMeta}>
+              <Box className={mergeClasses(classes.category, categoryClass)}>
+                {normalized.category}
+              </Box>
+              {timeLabel && (
+                <Typography className={classes.activityTime}>
+                  {timeLabel}
+                </Typography>
+              )}
+            </Box>
+
+            <Typography className={classes.activityTitle} component="h3">
+              {normalized.title}
             </Typography>
-          )}
-        </Box>
 
-        <Typography className={classes.activityTitle} component="h3">
-          {normalized.title}
-        </Typography>
+            {normalized.description && (
+              <Typography className={classes.activityDescription}>
+                {normalized.description}
+              </Typography>
+            )}
 
-        {normalized.description && (
-          <Typography className={classes.activityDescription}>
-            {normalized.description}
-          </Typography>
+            <Stack className={classes.detailLine} direction="row">
+              {normalized.location && (
+                <span className={classes.detailItem}>
+                  <PlaceIcon className={classes.detailIcon} />
+                  {normalized.location}
+                </span>
+              )}
+              {normalized.transport && (
+                <span className={classes.detailItem}>
+                  <TrainIcon className={classes.trainIcon} />
+                  {normalized.transport}
+                </span>
+              )}
+              {normalized.duration && (
+                <span className={classes.detailItem}>
+                  <AccessTimeIcon className={classes.mutedIcon} />
+                  {normalized.duration}
+                </span>
+              )}
+              {normalized.cost && (
+                <span className={classes.detailItem}>
+                  <PaidIcon className={classes.costIcon} />
+                  Estimated: {normalized.cost}
+                </span>
+              )}
+              {normalized.weather && (
+                <span className={classes.detailItem}>
+                  <WbCloudyIcon className={classes.weatherIcon} />
+                  {normalized.weather}
+                </span>
+              )}
+            </Stack>
+          </>
         )}
-
-        <Stack className={classes.detailLine} direction="row">
-          {normalized.location && (
-            <span className={classes.detailItem}>
-              <PlaceIcon className={classes.detailIcon} />
-              {normalized.location}
-            </span>
-          )}
-          {normalized.transport && (
-            <span className={classes.detailItem}>
-              <TrainIcon className={classes.trainIcon} />
-              {normalized.transport}
-            </span>
-          )}
-          {normalized.duration && (
-            <span className={classes.detailItem}>
-              <AccessTimeIcon className={classes.mutedIcon} />
-              {normalized.duration}
-            </span>
-          )}
-          {normalized.cost && (
-            <span className={classes.detailItem}>
-              <PaidIcon className={classes.costIcon} />
-              Estimated: {normalized.cost}
-            </span>
-          )}
-          {normalized.weather && (
-            <span className={classes.detailItem}>
-              <WbCloudyIcon className={classes.weatherIcon} />
-              {normalized.weather}
-            </span>
-          )}
-        </Stack>
       </Box>
 
       <Box className={classes.cardActions}>
