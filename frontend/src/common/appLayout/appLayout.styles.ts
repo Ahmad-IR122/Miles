@@ -8,6 +8,12 @@ export const useAppLayoutStyles = makeStyles({
     backgroundColor: warm.bgPage,
   },
 
+  contentFrame: {
+    minHeight: "100dvh",
+    display: "flex",
+    flexDirection: "column",
+  },
+
   navOffset: {
     // Nav is fixed and inset from the top, so clear its height plus that inset.
     paddingTop: `${layout.navHeight + 66}px`,
