@@ -1,4 +1,5 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { mergeClasses } from "@griffel/react";
+import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
 import ChatWidget from "../chatWidget/chatWidget";
@@ -45,16 +46,25 @@ const AppLayout = () => {
   const showNav = routesWithNav.has(location.pathname) || isItineraryDetail;
   const showFooter =
     routesWithFooter.has(location.pathname) || isItineraryDetail;
+  const compactFooterTop = location.pathname === routesPaths.savedTrips;
   const homeLink =
     routesWithBackNav.has(location.pathname) || isItineraryDetail;
   const needsNavOffset = routesNeedingNavOffset.has(location.pathname);
 
   return (
     <div className={styles.root}>
+      {/* New routes start below the fixed nav instead of inheriting the
+          previous page's scroll position; Back/Forward restore that position. */}
+      <ScrollRestoration />
       {showNav ? <TopNav homeLink={homeLink} /> : null}
-      <div className={needsNavOffset ? styles.navOffset : undefined}>
+      <div
+        className={mergeClasses(
+          styles.contentFrame,
+          needsNavOffset && styles.navOffset,
+        )}
+      >
         <Outlet />
-        {showFooter ? <Footer /> : null}
+        {showFooter ? <Footer compactTop={compactFooterTop} /> : null}
       </div>
       {showNav ? <ChatWidget /> : null}
     </div>

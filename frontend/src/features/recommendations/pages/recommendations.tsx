@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { getUpcomingItinerary } from "../../../api/itinerary";
-import { getTripById } from "../../../api/trip";
-import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
-import { routesPaths } from "../../../routes/routesPaths";
+import {
+  buildItineraryDetailPath,
+  routesPaths,
+} from "../../../routes/routesPaths";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
-import RecommendationsFilters, {
-  ANY_COUNTRY,
-} from "../components/recommendationsFilters";
+import RecommendationsFilters from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";
 import RecommendationCard from "../components/recommendationCard";
 import { useRecommendations } from "../hooks/useRecommendations";
@@ -39,16 +37,47 @@ const budgetMap: Record<
   High: "$$$",
 };
 
+// The only way into this page now is the itinerary's "Discover more
+// activities" button, which always hands over the trip's own country via
+// navigation state - so this reads that instead of exposing a country picker
+// the user could drift away from the trip with.
+const getPresetCountry = (locationState: unknown) => {
+  if (
+    !locationState ||
+    typeof locationState !== "object" ||
+    !("presetCountry" in locationState)
+  ) {
+    return "";
+  }
+  const { presetCountry } = locationState as { presetCountry?: unknown };
+  return typeof presetCountry === "string" ? presetCountry.trim() : "";
+};
+
+// Same trip id the itinerary page was showing when "Discover more
+// activities" was clicked - carried through so "Add to Trip" can send you
+// back to that exact trip instead of whatever trip is "upcoming" by date.
+const getPresetTripId = (locationState: unknown) => {
+  if (
+    !locationState ||
+    typeof locationState !== "object" ||
+    !("tripId" in locationState)
+  ) {
+    return "";
+  }
+  const { tripId } = locationState as { tripId?: unknown };
+  if (typeof tripId === "string") return tripId;
+  if (typeof tripId === "number") return String(tripId);
+  return "";
+};
+
 const getResultSetKey = (
   places: { id: string }[],
   activeCategory: RecommendationCategoryFilter,
   activeBudget: BudgetFilterLabel,
-  activeCountry: string,
 ) =>
   JSON.stringify({
     activeCategory,
     activeBudget,
-    activeCountry,
     ids: places.map((place) => place.id),
   });
 
@@ -60,7 +89,6 @@ const Recommendations = () => {
     useState<RecommendationCategoryFilter>("All");
   const [activeBudget, setActiveBudget] =
     useState<BudgetFilterLabel>("Any Budget");
-  const [activeCountry, setActiveCountry] = useState<string>(ANY_COUNTRY);
   const [pagination, setPagination] = useState({
     page: 1,
     resultSetKey: "",
@@ -69,12 +97,8 @@ const Recommendations = () => {
     location.state,
     activeCategory,
   );
-  const [countryMismatchMessage, setCountryMismatchMessage] = useState("");
-  // The country check now happens before navigating away (fetching trip
-  // data first), so a click no longer jumps to the itinerary page
-  // instantly - tracking which card is mid-check lets that one button show
-  // "Adding..." instead of the page just sitting there looking stuck.
-  const [checkingPlaceId, setCheckingPlaceId] = useState<string | null>(null);
+  const presetCountry = getPresetCountry(location.state);
+  const presetTripId = getPresetTripId(location.state);
 
   const filteredPlaces = useMemo(
     () =>
@@ -88,13 +112,16 @@ const Recommendations = () => {
             return false;
           }
         }
-        if (activeCountry !== ANY_COUNTRY && place.country !== activeCountry) {
+        if (
+          presetCountry &&
+          place.country.trim().toLowerCase() !== presetCountry.toLowerCase()
+        ) {
           return false;
         }
 
         return true;
       }),
-    [activeCategory, activeBudget, activeCountry, places],
+    [activeCategory, activeBudget, presetCountry, places],
   );
 
   const totalPages = Math.max(
@@ -105,7 +132,6 @@ const Recommendations = () => {
     filteredPlaces,
     activeCategory,
     activeBudget,
-    activeCountry,
   );
   const currentPage =
     pagination.resultSetKey === resultSetKey ? pagination.page : 1;
@@ -131,47 +157,20 @@ const Recommendations = () => {
     });
   };
 
-  const handleAddToTrip = async (place: RecommendationPlace) => {
-    if (checkingPlaceId) return;
-    setCheckingPlaceId(place.id);
-
-    try {
-      // The itinerary page is where trip data normally loads - fetched here
-      // too so the country can be checked before ever navigating there,
-      // instead of sending the user over just to bounce them back.
-      const upcoming = await getUpcomingItinerary();
-      const tripId = upcoming.data?.trip_id;
-      const tripCountries = tripId
-        ? new Set(
-          (await getTripById(tripId)).data.destinations.map((destination) =>
-            destination.country.trim().toLowerCase(),
-          ),
-        )
-        : new Set<string>();
-
-      const activityCountry = place.country.trim().toLowerCase();
-
-      if (
-        tripCountries.size > 0 &&
-        activityCountry &&
-        !tripCountries.has(activityCountry)
-      ) {
-        setCountryMismatchMessage(
-          `${place.title} is in ${place.country}, which isn't part of this itinerary.`,
-        );
-        return;
-      }
-    } catch {
-      // Couldn't confirm either way (offline, no trip yet, etc.) - fail open
-      // rather than block a feature that used to work on a check that
-      // itself failed.
-    } finally {
-      setCheckingPlaceId(null);
-    }
-
-    navigate(routesPaths.itinerary, {
-      state: { pendingActivity: place },
-    });
+  // Everything shown here is already filtered to the itinerary's own
+  // country (see presetCountry above), so there's no longer anything to
+  // check before handing an activity back to the itinerary page. Going back
+  // to the SAME trip (not just "the itinerary page") is what presetTripId is
+  // for - without it this would land on /itinerary with no id, which loads
+  // whatever trip is soonest by date instead of the one Discover was opened
+  // from.
+  const handleAddToTrip = (place: RecommendationPlace) => {
+    navigate(
+      presetTripId
+        ? buildItineraryDetailPath(presetTripId)
+        : routesPaths.itinerary,
+      { state: { pendingActivity: place } },
+    );
   };
 
   return (
@@ -190,10 +189,8 @@ const Recommendations = () => {
           budgets={budgets}
           activeCategory={activeCategory}
           activeBudget={activeBudget}
-          activeCountry={activeCountry}
           onCategoryChange={setActiveCategory}
           onBudgetChange={setActiveBudget}
-          onCountryChange={setActiveCountry}
         />
 
         {isLoading && (
@@ -214,7 +211,6 @@ const Recommendations = () => {
               <RecommendationCard
                 key={place.id}
                 place={place}
-                isAdding={checkingPlaceId === place.id}
                 onAddToTrip={handleAddToTrip}
               />
             ))}
@@ -255,17 +251,6 @@ const Recommendations = () => {
           <RecommendationsEmptyState />
         )}
       </main>
-
-      <ConfirmDialog
-        open={countryMismatchMessage !== ""}
-        variant="warning"
-        hideCancel
-        title="Not part of this itinerary"
-        description={countryMismatchMessage}
-        confirmLabel="Got it"
-        onConfirm={() => setCountryMismatchMessage("")}
-        onCancel={() => setCountryMismatchMessage("")}
-      />
     </div>
   );
 };

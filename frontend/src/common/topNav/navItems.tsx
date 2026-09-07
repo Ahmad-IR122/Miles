@@ -4,6 +4,10 @@ import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 
 import { routesPaths } from "../../routes/routesPaths";
 
+// Discover isn't a standalone tab anymore - it's only reachable from a
+// specific itinerary now (via its "Discover more activities" button), pre-
+// filtered to that trip's country, so it no longer makes sense as a
+// destination you'd jump to on its own from the main nav.
 export const navItems = [
   {
     label: "Home",
@@ -18,11 +22,6 @@ export const navItems = [
   {
     label: "My Trips",
     path: routesPaths.savedTrips,
-    icon: <PlaceOutlinedIcon aria-hidden="true" />,
-  },
-  {
-    label: "Discover",
-    path: routesPaths.recommendation,
     icon: <PlaceOutlinedIcon aria-hidden="true" />,
   },
 ];

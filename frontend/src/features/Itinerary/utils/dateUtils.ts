@@ -13,6 +13,22 @@ const formatShortDate = (date?: Date) =>
     day: "numeric",
   }) ?? "";
 
+const DAY_DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+};
+
+/** Formats a day's own stored date. */
+export const formatDate = (date?: string) =>
+  toDate(date)?.toLocaleDateString("en-US", DAY_DATE_FORMAT) ?? "";
+
+/**
+ * Fallback for days that carry no date of their own (fixture data): the
+ * trip's start date advanced by `offset`. Prefer formatDate() whenever the
+ * day has a real date - deriving it from a list position hides ordering
+ * bugs behind a date that always looks plausible.
+ */
 export const formatDayDate = (startDate?: string, offset = 0) => {
   const date = toDate(startDate);
 
@@ -21,11 +37,7 @@ export const formatDayDate = (startDate?: string, offset = 0) => {
   }
 
   date.setDate(date.getDate() + offset);
-  return date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  return date.toLocaleDateString("en-US", DAY_DATE_FORMAT);
 };
 
 export const formatDateRange = (startDate?: string, endDate?: string) => {

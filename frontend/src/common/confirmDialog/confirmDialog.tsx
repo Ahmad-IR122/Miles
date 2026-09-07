@@ -20,6 +20,10 @@ type ConfirmDialogProps = {
   // cancel decision. Success dialogs already hide the cancel button on
   // their own; this covers the same need for a "warning"-styled notice.
   hideCancel?: boolean;
+  // "large" bumps up the card and its text a step for messages that should
+  // stand out a bit more (e.g. a success confirmation), without needing a
+  // whole separate dialog style.
+  size?: "default" | "large";
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -34,12 +38,14 @@ const ConfirmDialog = ({
   variant = "warning",
   isConfirming = false,
   hideCancel = false,
+  size = "default",
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) => {
   const styles = useConfirmDialogStyles();
   const titleId = useId();
   const descriptionId = useId();
+  const isLarge = size === "large";
 
   return (
     <Dialog
@@ -48,7 +54,12 @@ const ConfirmDialog = ({
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       slotProps={{
-        paper: { className: styles.paper },
+        paper: {
+          className: mergeClasses(
+            styles.paper,
+            isLarge ? styles.paperLarge : undefined,
+          ),
+        },
         backdrop: { className: styles.backdrop },
       }}
     >
@@ -65,12 +76,24 @@ const ConfirmDialog = ({
         )}
       </div>
 
-      <h2 id={titleId} className={styles.title}>
+      <h2
+        id={titleId}
+        className={mergeClasses(
+          styles.title,
+          isLarge ? styles.titleLarge : undefined,
+        )}
+      >
         {title}
       </h2>
 
       {description && (
-        <p id={descriptionId} className={styles.description}>
+        <p
+          id={descriptionId}
+          className={mergeClasses(
+            styles.description,
+            isLarge ? styles.descriptionLarge : undefined,
+          )}
+        >
           {description}
         </p>
       )}

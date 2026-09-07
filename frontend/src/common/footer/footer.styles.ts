@@ -19,6 +19,14 @@ export const useFooterStyles = makeStyles({
     },
   },
 
+  compactTop: {
+    marginTop: layout.spacing[4],
+
+    "@media (max-width: 760px)": {
+      marginTop: layout.spacing[3],
+    },
+  },
+
   shell: {
     position: "relative",
     overflow: "hidden",

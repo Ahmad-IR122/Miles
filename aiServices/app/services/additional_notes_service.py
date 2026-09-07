@@ -264,16 +264,15 @@ def _sanitize_destination_constraints(
 
     remaining_destination = constraints.remaining_days_destination
 
-    if remaining_destination is not None:
-        if (
-            _normalize(remaining_destination.country)
-            not in selected_countries
-            or not _remaining_destination_is_in_note(
-                note,
-                remaining_destination,
-            )
-        ):
-            remaining_destination = None
+    if remaining_destination is not None and (
+        _normalize(remaining_destination.country)
+        not in selected_countries
+        or not _remaining_destination_is_in_note(
+            note,
+            remaining_destination,
+        )
+    ):
+        remaining_destination = None
 
     return constraints.model_copy(
         update={

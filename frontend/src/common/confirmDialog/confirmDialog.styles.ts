@@ -26,6 +26,16 @@ export const useConfirmDialogStyles = makeStyles({
     },
   },
 
+  // A somewhat bigger version of the same card, for messages that should
+  // stand out a little more (e.g. a success confirmation) without going all
+  // the way to a different dialog style.
+  paperLarge: {
+    "&.MuiPaper-root": {
+      maxWidth: "420px",
+      ...shorthands.padding(layout.spacing[8], layout.spacing[7]),
+    },
+  },
+
   iconWrap: {
     display: "flex",
     alignItems: "center",
@@ -56,10 +66,19 @@ export const useConfirmDialogStyles = makeStyles({
     color: semanticColors.textPrimary,
   },
 
+  titleLarge: {
+    fontSize: typography.fontSize.size9,
+  },
+
   description: {
     margin: `${layout.spacing[2]} 0 0`,
     ...typographyPresets.body,
     color: semanticColors.textSecondary,
+    lineHeight: typography.lineHeight.relaxed,
+  },
+
+  descriptionLarge: {
+    ...typographyPresets.bodyLarge,
     lineHeight: typography.lineHeight.relaxed,
   },
 

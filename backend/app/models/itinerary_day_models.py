@@ -51,4 +51,7 @@ class ItineraryDay(Base):
     activities: Mapped[list["Activity"]] = relationship(
         back_populates="itinerary_day",
         cascade="all, delete-orphan",
+        # regenerate_activity sends the AI service a positional index into
+        # this list, so its order has to be the stored order.
+        order_by="Activity.activity_order, Activity.id",
     )

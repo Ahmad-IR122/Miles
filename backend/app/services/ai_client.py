@@ -93,13 +93,35 @@ def from_itinerary(days: list[DayPlan]) -> dict:
     return {"days": [from_day(day) for day in days]}
 
 
+def _interests_for_ai(trip, interest_names: list[str]) -> list[str]:
+    """Interest list for the AI service, including the custom "Other" text.
+
+    The custom interest has no row in the interests table, but it is still an
+    interest. It has to land in this list rather than only in additional_notes:
+    the AI service builds its dataset search query from `interests` alone, so
+    anything missing here is never retrieved, and the prompt's interest line
+    silently drops it.
+    """
+    interests = list(interest_names)
+    other_interest = (trip.other_interest or "").strip()
+
+    if not other_interest:
+        return interests
+
+    already_listed = {name.strip().casefold() for name in interests}
+    if other_interest.casefold() not in already_listed:
+        interests.append(other_interest)
+
+    return interests
+
+
 def preferences_from_trip(trip, interest_names: list[str]) -> dict:
     """Build the aiServices TravelPreferences payload from a DB Trip row."""
     return {
         "destinations": trip.destinations,
         "start_date": str(trip.start_date),
         "end_date": str(trip.end_date),
-        "interests": interest_names,
+        "interests": _interests_for_ai(trip, interest_names),
         "budget": str(trip.budget) if trip.budget is not None else "",
         "budget_level": map_budget_level(trip.budget),
         "additional_notes": trip.additional_notes,

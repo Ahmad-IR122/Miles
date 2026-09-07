@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import chat, health, itinerary, rag, recommendations
+from app.routers import chat, health, itinerary, recommendations
 
 load_dotenv()
 app = FastAPI()
@@ -19,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(health.router)
-app.include_router(rag.router)
 app.include_router(itinerary.router)
 app.include_router(chat.router)
 app.include_router(recommendations.router, prefix="/api")

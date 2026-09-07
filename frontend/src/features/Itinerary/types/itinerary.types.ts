@@ -29,6 +29,13 @@ export type Day = {
 
 export type Trip = {
   id?: string;
+  // The trip's own backend id - distinct from `id` above, which is actually
+  // the *itinerary's* id (kept as `id` for backward compatibility with
+  // fixture data and regenerate responses). Routes like /itinerary/:id and
+  // the by-trip API calls all key off the trip id, not the itinerary id, so
+  // anything that needs to link back to this exact trip (e.g. Discover's
+  // "Add to Trip") should use tripId, not id.
+  tripId?: string;
   tripRequestId?: string;
   destination?: string;
   destinations?: TripDestination[];

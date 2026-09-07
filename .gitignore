@@ -39,4 +39,15 @@ __pycache__/
 *.sln
 *.sw?
 .ruff_cache/
-.claude/
+
+# Ignore local/personal Claude Code state, but keep shared, repo-committed
+# skills (.claude/skills/) so the team gets them via git.
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+
+# Playwright / qa-agent
+frontend/qa-agent-report/
+frontend/test-results/
+frontend/playwright-report/
+frontend/e2e/.auth/
