@@ -3,7 +3,7 @@ import { mergeClasses } from "@griffel/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useItineraryStyles } from "../styles/itinerary.styles";
 import type { Day } from "../types/itinerary.types";
-import { formatDayDate } from "../utils/dateUtils";
+import { formatDate, formatDayDate } from "../utils/dateUtils";
 
 type DaySelectorProps = {
   days: Day[];
@@ -46,7 +46,9 @@ export const DaySelector = ({
             >
               <span>Day {day.day}</span>
               <span className={classes.dayDate}>
-                {formatDayDate(startDate, index)}
+                {day.date
+                  ? formatDate(day.date)
+                  : formatDayDate(startDate, index)}
               </span>
             </button>
           </Box>

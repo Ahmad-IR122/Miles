@@ -55,4 +55,8 @@ class Itinerary(Base):
     days: Mapped[list["ItineraryDay"]] = relationship(
         back_populates="itinerary",
         cascade="all, delete-orphan",
+        # Callers (and the API response) treat this list as day 1..N in
+        # order. Without an explicit sort the database is free to return
+        # the rows in any order at all.
+        order_by="ItineraryDay.day_number, ItineraryDay.id",
     )
