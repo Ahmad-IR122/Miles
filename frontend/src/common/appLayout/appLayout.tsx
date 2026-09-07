@@ -1,5 +1,5 @@
 import { mergeClasses } from "@griffel/react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, ScrollRestoration, useLocation } from "react-router-dom";
 
 import { routesPaths } from "../../routes/routesPaths";
 import ChatWidget from "../chatWidget/chatWidget";
@@ -53,6 +53,9 @@ const AppLayout = () => {
 
   return (
     <div className={styles.root}>
+      {/* New routes start below the fixed nav instead of inheriting the
+          previous page's scroll position; Back/Forward restore that position. */}
+      <ScrollRestoration />
       {showNav ? <TopNav homeLink={homeLink} /> : null}
       <div
         className={mergeClasses(
