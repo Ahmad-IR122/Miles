@@ -39,4 +39,6 @@ __pycache__/
 *.sln
 *.sw?
 .ruff_cache/
-.claude/
+.claude/*
+!.claude/skills/
+!.claude/skills/**
