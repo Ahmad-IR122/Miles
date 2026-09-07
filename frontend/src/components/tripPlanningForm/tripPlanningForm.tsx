@@ -32,6 +32,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { interestOptions } from "../../constants/interests";
 import { generateItinerary } from "../../api/itinerary";
 import { createTrip, getTrips } from "../../api/trip";
+import { api } from "../../api/api";
 import { saveTripPreferences } from "../../api/tripPreference";
 import { buildTripPrompt } from "./tripPrompt";
 import type { Trip } from "../../types/trip";
@@ -84,6 +85,9 @@ const getGenerationErrorKey = (error: unknown): string => {
 
 const maxTripDays = 31;
 const maxNotesLength = 1000;
+// Matches the trips.other_interest column, so long input is trimmed here
+// rather than rejected by the API.
+const maxOtherInterestLength = 100;
 const minimumGeneratingDisplayMs = 3600;
 const minInterests = 3;
 const minAdults = 1;
@@ -559,13 +563,22 @@ const TripPlanningForm = () => {
       const baseDays = Math.floor(tripDuration / stops.length);
       const extraDays = tripDuration % stops.length;
 
-      const tripPayload = {
-        destination: stops
-          .map((stop) =>
-            stop.city ? `${stop.city}, ${stop.country}` : stop.country,
-          )
-          .join(" • "),
+      // The notes box and the custom "Other" interest are the only free text
+      // the traveler writes, and they travel in separate fields because they
+      // do different jobs. Notes are constraints — the model can apply them to
+      // whatever it already has. The custom interest is an interest, so it has
+      // to reach preferences.interests: the AI service builds its dataset
+      // search query from that list alone, and an interest that never makes it
+      // into the query has no matching activities to be planned from.
+      const additionalNotes =
+        notes.trim().slice(0, maxNotesLength) || undefined;
 
+      const customOtherInterest =
+        selectedInterests.includes("Other") && otherInterest.trim()
+          ? otherInterest.trim().slice(0, maxOtherInterestLength)
+          : undefined;
+
+      const tripPayload = {
         destinations: stops.map((stop, index) => ({
           ...stop,
           days: baseDays + (index < extraDays ? 1 : 0),
@@ -575,13 +588,15 @@ const TripPlanningForm = () => {
 
         end_date: endDate?.format("YYYY-MM-DD") ?? "",
 
-        budget_min: budgetSliderMin,
         budget_max: budgetMax,
 
         adults,
         children,
 
         travelers_count: adults + children,
+
+        additional_notes: additionalNotes,
+        other_interest: customOtherInterest,
       };
       // If a previous attempt already created this exact trip and only
       // failed at the generation step, reuse it instead of re-creating it —
@@ -599,6 +614,67 @@ const TripPlanningForm = () => {
           : (await createTrip(tripPayload)).data;
       if (!canReusePendingTrip) {
         setPendingTrip(trip);
+      }
+
+      try {
+        const canonicalInterests = await api
+          .get<{ id: number; name: string }[]>("/interests")
+          .then((response) => response.data);
+
+        const interestIdsByName = new Map(
+          canonicalInterests.map((interest) => [
+            interest.name.trim().toLowerCase(),
+            interest.id,
+          ]),
+        );
+
+        for (const label of selectedInterests) {
+          // "Other" is not a real interest — the text behind it travels in
+          // additional_notes above.
+          if (label === "Other") {
+            continue;
+          }
+
+          const normalized = label.trim().toLowerCase();
+          let interestId = interestIdsByName.get(normalized);
+          if (interestId === undefined) {
+            const createdInterest = await api.post<{
+              id: number;
+              name: string;
+            }>("/interests", {
+              name: label,
+            });
+
+            interestId = createdInterest.data.id;
+            interestIdsByName.set(
+              createdInterest.data.name.trim().toLowerCase(),
+              interestId,
+            );
+          }
+
+          try {
+            await api.post(`/trips/${trip.id}/interests`, {
+              interest_id: interestId,
+            });
+          } catch (linkError) {
+            // A retried submit reuses the same trip (see pendingTrip above),
+            // so interests linked on an earlier attempt come back as 409 —
+            // that is already the desired state, not a failure.
+            if (
+              !axios.isAxiosError(linkError) ||
+              linkError.response?.status !== 409
+            ) {
+              throw linkError;
+            }
+          }
+        }
+      } catch {
+        // Unlike the brief saved below (which nothing reads back), these rows
+        // are the only source of the interest list the itinerary is generated
+        // from. Stop with a message that points at the real problem rather
+        // than generate an itinerary that ignores the traveler's interests.
+        setSubmitError(t("tripPlanningForm.validation.interestSyncError"));
+        return;
       }
 
       // Nothing here talks to a model: the brief is only written down, ready
@@ -1230,6 +1306,9 @@ const TripPlanningForm = () => {
                       )}
                       value={otherInterest}
                       onChange={(event) => setOtherInterest(event.target.value)}
+                      slotProps={{
+                        htmlInput: { maxLength: maxOtherInterestLength },
+                      }}
                       sx={getFieldSx(!!otherInterest.trim())}
                     />
                   </div>

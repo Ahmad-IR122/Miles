@@ -5,6 +5,7 @@ export type TripCreatePayload = {
   budget_max: number;
   travelers_count: number;
   additional_notes?: string;
+  other_interest?: string;
   adults: number;
   children: number;
 };

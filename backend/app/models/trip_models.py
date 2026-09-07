@@ -67,6 +67,14 @@ class Trip(Base):
         nullable=True,
     )
 
+    # The custom "Other" interest. Free text, so it gets no row in the
+    # globally-unique interests table - it lives on the trip instead and is
+    # folded into the interest list handed to the AI service.
+    other_interest: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
     trip_status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,

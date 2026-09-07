@@ -104,6 +104,7 @@ class TripCreate(BaseModel):
     children: int = Field(default=0, ge=0)
     trip_status: str = Field(default="planning", min_length=1, max_length=30)
     additional_notes: str | None = Field(default=None, max_length=1000)
+    other_interest: str | None = Field(default=None, max_length=100)
 
     @field_validator("currency", "trip_status")
     @classmethod
