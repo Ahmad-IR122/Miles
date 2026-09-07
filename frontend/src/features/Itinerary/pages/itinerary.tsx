@@ -13,7 +13,6 @@ import {
   IconButton,
   InputLabel,
   Select,
-  Snackbar,
   Stack,
   TextField,
   Tooltip,
@@ -24,6 +23,7 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import { interestOptions } from "../../../constants/interests";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
+import Toast from "../../../common/toast/toast";
 import { semanticColors, warmShadows } from "../../../common/theme/colors";
 import { LoadingScreen } from "../../../components/loadingScreen/loadingScreen";
 import { DaySelector } from "../components/daySelector";
@@ -35,13 +35,20 @@ import { useItineraryStyles } from "../styles/itinerary.styles";
 import { formatDateRange } from "../utils/dateUtils";
 import { getFieldSx } from "../../../components/tripPlanningForm/tripPlanningForm.styles";
 import type { RecommendationPlace } from "../../recommendations/types/types";
+import type { Activity } from "../types/itinerary.types";
 
 const emptyNewActivity = {
   title: "",
   description: "",
   location: "",
   price: "",
-  category: "",
+  // The type <select> below is native, with no blank/placeholder option, so
+  // a browser with no matching value just falls back to visually showing
+  // the first option ("Adventure") anyway - defaulting the real state to
+  // match it, rather than "", keeps what's shown and what's actually
+  // selected in sync, so the Add button isn't stuck disabled until the user
+  // touches a field that already looked filled in.
+  category: interestOptions[0],
   startTime: "13:00",
   endTime: "14:00",
 };
@@ -80,6 +87,27 @@ const formatTimeLabel = (value: string) => {
 const getDiscoverActivityCost = (price: string) => {
   const match = price.replace(/,/g, "").match(/\d+(?:\.\d+)?/);
   return match ? Number(match[0]) : undefined;
+};
+
+// Activities added from Discover don't come with a time slot of their own,
+// so they're scheduled right after whatever's already the last thing in the
+// day (9 AM if the day is still empty), running for a flat hour. Wrapped
+// with % 1440 so a day that already runs past 11 PM doesn't overflow into an
+// invalid "24:xx" time.
+const DEFAULT_DAY_START_MINUTES = 9 * 60;
+const NEW_DISCOVER_ACTIVITY_DURATION_MINUTES = 60;
+const wrapMinutes = (minutes: number) => ((minutes % 1440) + 1440) % 1440;
+
+const getDayEndMinutes = (activities: Activity[]) => {
+  let latest: number | undefined;
+  activities.forEach((activity) => {
+    if (typeof activity === "string") return;
+    const end = timeToMinutes(activity.endTime) ?? timeToMinutes(activity.time);
+    if (end !== undefined && (latest === undefined || end > latest)) {
+      latest = end;
+    }
+  });
+  return latest ?? DEFAULT_DAY_START_MINUTES;
 };
 
 const timeOptions = Array.from({ length: 47 }, (_, index) => {
@@ -127,9 +155,20 @@ const Itinerary = () => {
   const [newActivity, setNewActivity] = useState(emptyNewActivity);
   const [pendingActivityTime, setPendingActivityTime] = useState<string>();
   const [addActivityError, setAddActivityError] = useState("");
+  // Surfaces failures from an add-activity request that's already running in
+  // the background (see submitNewActivity) - by the time those resolve, the
+  // dialog itself is already closed, so they can't use addActivityError.
+  const [addActivityBackgroundError, setAddActivityBackgroundError] =
+    useState("");
   const [pendingDiscoverActivity, setPendingDiscoverActivity] =
     useState<RecommendationPlace | null>(initialPendingActivity);
   const [daySelectOpen, setDaySelectOpen] = useState(!!initialPendingActivity);
+  // Picking a day just highlights it in the dialog - the actual add only
+  // happens once Confirm is pressed, so a stray click can't immediately
+  // commit before the user's sure which day they meant.
+  const [selectedDayForAdd, setSelectedDayForAdd] = useState<number | null>(
+    null,
+  );
   const [discoverActivityMessage, setDiscoverActivityMessage] = useState("");
   const [discoverActivityError, setDiscoverActivityError] = useState("");
   const trip = itineraries[0];
@@ -365,14 +404,48 @@ const Itinerary = () => {
         startTime: activityPayload.start_time,
         endTime: activityPayload.end_time,
       });
-    } else {
-      setPendingActivityTime(formatTimeLabel(newActivity.startTime));
-      await addActivityToDay(selectedDay, { name: title, ...activityPayload });
+      setAddDialogOpen(false);
+      setEditingActivity(null);
+      setNewActivity(emptyNewActivity);
+      setAddActivityError("");
+      return;
     }
+
+    // Adding a new activity is a real backend request, which takes a moment.
+    // This used to await it with the dialog still open, so the only feedback
+    // during that wait was... nothing - the dialog just sat there looking
+    // unresponsive, which read as "my first click didn't register" and led
+    // straight to a second click. The dialog now closes the instant
+    // validation passes, and the request runs in the background: the
+    // timeline already shows a "still adding" skeleton row/overlay
+    // (addingActivity/pendingActivityTime, wired below) while it's in
+    // flight, so there's always visible feedback, just not blocking a
+    // second dialog interaction. A failure (duplicate, request error, day
+    // gone) can't reuse addActivityError since the dialog is already closed
+    // by then - it goes to addActivityBackgroundError instead, which feeds
+    // the same general error toast as everything else on this page.
     setAddDialogOpen(false);
     setEditingActivity(null);
     setNewActivity(emptyNewActivity);
     setAddActivityError("");
+    setPendingActivityTime(formatTimeLabel(newActivity.startTime));
+    void addActivityToDay(selectedDay, {
+      name: title,
+      ...activityPayload,
+    }).then((result) => {
+      setPendingActivityTime(undefined);
+      if (result === "duplicate") {
+        setAddActivityBackgroundError(
+          "This activity is already added to this day.",
+        );
+      } else if (result === "missing-day") {
+        setAddActivityBackgroundError(
+          "We couldn't add that activity. Please try again.",
+        );
+      }
+      // "failed" already surfaces via the shared regenerate error toast;
+      // "added" needs no extra message - the new card appearing is it.
+    });
   };
 
   const closeDaySelectDialog = () => {
@@ -382,6 +455,15 @@ const Itinerary = () => {
 
     setDaySelectOpen(false);
     setPendingDiscoverActivity(null);
+    setSelectedDayForAdd(null);
+  };
+
+  const confirmAddDiscoverActivity = () => {
+    if (selectedDayForAdd === null) {
+      setDiscoverActivityError("Choose a day first.");
+      return;
+    }
+    void addDiscoverActivityToDay(selectedDayForAdd);
   };
 
   const addDiscoverActivityToDay = async (dayIndex: number) => {
@@ -395,17 +477,30 @@ const Itinerary = () => {
     setDiscoverActivityError("");
     setDiscoverActivityMessage("");
 
+    // Scheduled right after whatever's currently last in the day (or 9 AM if
+    // the day is empty), for a flat hour - a real time slot instead of a
+    // duration-only placeholder.
+    const startMinutes = wrapMinutes(
+      getDayEndMinutes(days[dayIndex].activities),
+    );
+    const endMinutes = wrapMinutes(
+      startMinutes + NEW_DISCOVER_ACTIVITY_DURATION_MINUTES,
+    );
+
     const result = await addActivityToDay(dayIndex, {
       name: pendingDiscoverActivity.title,
       description: pendingDiscoverActivity.desc,
       location_name: pendingDiscoverActivity.location,
       estimated_cost: getDiscoverActivityCost(pendingDiscoverActivity.price),
       category: pendingDiscoverActivity.category,
+      start_time: formatApiTime(startMinutes),
+      end_time: formatApiTime(endMinutes),
     });
 
     if (result === "added") {
       setDaySelectOpen(false);
       setPendingDiscoverActivity(null);
+      setSelectedDayForAdd(null);
       setDiscoverActivityMessage(
         `${pendingDiscoverActivity.title} was added to Day ${days[dayIndex].day}.`,
       );
@@ -662,9 +757,14 @@ const Itinerary = () => {
               <Button
                 disabled={regenerateBusy}
                 key={day.id ?? day.day}
-                onClick={() => addDiscoverActivityToDay(dayIndex)}
+                onClick={() => {
+                  setSelectedDayForAdd(dayIndex);
+                  setDiscoverActivityError("");
+                }}
                 sx={{ justifyContent: "flex-start", textTransform: "none" }}
-                variant={selectedDay === dayIndex ? "contained" : "outlined"}
+                variant={
+                  selectedDayForAdd === dayIndex ? "contained" : "outlined"
+                }
               >
                 Day {day.day}
               </Button>
@@ -683,6 +783,14 @@ const Itinerary = () => {
             sx={{ color: semanticColors.textSecondary, textTransform: "none" }}
           >
             Cancel
+          </Button>
+          <Button
+            disabled={regenerateBusy || selectedDayForAdd === null}
+            onClick={confirmAddDiscoverActivity}
+            sx={{ textTransform: "none" }}
+            variant="contained"
+          >
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
@@ -793,6 +901,20 @@ const Itinerary = () => {
                       : ""
                   }
                 >
+                  {/* A native <select> with no option matching its current
+                      value falls back to visually displaying the FIRST real
+                      option instead of nothing - the same trap as the
+                      activity-type default bug above. Without this
+                      placeholder, that meant Start (and especially End, which
+                      auto-enables with a blank value right after Start
+                      changes) could visually show a plausible time that was
+                      never actually chosen, so clicking Add - while both
+                      fields "looked" filled in - failed validation with a
+                      confusing "choose a valid start and end time", and only
+                      an explicit reselect actually committed a real value. */}
+                  <option disabled value="">
+                    Select
+                  </option>
                   {selectableStartTimes.map((time) => (
                     <option key={time} value={time}>
                       {formatTimeLabel(time)}
@@ -814,18 +936,22 @@ const Itinerary = () => {
                   label="End time"
                   labelId="activity-end-time-label"
                   native
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setNewActivity((current) => ({
                       ...current,
                       endTime: event.target.value,
-                    }))
-                  }
+                    }));
+                    setAddActivityError("");
+                  }}
                   value={
                     selectableEndTimes.includes(newActivity.endTime)
                       ? newActivity.endTime
                       : ""
                   }
                 >
+                  <option disabled value="">
+                    Select
+                  </option>
                   {selectableEndTimes.map((time) => (
                     <option key={time} value={time}>
                       {formatTimeLabel(time)}
@@ -869,7 +995,21 @@ const Itinerary = () => {
                 }))
               }
               slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
-              sx={getFieldSx(false)}
+              sx={{
+                ...getFieldSx(false),
+                // Number inputs get browser-drawn up/down steppers by
+                // default - hidden here since a "click to nudge the price
+                // by $0.01" control doesn't add anything for a free-typed
+                // cost field.
+                "& input[type=number]": {
+                  MozAppearance: "textfield",
+                },
+                "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                  {
+                    WebkitAppearance: "none",
+                    margin: 0,
+                  },
+              }}
               type="number"
               value={newActivity.price}
             />
@@ -918,17 +1058,26 @@ const Itinerary = () => {
         title="Save your schedule changes?"
       />
 
-      <Snackbar
-        autoHideDuration={6000}
-        message={regenerateError || activityError || orderError}
+      <Toast
+        message={
+          regenerateError ||
+          activityError ||
+          orderError ||
+          addActivityBackgroundError
+        }
         onClose={() => {
           clearRegenerateError();
           clearActivityError();
           clearOrderError();
+          setAddActivityBackgroundError("");
         }}
         open={
-          regenerateError !== "" || activityError !== "" || orderError !== ""
+          regenerateError !== "" ||
+          activityError !== "" ||
+          orderError !== "" ||
+          addActivityBackgroundError !== ""
         }
+        variant="warning"
       />
     </Box>
   );

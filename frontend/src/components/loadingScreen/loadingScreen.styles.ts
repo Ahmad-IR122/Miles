@@ -49,10 +49,11 @@ export const useLoadingScreenStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     backgroundImage: `radial-gradient(circle, color-mix(in srgb, ${warm.coralBright} 16%, transparent) 0%, transparent 70%)`,
-    "& img": {
+    // LoadingSprite's root element (one frame of the sprite sheet, drawn as
+    // a CSS background rather than an <img> - see loadingSprite.tsx).
+    "& > div": {
       width: "100%",
       height: "100%",
-      objectFit: "contain",
       imageRendering: "pixelated",
       filter: `drop-shadow(0 0 2px color-mix(in srgb, ${semanticColors.bgPrimary} 65%, transparent)) drop-shadow(0 0 9px color-mix(in srgb, ${warm.coralBright} 35%, transparent))`,
     },

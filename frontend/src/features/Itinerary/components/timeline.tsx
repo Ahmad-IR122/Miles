@@ -322,7 +322,14 @@ export const Timeline = ({
     const observer = new ResizeObserver(measure);
     observer.observe(timelineEl);
     return () => observer.disconnect();
-  }, [timelineActivities.length]);
+    // Re-measure on busy/pendingActivityTime too, not just a change in row
+    // count: adding an activity manually inserts a skeleton-height pending
+    // row, then swaps it for the real (usually taller) card in place, at the
+    // same row count - a transition the ResizeObserver above generally
+    // catches, but not reliably enough on its own (e.g. web-font metrics
+    // settling after paint), which was leaving the connector line ending
+    // short of the actual last marker once the real card landed.
+  }, [timelineActivities.length, busy, pendingActivityTime]);
 
   // Keep the plane locked to the wavy connector: read the sticky track's
   // real on-screen position, then sample the ACTUAL rendered <path> at that
@@ -517,7 +524,24 @@ export const Timeline = ({
             </>
           );
 
-          const key = activityIndex === -1 ? "pending-activity" : activityIndex;
+          // Keyed by the activity's own stable id (when it has one) rather
+          // than its position in the array. dnd-kit's useSortable inside
+          // SortableActivityRow is keyed by that same real id - keying the
+          // row itself by array index instead would mean that, the moment
+          // two cards swap places, React reuses the DOM node/component
+          // instance sitting at each index and just swaps in the OTHER
+          // card's data underneath it, while dnd-kit's hook suddenly finds
+          // its id has changed out from under the same instance. That
+          // mismatch is what produced the extra "swapped again" animation on
+          // drop - matching the keys here to what dnd-kit already keys by
+          // makes each row's identity consistent end to end, so it just
+          // animates once, to its new slot.
+          const key =
+            activityIndex === -1
+              ? "pending-activity"
+              : typeof activity === "string"
+                ? `legacy-${activityIndex}`
+                : (activity.id ?? activityIndex);
 
           if (isDraggable) {
             return (

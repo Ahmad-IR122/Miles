@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { getUpcomingItinerary } from "../../../api/itinerary";
+import { getTripById } from "../../../api/trip";
+import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import { routesPaths } from "../../../routes/routesPaths";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters, {
@@ -66,6 +69,12 @@ const Recommendations = () => {
     location.state,
     activeCategory,
   );
+  const [countryMismatchMessage, setCountryMismatchMessage] = useState("");
+  // The country check now happens before navigating away (fetching trip
+  // data first), so a click no longer jumps to the itinerary page
+  // instantly - tracking which card is mid-check lets that one button show
+  // "Adding..." instead of the page just sitting there looking stuck.
+  const [checkingPlaceId, setCheckingPlaceId] = useState<string | null>(null);
 
   const filteredPlaces = useMemo(
     () =>
@@ -122,7 +131,44 @@ const Recommendations = () => {
     });
   };
 
-  const handleAddToTrip = (place: RecommendationPlace) => {
+  const handleAddToTrip = async (place: RecommendationPlace) => {
+    if (checkingPlaceId) return;
+    setCheckingPlaceId(place.id);
+
+    try {
+      // The itinerary page is where trip data normally loads - fetched here
+      // too so the country can be checked before ever navigating there,
+      // instead of sending the user over just to bounce them back.
+      const upcoming = await getUpcomingItinerary();
+      const tripId = upcoming.data?.trip_id;
+      const tripCountries = tripId
+        ? new Set(
+          (await getTripById(tripId)).data.destinations.map((destination) =>
+            destination.country.trim().toLowerCase(),
+          ),
+        )
+        : new Set<string>();
+
+      const activityCountry = place.country.trim().toLowerCase();
+
+      if (
+        tripCountries.size > 0 &&
+        activityCountry &&
+        !tripCountries.has(activityCountry)
+      ) {
+        setCountryMismatchMessage(
+          `${place.title} is in ${place.country}, which isn't part of this itinerary.`,
+        );
+        return;
+      }
+    } catch {
+      // Couldn't confirm either way (offline, no trip yet, etc.) - fail open
+      // rather than block a feature that used to work on a check that
+      // itself failed.
+    } finally {
+      setCheckingPlaceId(null);
+    }
+
     navigate(routesPaths.itinerary, {
       state: { pendingActivity: place },
     });
@@ -168,6 +214,7 @@ const Recommendations = () => {
               <RecommendationCard
                 key={place.id}
                 place={place}
+                isAdding={checkingPlaceId === place.id}
                 onAddToTrip={handleAddToTrip}
               />
             ))}
@@ -208,6 +255,17 @@ const Recommendations = () => {
           <RecommendationsEmptyState />
         )}
       </main>
+
+      <ConfirmDialog
+        open={countryMismatchMessage !== ""}
+        variant="warning"
+        hideCancel
+        title="Not part of this itinerary"
+        description={countryMismatchMessage}
+        confirmLabel="Got it"
+        onConfirm={() => setCountryMismatchMessage("")}
+        onCancel={() => setCountryMismatchMessage("")}
+      />
     </div>
   );
 };
