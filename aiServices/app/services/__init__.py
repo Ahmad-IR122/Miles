@@ -7,7 +7,6 @@ from .itinerary import (
     regenerate_day,
     regenerate_itinerary,
 )
-from .rag import RAGService
 from .search import search_service
 
 __all__ = [

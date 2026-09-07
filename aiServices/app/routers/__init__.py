@@ -1,5 +1,5 @@
 """HTTP routers exposed by the AI service."""
 
-from . import health, itinerary, rag
+from . import health, itinerary
 
-__all__ = ["health", "itinerary", "rag", "recommendations"]
+__all__ = ["health", "itinerary", "recommendations"]
