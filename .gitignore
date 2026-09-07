@@ -39,4 +39,6 @@ __pycache__/
 *.sln
 *.sw?
 .ruff_cache/
-.claude/
+# Ignore local Claude Code config, but share team skills
+.claude/*
+!.claude/skills/
