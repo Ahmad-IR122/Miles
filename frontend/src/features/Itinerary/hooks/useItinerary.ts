@@ -84,8 +84,7 @@ const loadItinerary = async (tripId?: string): Promise<Trip[]> => {
   return [adaptGeneratedItinerary(tripResponse.data, generated)];
 };
 
-export type AddActivityResult =
-  "added" | "duplicate" | "missing-day" | "failed";
+export type AddActivityResult = "added" | "missing-day" | "failed";
 
 export const useItinerary = () => {
   const location = useLocation();
@@ -239,23 +238,10 @@ export const useItinerary = () => {
       return "missing-day";
     }
 
-    const normalizedName = activity.name.trim().toLowerCase();
-    const normalizedLocation = activity.location_name.trim().toLowerCase();
-    const alreadyAdded = day.activities.some((current) => {
-      if (typeof current === "string") {
-        return current.trim().toLowerCase() === normalizedName;
-      }
-
-      return (
-        current.title.trim().toLowerCase() === normalizedName &&
-        (current.location ?? "").trim().toLowerCase() === normalizedLocation
-      );
-    });
-
-    if (alreadyAdded) {
-      return "duplicate";
-    }
-
+    // Adding the same activity to a day more than once used to be blocked
+    // as a "duplicate" - removed on request, since wanting two lunches at
+    // the same place, or the same stop twice, is a legitimate choice and
+    // not a mistake to guard against.
     const tripId = trip.id;
     const added = await regenerate.run(
       { scope: "add", id: day.id ?? String(day.day) },

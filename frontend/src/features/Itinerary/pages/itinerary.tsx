@@ -19,9 +19,11 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import { interestOptions } from "../../../constants/interests";
+import { routesPaths } from "../../../routes/routesPaths";
 import ConfirmDialog from "../../../common/confirmDialog/confirmDialog";
 import Toast from "../../../common/toast/toast";
 import { semanticColors, warmShadows } from "../../../common/theme/colors";
@@ -176,6 +178,15 @@ const Itinerary = () => {
   const activeDay = days[selectedDay] ?? days[0];
   const dateRange = formatDateRange(trip?.startDate, trip?.endDate);
   const daysCount = days.length;
+  // A trip only ever covers one country (multi-city trips are multiple
+  // cities within that same country), so any destination entry gives us the
+  // country to hand Discover for pre-filtering.
+  const tripCountry = trip?.destinations?.[0]?.country;
+  const openDiscoverForTrip = () => {
+    navigate(routesPaths.recommendation, {
+      state: { presetCountry: tripCountry },
+    });
+  };
 
   const facts = [
     dateRange ? { label: "Dates", value: dateRange } : null,
@@ -222,11 +233,13 @@ const Itinerary = () => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [dirtyDayIndex]);
 
-  const confirmSaveAndLeave = async () => {
-    const saved = await saveDayOrder();
-    if (saved) {
-      orderBlocker.proceed?.();
-    }
+  // Leaving mid-reorder now discards the pending reorder rather than saving
+  // on the way out - saving is already its own explicit button right on the
+  // page, so the leave prompt's job is just to make sure that discard is
+  // actually what you meant, not to sneak a save in.
+  const confirmDiscardAndLeave = () => {
+    discardDayOrder();
+    orderBlocker.proceed?.();
   };
 
   useEffect(() => {
@@ -420,10 +433,10 @@ const Itinerary = () => {
     // timeline already shows a "still adding" skeleton row/overlay
     // (addingActivity/pendingActivityTime, wired below) while it's in
     // flight, so there's always visible feedback, just not blocking a
-    // second dialog interaction. A failure (duplicate, request error, day
-    // gone) can't reuse addActivityError since the dialog is already closed
-    // by then - it goes to addActivityBackgroundError instead, which feeds
-    // the same general error toast as everything else on this page.
+    // second dialog interaction. A failure (request error, day gone) can't
+    // reuse addActivityError since the dialog is already closed by then -
+    // it goes to addActivityBackgroundError instead, which feeds the same
+    // general error toast as everything else on this page.
     setAddDialogOpen(false);
     setEditingActivity(null);
     setNewActivity(emptyNewActivity);
@@ -434,11 +447,7 @@ const Itinerary = () => {
       ...activityPayload,
     }).then((result) => {
       setPendingActivityTime(undefined);
-      if (result === "duplicate") {
-        setAddActivityBackgroundError(
-          "This activity is already added to this day.",
-        );
-      } else if (result === "missing-day") {
+      if (result === "missing-day") {
         setAddActivityBackgroundError(
           "We couldn't add that activity. Please try again.",
         );
@@ -507,13 +516,6 @@ const Itinerary = () => {
       return;
     }
 
-    if (result === "duplicate") {
-      setDiscoverActivityError(
-        "This activity is already added to the selected day.",
-      );
-      return;
-    }
-
     setDiscoverActivityError(
       "We couldn't add that activity. Please try again.",
     );
@@ -533,11 +535,37 @@ const Itinerary = () => {
       <Container className={classes.shell}>
         <Box className={mergeClasses(classes.layout, classes.noSummaryLayout)}>
           <Box className={classes.mainContent}>
-            <ItineraryHeader
-              activeDayActivities={activeDay?.activities}
-              destination={trip?.destination}
-              destinations={trip?.destinations}
-            />
+            <Box
+              sx={{
+                alignItems: "center",
+                display: "flex",
+                gap: 2,
+                justifyContent: "space-between",
+              }}
+            >
+              <ItineraryHeader
+                activeDayActivities={activeDay?.activities}
+                destination={trip?.destination}
+                destinations={trip?.destinations}
+              />
+
+              {trip && (
+                <Button
+                  onClick={openDiscoverForTrip}
+                  startIcon={<ExploreOutlinedIcon />}
+                  sx={{
+                    borderRadius: "999px",
+                    color: semanticColors.textOnAccent,
+                    flexShrink: 0,
+                    px: 2.5,
+                    textTransform: "none",
+                  }}
+                  variant="contained"
+                >
+                  Discover more activities
+                </Button>
+              )}
+            </Box>
 
             {trip && (
               <>
@@ -711,6 +739,7 @@ const Itinerary = () => {
       <ConfirmDialog
         open={discoverActivityMessage !== ""}
         variant="success"
+        size="large"
         title="Activity added successfully"
         description={discoverActivityMessage}
         confirmLabel="Done"
@@ -1048,14 +1077,12 @@ const Itinerary = () => {
 
       <ConfirmDialog
         cancelLabel="Keep editing"
-        confirmLabel="Save and leave"
-        confirmingLabel="Saving…"
-        description="You reordered this day's activities but haven't saved yet. Save now, or the changes will be lost."
-        isConfirming={savingOrder}
+        confirmLabel="Discard changes and leave"
+        description="You reordered this day's activities but haven't saved yet. Leaving now will discard that reorder."
         onCancel={() => orderBlocker.reset?.()}
-        onConfirm={confirmSaveAndLeave}
+        onConfirm={confirmDiscardAndLeave}
         open={orderBlocker.state === "blocked"}
-        title="Save your schedule changes?"
+        title="Discard unsaved changes?"
       />
 
       <Toast
