@@ -183,8 +183,17 @@ const Itinerary = () => {
   // country to hand Discover for pre-filtering.
   const tripCountry = trip?.destinations?.[0]?.country;
   const openDiscoverForTrip = () => {
+    // Carrying the trip's own id along so that adding an activity from
+    // Discover comes back to THIS trip's itinerary page - without it,
+    // "Add to Trip" had no way to know which trip you came from and always
+    // landed back on /itinerary with no id, which loads whatever trip is
+    // "upcoming" by date instead of the one you were actually viewing.
+    // This has to be trip.tripId, not trip.id - trip.id is actually the
+    // *itinerary's* id (long-standing naming quirk in the adapter), and
+    // using it here sent Discover back with the wrong id, which loaded fine
+    // for some trips by coincidence and 404'd for others.
     navigate(routesPaths.recommendation, {
-      state: { presetCountry: tripCountry },
+      state: { presetCountry: tripCountry, tripId: trip?.tripId },
     });
   };
 

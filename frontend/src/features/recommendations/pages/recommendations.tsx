@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { routesPaths } from "../../../routes/routesPaths";
+import {
+  buildItineraryDetailPath,
+  routesPaths,
+} from "../../../routes/routesPaths";
 import RecommendationsEmptyState from "../components/recommendationsEmptyState";
 import RecommendationsFilters from "../components/recommendationsFilters";
 import RecommendationsHeader from "../components/recommendationsHeader";
@@ -50,6 +53,23 @@ const getPresetCountry = (locationState: unknown) => {
   return typeof presetCountry === "string" ? presetCountry.trim() : "";
 };
 
+// Same trip id the itinerary page was showing when "Discover more
+// activities" was clicked - carried through so "Add to Trip" can send you
+// back to that exact trip instead of whatever trip is "upcoming" by date.
+const getPresetTripId = (locationState: unknown) => {
+  if (
+    !locationState ||
+    typeof locationState !== "object" ||
+    !("tripId" in locationState)
+  ) {
+    return "";
+  }
+  const { tripId } = locationState as { tripId?: unknown };
+  if (typeof tripId === "string") return tripId;
+  if (typeof tripId === "number") return String(tripId);
+  return "";
+};
+
 const getResultSetKey = (
   places: { id: string }[],
   activeCategory: RecommendationCategoryFilter,
@@ -78,6 +98,7 @@ const Recommendations = () => {
     activeCategory,
   );
   const presetCountry = getPresetCountry(location.state);
+  const presetTripId = getPresetTripId(location.state);
 
   const filteredPlaces = useMemo(
     () =>
@@ -138,11 +159,18 @@ const Recommendations = () => {
 
   // Everything shown here is already filtered to the itinerary's own
   // country (see presetCountry above), so there's no longer anything to
-  // check before handing an activity back to the itinerary page.
+  // check before handing an activity back to the itinerary page. Going back
+  // to the SAME trip (not just "the itinerary page") is what presetTripId is
+  // for - without it this would land on /itinerary with no id, which loads
+  // whatever trip is soonest by date instead of the one Discover was opened
+  // from.
   const handleAddToTrip = (place: RecommendationPlace) => {
-    navigate(routesPaths.itinerary, {
-      state: { pendingActivity: place },
-    });
+    navigate(
+      presetTripId
+        ? buildItineraryDetailPath(presetTripId)
+        : routesPaths.itinerary,
+      { state: { pendingActivity: place } },
+    );
   };
 
   return (

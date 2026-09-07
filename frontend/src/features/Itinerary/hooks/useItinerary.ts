@@ -174,6 +174,7 @@ export const useItinerary = () => {
         {
           ...first,
           id: String(updated.id),
+          tripId: String(updated.trip_id),
           days: adaptGeneratedDays(updated.days),
         },
         ...rest,
