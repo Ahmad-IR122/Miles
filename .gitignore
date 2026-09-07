@@ -42,3 +42,9 @@ __pycache__/
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+
+# Playwright / qa-agent
+frontend/qa-agent-report/
+frontend/test-results/
+frontend/playwright-report/
+frontend/e2e/.auth/
