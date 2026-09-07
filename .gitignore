@@ -39,6 +39,9 @@ __pycache__/
 *.sln
 *.sw?
 .ruff_cache/
+
+# Ignore local/personal Claude Code state, but keep shared, repo-committed
+# skills (.claude/skills/) so the team gets them via git.
 .claude/*
 !.claude/skills/
 !.claude/skills/**
