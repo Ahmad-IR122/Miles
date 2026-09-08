@@ -307,10 +307,14 @@ export const Timeline = ({
   // letting it run to the bottom of the (taller) last activity card.
   useLayoutEffect(() => {
     const timelineEl = timelineRef.current;
-    const markerEl = lastMarkerRef.current;
-    if (!timelineEl || !markerEl) return;
+    if (!timelineEl) return;
 
     const measure = () => {
+      // Regeneration can remount the rows when dragging is disabled. Read
+      // the current marker each time instead of measuring a detached node.
+      const markerEl = lastMarkerRef.current;
+      if (!markerEl) return;
+
       const timelineTop = timelineEl.getBoundingClientRect().top;
       const markerRect = markerEl.getBoundingClientRect();
       const markerCenter = markerRect.top + markerRect.height / 2;
@@ -329,7 +333,13 @@ export const Timeline = ({
     // catches, but not reliably enough on its own (e.g. web-font metrics
     // settling after paint), which was leaving the connector line ending
     // short of the actual last marker once the real card landed.
-  }, [timelineActivities.length, busy, pendingActivityTime]);
+  }, [
+    timelineActivities.length,
+    busy,
+    pendingActivityTime,
+    canReorder,
+    day.activities,
+  ]);
 
   // Keep the plane locked to the wavy connector: read the sticky track's
   // real on-screen position, then sample the ACTUAL rendered <path> at that
